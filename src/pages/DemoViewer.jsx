@@ -706,50 +706,8 @@ function AIRenderOverlay({ visible, progress, resultUrl, onClose, onDownload }) 
 }
 
 /* ═══════════════════════════════════════════════════
-   INLINE STYLES
+   INLINE STYLES REMOVED - Using layout.css classes
    ═══════════════════════════════════════════════════ */
-const viewerStyles = {
-    container: {
-        display: 'flex', gap: '24px',
-        height: 'calc(100vh - 140px)', minHeight: '500px',
-    },
-    canvas: {
-        flex: 1, borderRadius: 'var(--radius-xl)', overflow: 'hidden',
-        border: '1px solid var(--border-primary)', background: '#0f1020',
-        position: 'relative',
-    },
-    panel: {
-        width: '320px', flexShrink: 0, display: 'flex',
-        flexDirection: 'column', gap: '16px', overflowY: 'auto',
-        paddingRight: '4px',
-    },
-    swatchGrid: {
-        display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '8px',
-    },
-    swatch: (color, isActive) => ({
-        width: '100%', aspectRatio: '1', borderRadius: 'var(--radius-md)',
-        background: color,
-        border: isActive ? '3px solid var(--accent-blue)' : '2px solid var(--border-primary)',
-        cursor: 'pointer', transition: 'all 0.2s ease',
-        boxShadow: isActive ? '0 0 15px rgba(88, 166, 255, 0.3)' : 'none',
-    }),
-    slider: {
-        width: '100%', height: '6px', borderRadius: '3px',
-        outline: 'none', appearance: 'none',
-        background: 'var(--bg-tertiary)', cursor: 'pointer',
-    },
-    cardTitle: { fontSize: '0.95rem', fontWeight: 700, marginBottom: '4px' },
-    cardDesc: { fontSize: '0.75rem', color: 'var(--text-tertiary)', marginBottom: '14px' },
-    toggleBtn: (active) => ({
-        display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-        width: '100%', padding: '10px 14px', borderRadius: 'var(--radius-md)',
-        background: active ? 'rgba(88, 166, 255, 0.1)' : 'var(--bg-tertiary)',
-        border: active ? '1px solid var(--accent-blue)' : '1px solid var(--border-primary)',
-        color: 'var(--text-primary)', cursor: 'pointer', fontSize: '0.85rem',
-        fontFamily: 'var(--font-primary)', fontWeight: 500,
-        transition: 'all 0.2s ease',
-    }),
-}
 
 /* ═══════════════════════════════════════════════════
    COLLABORATIVE SHOWROOM — BroadcastChannel Sync
@@ -956,7 +914,7 @@ export default function DemoViewer() {
                     <h1 className="page-title">360° Perde Demo</h1>
                     <p className="page-subtitle">Kumaş ve renk seçerek perdenizi canlı deneyimleyin</p>
                 </div>
-                <div style={{ display: 'flex', gap: '10px' }}>
+                <div className="demo-actions">
                     <button className="btn btn-secondary" onClick={() => {
                         const canvasEl = canvasRef.current?.querySelector('canvas')
                         if (canvasEl) {
@@ -971,10 +929,6 @@ export default function DemoViewer() {
                     <button
                         className="btn btn-primary"
                         onClick={handleAIRender}
-                        style={{
-                            background: 'var(--gradient-brand)',
-                            boxShadow: '0 4px 20px rgba(88, 166, 255, 0.3)',
-                        }}
                     >
                         ✨ AI Render
                     </button>
@@ -994,19 +948,10 @@ export default function DemoViewer() {
 
             {/* Collab Modal */}
             {collabModalOpen && (
-                <div style={{
-                    position: 'fixed', inset: 0, zIndex: 9999,
-                    background: 'rgba(0,0,0,0.6)', backdropFilter: 'blur(6px)',
-                    display: 'flex', alignItems: 'center', justifyContent: 'center',
-                }} onClick={() => setCollabModalOpen(false)}>
-                    <div onClick={e => e.stopPropagation()} style={{
-                        background: 'var(--bg-secondary)', borderRadius: 'var(--radius-xl)',
-                        padding: '28px', maxWidth: '420px', width: '90%',
-                        border: '1px solid var(--border-primary)',
-                        boxShadow: '0 20px 60px rgba(0,0,0,0.4)',
-                    }}>
-                        <h3 style={{ fontSize: '1.1rem', fontWeight: 700, marginBottom: '4px' }}>🔗 Birlikte İzle</h3>
-                        <p style={{ fontSize: '0.78rem', color: 'var(--text-tertiary)', marginBottom: '20px' }}>
+                <div className="modal-overlay" onClick={() => setCollabModalOpen(false)}>
+                    <div className="modal" onClick={e => e.stopPropagation()}>
+                        <h3 className="modal-title">🔗 Birlikte İzle</h3>
+                        <p style={{ fontSize: '0.9rem', color: 'var(--text-secondary)', marginBottom: '20px' }}>
                             Müşterinizle aynı anda 3D sahneyi izleyin
                         </p>
 
@@ -1017,12 +962,12 @@ export default function DemoViewer() {
                                     padding: '16px', borderRadius: 'var(--radius-md)',
                                     background: 'var(--bg-tertiary)', marginBottom: '12px',
                                 }}>
-                                    <div style={{ fontSize: '0.8rem', fontWeight: 600, marginBottom: '8px' }}>📡 Oturum Başlat (Perdeci)</div>
-                                    <p style={{ fontSize: '0.72rem', color: 'var(--text-tertiary)', marginBottom: '10px' }}>
+                                    <div style={{ fontSize: '0.9rem', fontWeight: 600, marginBottom: '8px' }}>📡 Oturum Başlat (Perdeci)</div>
+                                    <p style={{ fontSize: '0.8rem', color: 'var(--text-tertiary)', marginBottom: '12px' }}>
                                         Kod oluşturun ve müşterinize paylaşın
                                     </p>
                                     <button className="btn btn-primary" onClick={() => { collab.startHost(); }}
-                                        style={{ width: '100%', background: 'var(--gradient-brand)' }}>
+                                        style={{ width: '100%' }}>
                                         📡 Oturum Oluştur
                                     </button>
                                 </div>
@@ -1032,7 +977,7 @@ export default function DemoViewer() {
                                     padding: '16px', borderRadius: 'var(--radius-md)',
                                     background: 'var(--bg-tertiary)',
                                 }}>
-                                    <div style={{ fontSize: '0.8rem', fontWeight: 600, marginBottom: '8px' }}>👁️ Oturuma Katıl (Müşteri)</div>
+                                    <div style={{ fontSize: '0.9rem', fontWeight: 600, marginBottom: '8px' }}>👁️ Oturuma Katıl (Müşteri)</div>
                                     <div style={{ display: 'flex', gap: '8px' }}>
                                         <input className="input" placeholder="Kodu girin (örn: A3X9K2)"
                                             value={joinInput} onChange={e => setJoinInput(e.target.value)}
@@ -1048,33 +993,33 @@ export default function DemoViewer() {
                             /* Connected state */
                             <div style={{ textAlign: 'center' }}>
                                 <div style={{
-                                    padding: '20px', borderRadius: 'var(--radius-md)',
+                                    padding: '24px', borderRadius: 'var(--radius-md)',
                                     background: 'rgba(46, 204, 113, 0.08)', border: '1px solid rgba(46, 204, 113, 0.25)',
-                                    marginBottom: '16px',
+                                    marginBottom: '20px',
                                 }}>
-                                    <div style={{ fontSize: '0.7rem', color: 'var(--text-tertiary)', marginBottom: '6px' }}>
+                                    <div style={{ fontSize: '0.8rem', color: 'var(--text-tertiary)', marginBottom: '6px' }}>
                                         {collab.role === 'host' ? '📡 Oturum Kodu' : '👁️ Bağlı Oturum'}
                                     </div>
                                     <div style={{
-                                        fontSize: '2rem', fontWeight: 800, letterSpacing: '8px',
+                                        fontSize: '2.5rem', fontWeight: 800, letterSpacing: '8px',
                                         color: '#2ecc71', fontFamily: "'Courier New', monospace",
                                     }}>
                                         {collab.roomCode}
                                     </div>
                                     {collab.role === 'host' && (
-                                        <button className="btn btn-secondary" style={{ marginTop: '10px', fontSize: '0.72rem' }}
+                                        <button className="btn btn-secondary" style={{ marginTop: '12px', fontSize: '0.8rem' }}
                                             onClick={() => navigator.clipboard.writeText(collab.roomCode)}>
                                             📋 Kodu Kopyala
                                         </button>
                                     )}
                                     {collab.role === 'host' && (
-                                        <div style={{ marginTop: '8px', fontSize: '0.72rem', color: 'var(--text-secondary)' }}>
+                                        <div style={{ marginTop: '12px', fontSize: '0.8rem', color: 'var(--text-secondary)' }}>
                                             {collab.peerCount > 0 ? `👥 ${collab.peerCount} kişi izliyor` : '⏳ Bağlantı bekleniyor...'}
                                         </div>
                                     )}
                                 </div>
                                 <button className="btn btn-secondary" onClick={() => { collab.disconnect(); setCollabModalOpen(false) }}
-                                    style={{ color: '#e74c3c', borderColor: 'rgba(231,76,60,0.3)' }}>
+                                    style={{ color: '#e74c3c', borderColor: 'rgba(231,76,60,0.3)', width: '100%' }}>
                                     ✕ Bağlantıyı Kes
                                 </button>
                             </div>
@@ -1083,9 +1028,9 @@ export default function DemoViewer() {
                 </div>
             )}
 
-            <div style={viewerStyles.container}>
+            <div className="demo-container">
                 {/* 3D Canvas */}
-                <div style={viewerStyles.canvas} ref={canvasRef}>
+                <div className="demo-canvas-area" ref={canvasRef}>
                     <Suspense fallback={
                         <div style={{
                             width: '100%', height: '100%', display: 'flex',
@@ -1134,12 +1079,13 @@ export default function DemoViewer() {
 
                     {/* Hints bar */}
                     <div style={{
-                        position: 'absolute', bottom: '16px', left: '50%',
+                        position: 'absolute', bottom: '24px', left: '50%',
                         transform: 'translateX(-50%)', padding: '8px 16px',
-                        background: 'rgba(0,0,0,0.55)', borderRadius: 'var(--radius-full)',
-                        fontSize: '0.75rem', color: '#fff', backdropFilter: 'blur(8px)',
+                        background: 'rgba(0,0,0,0.6)', borderRadius: 'var(--radius-full)',
+                        fontSize: '0.8rem', color: '#fff', backdropFilter: 'blur(8px)',
                         display: 'flex', alignItems: 'center', gap: '8px',
                         pointerEvents: 'none',
+                        border: '1px solid rgba(255,255,255,0.1)'
                     }}>
                         🖱️ Döndür · 🔍 Yakınlaştır · {selectedFabric.transmission > 0.3 ? '☀️ Arkadan ışık geçişi aktif' : ''}
                     </div>
@@ -1147,13 +1093,12 @@ export default function DemoViewer() {
                     {/* Collab Live Badge */}
                     {collab.connected && (
                         <div style={{
-                            position: 'absolute', top: '12px', left: '12px', zIndex: 10,
+                            position: 'absolute', top: '20px', left: '20px', zIndex: 10,
                         }}>
-                            <div className="collab-badge">
-                                <div className="collab-dot" />
+                            <div className="badge badge-danger" style={{ padding: '8px 12px', fontSize: '0.8rem' }}>
                                 {collab.role === 'host'
-                                    ? `CANLI — ${collab.peerCount > 0 ? `${collab.peerCount} kişi izliyor` : 'Bekleniyor...'}`
-                                    : 'CANLI — Perdeci kontrol ediyor'
+                                    ? `🔴 CANLI — ${collab.peerCount > 0 ? `${collab.peerCount} kişi izliyor` : 'Bekleniyor...'}`
+                                    : '🔴 CANLI — Perdeci kontrol ediyor'
                                 }
                             </div>
                         </div>
@@ -1161,16 +1106,17 @@ export default function DemoViewer() {
                 </div>
 
                 {/* ─── Control Panel ─── */}
-                <div style={viewerStyles.panel}>
+                <div className="demo-controls-panel">
                     {/* Fabric Selection */}
                     <div className="card">
-                        <h3 style={viewerStyles.cardTitle}>Kumaş Seçimi</h3>
-                        <p style={viewerStyles.cardDesc}>Renk, doku ve ışık geçirgenliğini değiştirin</p>
-                        <div style={viewerStyles.swatchGrid}>
+                        <h3 style={{ fontSize: '1rem', fontWeight: 700, marginBottom: '4px' }}>Kumaş Seçimi</h3>
+                        <p style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', marginBottom: '16px' }}>Renk, doku ve ışık geçirgenliğini değiştirin</p>
+                        <div className="swatch-grid">
                             {fabrics.map(f => (
                                 <button
                                     key={f.id}
-                                    style={viewerStyles.swatch(f.color, selectedFabric.id === f.id)}
+                                    className={`swatch-btn ${selectedFabric.id === f.id ? 'active' : ''}`}
+                                    style={{ backgroundColor: f.color }}
                                     onClick={() => setSelectedFabric(f)}
                                     aria-label={`Kumaş: ${f.name}`}
                                     title={f.name}
@@ -1178,14 +1124,14 @@ export default function DemoViewer() {
                             ))}
                         </div>
                         <div style={{
-                            marginTop: '12px', padding: '10px 14px',
+                            marginTop: '16px', padding: '12px',
                             background: 'var(--bg-tertiary)', borderRadius: 'var(--radius-md)',
-                            fontSize: '0.8rem',
+                            fontSize: '0.85rem',
                         }}>
-                            <span style={{ fontWeight: 600 }}>{selectedFabric.name}</span>
+                            <span style={{ fontWeight: 600, display: 'block', marginBottom: '8px' }}>{selectedFabric.name}</span>
                             <div style={{
-                                display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '4px',
-                                color: 'var(--text-tertiary)', fontSize: '0.7rem', marginTop: '6px',
+                                display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px',
+                                color: 'var(--text-secondary)', fontSize: '0.75rem',
                             }}>
                                 <span>Pürüzlülük: {(selectedFabric.roughness * 100).toFixed(0)}%</span>
                                 <span>Sheen: {(selectedFabric.sheen * 100).toFixed(0)}%</span>
@@ -1197,21 +1143,21 @@ export default function DemoViewer() {
 
                     {/* Curtain Style */}
                     <div className="card">
-                        <h3 style={viewerStyles.cardTitle}>Perde Stili</h3>
-                        <p style={viewerStyles.cardDesc}>Dikim modelini belirleyin</p>
-                        <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                        <h3 style={{ fontSize: '1rem', fontWeight: 700, marginBottom: '4px' }}>Perde Stili</h3>
+                        <p style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', marginBottom: '16px' }}>Dikim modelini belirleyin</p>
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
                             {curtainStyles.map(s => (
                                 <button
                                     key={s.id}
-                                    className={`tab ${curtainStyle === s.id ? 'active' : ''}`}
+                                    className={`btn btn-secondary ${curtainStyle === s.id ? 'active' : ''}`}
                                     style={{
-                                        width: '100%', textAlign: 'left', padding: '10px 14px',
-                                        borderRadius: 'var(--radius-md)', display: 'flex',
-                                        alignItems: 'center', gap: '10px',
+                                        justifyContent: 'flex-start',
+                                        backgroundColor: curtainStyle === s.id ? 'var(--bg-elevated)' : undefined,
+                                        borderColor: curtainStyle === s.id ? 'var(--accent-blue)' : undefined
                                     }}
                                     onClick={() => setCurtainStyle(s.id)}
                                 >
-                                    <span style={{ fontSize: '1.1rem', opacity: 0.6 }}>{s.icon}</span>
+                                    <span style={{ fontSize: '1.2rem', opacity: 0.8 }}>{s.icon}</span>
                                     {s.name}
                                 </button>
                             ))}
@@ -1220,34 +1166,34 @@ export default function DemoViewer() {
 
                     {/* Open/Close */}
                     <div className="card">
-                        <h3 style={viewerStyles.cardTitle}>Açıklık</h3>
-                        <p style={viewerStyles.cardDesc}>Perdeyi aç/kapat</p>
+                        <h3 style={{ fontSize: '1rem', fontWeight: 700, marginBottom: '4px' }}>Açıklık</h3>
+                        <p style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', marginBottom: '16px' }}>Perdeyi aç/kapat</p>
                         <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                            <span style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', whiteSpace: 'nowrap' }}>Kapalı</span>
+                            <span style={{ fontSize: '0.85rem', color: 'var(--text-secondary)' }}>Kapalı</span>
                             <input
                                 type="range" min="0" max="1" step="0.05"
                                 value={openAmount}
                                 onChange={e => setOpenAmount(parseFloat(e.target.value))}
-                                style={viewerStyles.slider}
+                                className="demo-range"
                                 aria-label="Perde açıklık miktarı"
                             />
-                            <span style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', whiteSpace: 'nowrap' }}>Açık</span>
+                            <span style={{ fontSize: '0.85rem', color: 'var(--text-secondary)' }}>Açık</span>
                         </div>
-                        <div style={{ textAlign: 'center', marginTop: '6px', fontSize: '0.8rem', color: 'var(--text-tertiary)' }}>
+                        <div style={{ textAlign: 'center', marginTop: '8px', fontSize: '0.9rem', fontWeight: 600, color: 'var(--text-primary)' }}>
                             {(openAmount * 100).toFixed(0)}%
                         </div>
                     </div>
 
                     {/* Environment */}
                     <div className="card">
-                        <h3 style={viewerStyles.cardTitle}>Ortam</h3>
-                        <p style={viewerStyles.cardDesc}>Manzara ve rüzgar efektleri</p>
+                        <h3 style={{ fontSize: '1rem', fontWeight: 700, marginBottom: '4px' }}>Ortam</h3>
+                        <p style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', marginBottom: '16px' }}>Manzara ve rüzgar efektleri</p>
 
                         {/* Backdrop selector */}
-                        <div style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', marginBottom: '8px', fontWeight: 600 }}>
+                        <div style={{ fontSize: '0.85rem', color: 'var(--text-primary)', marginBottom: '10px', fontWeight: 600 }}>
                             Pencere Manzarası
                         </div>
-                        <div style={{ display: 'flex', gap: '6px', marginBottom: '14px' }}>
+                        <div style={{ display: 'flex', gap: '8px', marginBottom: '16px' }}>
                             {[
                                 { id: 'city', label: '🏙️ Şehir', desc: 'Lüks gökdelen manzarası' },
                                 { id: 'garden', label: '🌳 Bahçe', desc: 'Yeşil bahçe manzarası' },
@@ -1255,11 +1201,8 @@ export default function DemoViewer() {
                             ].map(b => (
                                 <button
                                     key={b.id}
-                                    className={`tab ${backdrop === b.id ? 'active' : ''}`}
-                                    style={{
-                                        flex: 1, padding: '8px 6px', textAlign: 'center',
-                                        borderRadius: 'var(--radius-md)', fontSize: '0.78rem',
-                                    }}
+                                    className={`btn btn-sm ${backdrop === b.id ? 'btn-primary' : 'btn-secondary'}`}
+                                    style={{ flex: 1, padding: '8px' }}
                                     onClick={() => setBackdrop(b.id)}
                                     title={b.desc}
                                 >
@@ -1270,48 +1213,48 @@ export default function DemoViewer() {
 
                         {/* Wind toggle */}
                         <button
-                            style={viewerStyles.toggleBtn(windEnabled)}
+                            className={`btn ${windEnabled ? 'btn-primary' : 'btn-secondary'}`}
                             onClick={() => setWindEnabled(w => !w)}
-                            aria-pressed={windEnabled}
+                            style={{ width: '100%', justifyContent: 'space-between' }}
                         >
                             <span>🌬️ Esinti Modu</span>
-                            <span style={{
+                            <div style={{
                                 width: '36px', height: '20px', borderRadius: '10px',
-                                background: windEnabled ? 'var(--accent-blue)' : 'var(--bg-elevated)',
+                                background: 'rgba(0,0,0,0.2)',
                                 position: 'relative', transition: 'background 0.2s',
-                                border: '1px solid var(--border-primary)',
-                                display: 'inline-block',
+                                border: '1px solid rgba(255,255,255,0.1)',
                             }}>
-                                <span style={{
+                                <div style={{
                                     position: 'absolute', top: '2px',
-                                    left: windEnabled ? '17px' : '2px',
+                                    left: windEnabled ? '18px' : '2px',
                                     width: '14px', height: '14px', borderRadius: '50%',
                                     background: '#fff', transition: 'left 0.2s',
                                     boxShadow: '0 1px 3px rgba(0,0,0,0.3)',
                                 }} />
-                            </span>
+                            </div>
                         </button>
                     </div>
 
                     {/* AI Atmosphere Recipe */}
-                    <div className="card ai-note" style={{
-                        background: 'rgba(88, 166, 255, 0.05)',
+                    <div className="card" style={{
+                        background: 'linear-gradient(135deg, rgba(59, 130, 246, 0.05) 0%, rgba(139, 92, 246, 0.05) 100%)',
+                        border: '1px solid rgba(59, 130, 246, 0.2)'
                     }}>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '8px' }}>
-                            <span className="ai-sparkle" style={{ fontSize: '1rem' }}>🌅</span>
-                            <span style={{ fontSize: '0.85rem', fontWeight: 700 }}>AI Atmosfer Reçetesi</span>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '10px' }}>
+                            <span style={{ fontSize: '1.2rem' }}>🌅</span>
+                            <span style={{ fontSize: '0.9rem', fontWeight: 700, color: 'var(--text-primary)' }}>AI Atmosfer Reçetesi</span>
                         </div>
                         <div style={{
-                            fontSize: '0.8rem', color: 'var(--text-secondary)', lineHeight: 1.6,
+                            fontSize: '0.85rem', color: 'var(--text-secondary)', lineHeight: 1.6,
                             minHeight: '60px',
                         }}>
                             {atmosphereLoading ? (
                                 <div style={{ display: 'flex', alignItems: 'center', gap: '8px', color: 'var(--text-tertiary)' }}>
-                                    <span className="ai-sparkle">✨</span>
+                                    <span>✨</span>
                                     Sahne analiz ediliyor...
                                 </div>
                             ) : atmosphere ? (
-                                <div className="ai-text-appear">{atmosphere}</div>
+                                <div style={{ animation: 'fadeIn 0.5s ease' }}>{atmosphere}</div>
                             ) : (
                                 <div style={{ color: 'var(--text-tertiary)' }}>
                                     💡 Kumaş, manzara veya açıklığı değiştirin — AI ortam yorumu yapacak.
@@ -1324,3 +1267,4 @@ export default function DemoViewer() {
         </div>
     )
 }
+

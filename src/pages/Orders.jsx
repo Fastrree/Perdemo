@@ -223,10 +223,9 @@ export default function Orders() {
 
             {/* New Order Modal */}
             {modalOpen && (
-                <div className="overlay overlay--center" onClick={() => setModalOpen(false)}>
-                    <div className="overlay__backdrop" />
-                    <div onClick={e => e.stopPropagation()} className="modal-panel modal-panel--lg">
-                        <h3 style={{ fontSize: '1.1rem', fontWeight: 700, marginBottom: '20px' }}>➕ Yeni Sipariş</h3>
+                <div className="modal-overlay" onClick={() => setModalOpen(false)}>
+                    <div onClick={e => e.stopPropagation()} className="modal modal-lg">
+                        <h3 className="modal-title">➕ Yeni Sipariş</h3>
                         <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
                             <div>
                                 <label className="form-label">Müşteri *</label>
@@ -236,7 +235,7 @@ export default function Orders() {
                                 <label className="form-label">Ürün *</label>
                                 <input className="input" value={form.product} onChange={e => setForm(f => ({ ...f, product: e.target.value }))} placeholder="Kadife Perde - Bordo" />
                             </div>
-                            <div className="grid-3-col" style={{ gap: '12px' }}>
+                            <div className="grid-3" style={{ gap: '12px' }}>
                                 <div>
                                     <label className="form-label">Adet</label>
                                     <input className="input" type="number" value={form.qty} onChange={e => setForm(f => ({ ...f, qty: e.target.value }))} />

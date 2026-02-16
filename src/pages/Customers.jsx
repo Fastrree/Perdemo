@@ -124,214 +124,216 @@ const CustomerDetailSlideOver = memo(function CustomerDetailSlideOver({ customer
     if (!customer) return null
 
     return (
-        <div className="overlay" onClick={onClose}>
-            <div className="overlay__backdrop" />
+        <div className="slideover-overlay" onClick={onClose}>
             <div onClick={e => e.stopPropagation()} className="slideover slideover--wide">
-                <div className="overlay__header">
-                    <h2 className="overlay__title">Müşteri Detay</h2>
-                    <button className="btn btn-ghost overlay__close" onClick={onClose}>✕</button>
+                <div className="slideover-header">
+                    <h2 className="slideover-title">Müşteri Detay</h2>
+                    <button className="btn btn-ghost" onClick={onClose}>✕</button>
                 </div>
 
-                {/* Header — always visible */}
-                <div style={{ display: 'flex', alignItems: 'center', gap: '16px', marginBottom: '16px' }}>
-                    <div className="avatar avatar-lg" style={{ width: '56px', height: '56px', fontSize: '1.1rem' }}>
-                        {customer.name.split(' ').map(n => n[0]).join('')}
+                <div className="slideover-body">
+                    {/* Header — always visible */}
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '16px', marginBottom: '16px' }}>
+                        <div className="avatar avatar-lg" style={{ width: '56px', height: '56px', fontSize: '1.1rem' }}>
+                            {customer.name.split(' ').map(n => n[0]).join('')}
+                        </div>
+                        <div>
+                            <h3 style={{ fontSize: '1.15rem', fontWeight: 700, marginBottom: '2px' }}>{customer.name}</h3>
+                            <span className={`badge ${statusBadge[customer.status].cls}`}>{statusBadge[customer.status].label}</span>
+                        </div>
                     </div>
-                    <div>
-                        <h3 style={{ fontSize: '1.15rem', fontWeight: 700, marginBottom: '2px' }}>{customer.name}</h3>
-                        <span className={`badge ${statusBadge[customer.status].cls}`}>{statusBadge[customer.status].label}</span>
+
+                    {/* Tab Switcher */}
+                    <div style={{ display: 'flex', gap: '0', marginBottom: '20px', borderBottom: '1px solid var(--border-primary)' }}>
+                        {[['info', '📋 Bilgiler'], ['twin', '🏠 Dijital İkiz']].map(([key, label]) => (
+                            <button key={key} onClick={() => setDetailTab(key)}
+                                style={{
+                                    padding: '10px 16px', border: 'none', background: 'none', cursor: 'pointer',
+                                    fontSize: '0.82rem', fontWeight: detailTab === key ? 700 : 400,
+                                    color: detailTab === key ? 'var(--accent-blue)' : 'var(--text-tertiary)',
+                                    borderBottom: detailTab === key ? '2px solid var(--accent-blue)' : '2px solid transparent',
+                                    transition: 'all 0.2s',
+                                }}>{label}{key === 'twin' && digitalTwins[customer.id] ? ` (${digitalTwins[customer.id].rooms.reduce((s, r) => s + r.windows.length, 0)})` : ''}</button>
+                        ))}
                     </div>
-                </div>
 
-                {/* Tab Switcher */}
-                <div style={{ display: 'flex', gap: '0', marginBottom: '20px', borderBottom: '1px solid var(--border-primary)' }}>
-                    {[['info', '📋 Bilgiler'], ['twin', '🏠 Dijital İkiz']].map(([key, label]) => (
-                        <button key={key} onClick={() => setDetailTab(key)}
-                            style={{
-                                padding: '10px 16px', border: 'none', background: 'none', cursor: 'pointer',
-                                fontSize: '0.82rem', fontWeight: detailTab === key ? 700 : 400,
-                                color: detailTab === key ? 'var(--accent-blue)' : 'var(--text-tertiary)',
-                                borderBottom: detailTab === key ? '2px solid var(--accent-blue)' : '2px solid transparent',
-                                transition: 'all 0.2s',
-                            }}>{label}{key === 'twin' && digitalTwins[customer.id] ? ` (${digitalTwins[customer.id].rooms.reduce((s, r) => s + r.windows.length, 0)})` : ''}</button>
-                    ))}
-                </div>
-
-                {/* TAB: Info */}
-                {detailTab === 'info' && (
-                    <>
-                        <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', marginBottom: '20px' }}>
-                            {[
-                                ['📧', 'E-posta', customer.email],
-                                ['📱', 'Telefon', customer.phone],
-                                ['📍', 'Şehir', customer.city],
-                                ['📅', 'Son Sipariş', customer.lastOrder],
-                            ].map(([icon, label, val]) => (
-                                <div key={label} className="info-row info-row--lg">
-                                    <span>{icon}</span>
-                                    <div>
-                                        <div className="info-row__label">{label}</div>
-                                        <div className="info-row__value">{val}</div>
-                                    </div>
-                                </div>
-                            ))}
-                        </div>
-
-                        <div className="grid-2-col" style={{ marginBottom: '20px' }}>
-                            <div className="stat-cell" style={{ padding: '16px' }}>
-                                <div className="stat-cell__value stat-cell__value--xl" style={{ color: 'var(--accent-blue)' }}>{customer.orders}</div>
-                                <div className="stat-cell__label stat-cell__label--lg">Toplam Sipariş</div>
-                            </div>
-                            <div className="stat-cell" style={{ padding: '16px' }}>
-                                <div className="stat-cell__value stat-cell__value--xl" style={{ background: 'var(--gradient-brand)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>
-                                    ₺{customer.totalSpent.toLocaleString('tr-TR')}
-                                </div>
-                                <div className="stat-cell__label stat-cell__label--lg">Toplam Ciro</div>
-                            </div>
-                        </div>
-
-                        <div className="action-col">
-                            <button className="btn btn-primary" style={{ width: '100%' }}
-                                onClick={() => { onEdit(customer) }}>✏️ Bilgileri Düzenle</button>
-                            <button className="btn btn-secondary" style={{ width: '100%' }}
-                                onClick={() => window.open(`tel:${customer.phone.replace(/\s/g, '')}`)}>📱 Ara</button>
-                            <button className="btn btn-secondary" style={{ width: '100%' }}
-                                onClick={() => window.open(`mailto:${customer.email}`)}>📧 E-posta Gönder</button>
-                            <button className="btn btn-secondary" style={{ width: '100%', color: '#e74c3c', borderColor: 'rgba(231,76,60,0.3)' }}
-                                onClick={() => { if (confirm('Bu müşteriyi silmek istediğinizden emin misiniz?')) onDelete(customer.id) }}>🗑️ Sil</button>
-                        </div>
-                    </>
-                )}
-
-                {/* TAB: Digital Twin */}
-                {detailTab === 'twin' && (() => {
-                    const twin = digitalTwins[customer.id]
-                    if (!twin) return (
-                        <div style={{ textAlign: 'center', padding: '40px 0' }}>
-                            <div style={{ fontSize: '3rem', marginBottom: '12px', opacity: 0.3 }}>🏠</div>
-                            <div style={{ fontSize: '0.9rem', fontWeight: 600, marginBottom: '6px' }}>Dijital İkiz Henüz Yok</div>
-                            <div style={{ fontSize: '0.78rem', color: 'var(--text-tertiary)', marginBottom: '16px' }}>Bu müşteri için pencere arşivi oluşturulmamış.</div>
-                            <button className="btn btn-primary"
-                                onClick={() => alert('Yeni sipariş tamamlandığında otomatik oluşturulur.')}>🏠 Dijital İkiz Başlat</button>
-                        </div>
-                    )
-
-                    const totalWindows = twin.rooms.reduce((s, r) => s + r.windows.length, 0)
-                    const totalProjectCost = twin.projects.reduce((s, p) => s + p.cost, 0)
-
-                    // Check maintenance reminders
-                    const now = new Date()
-                    const reminders = []
-                    twin.rooms.forEach(room => {
-                        room.windows.forEach(w => {
-                            const installed = new Date(w.installedDate)
-                            const monthsSince = (now.getFullYear() - installed.getFullYear()) * 12 + (now.getMonth() - installed.getMonth())
-                            if (monthsSince >= w.washCycle) {
-                                reminders.push({ room: room.name, fabric: w.fabric, months: monthsSince, cycle: w.washCycle })
-                            }
-                        })
-                    })
-
-                    return (
+                    {/* TAB: Info */}
+                    {detailTab === 'info' && (
                         <>
-                            {/* Twin Stats */}
-                            <div className="grid-3-col" style={{ gap: '8px', marginBottom: '16px' }}>
-                                <div style={{ padding: '10px', background: 'var(--bg-tertiary)', borderRadius: 'var(--radius-md)', textAlign: 'center' }}>
-                                    <div style={{ fontSize: '1.2rem', fontWeight: 800, color: 'var(--accent-blue)' }}>{twin.rooms.length}</div>
-                                    <div style={{ fontSize: '0.6rem', color: 'var(--text-tertiary)' }}>Oda</div>
-                                </div>
-                                <div style={{ padding: '10px', background: 'var(--bg-tertiary)', borderRadius: 'var(--radius-md)', textAlign: 'center' }}>
-                                    <div style={{ fontSize: '1.2rem', fontWeight: 800, color: '#bc8cff' }}>{totalWindows}</div>
-                                    <div style={{ fontSize: '0.6rem', color: 'var(--text-tertiary)' }}>Pencere</div>
-                                </div>
-                                <div style={{ padding: '10px', background: 'var(--bg-tertiary)', borderRadius: 'var(--radius-md)', textAlign: 'center' }}>
-                                    <div style={{ fontSize: '1.2rem', fontWeight: 800, background: 'var(--gradient-brand)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>₺{(totalProjectCost / 1000).toFixed(0)}k</div>
-                                    <div style={{ fontSize: '0.6rem', color: 'var(--text-tertiary)' }}>Toplam</div>
-                                </div>
-                            </div>
-
-                            {/* Maintenance Alerts */}
-                            {reminders.length > 0 && (
-                                <div style={{
-                                    padding: '10px 14px', marginBottom: '16px',
-                                    background: 'rgba(243,156,18,0.08)', border: '1px solid rgba(243,156,18,0.25)',
-                                    borderRadius: 'var(--radius-md)', fontSize: '0.75rem',
-                                }}>
-                                    <div style={{ fontWeight: 700, color: '#f39c12', marginBottom: '6px' }}>🧹 Bakım Hatırlatması ({reminders.length})</div>
-                                    {reminders.map((r, i) => (
-                                        <div key={i} style={{ color: 'var(--text-secondary)', marginBottom: '3px' }}>
-                                            {r.room} — {r.fabric}: {r.months} aydır yıkanmadı (önerilen: her {r.cycle} ay)
-                                        </div>
-                                    ))}
-                                </div>
-                            )}
-
-                            {/* Rooms & Windows */}
-                            <div style={{ marginBottom: '20px' }}>
-                                <h4 style={{ fontSize: '0.85rem', fontWeight: 700, marginBottom: '10px' }}>🏠 Odalar & Pencereler</h4>
-                                {twin.rooms.map(room => (
-                                    <div key={room.name} style={{ marginBottom: '12px' }}>
-                                        <div style={{ fontSize: '0.8rem', fontWeight: 700, marginBottom: '6px', display: 'flex', alignItems: 'center', gap: '6px' }}>
-                                            <span>{room.icon}</span> {room.name}
-                                            <span style={{ fontSize: '0.65rem', color: 'var(--text-tertiary)', fontWeight: 400 }}>({room.windows.length} pencere)</span>
-                                        </div>
-                                        <div style={{ display: 'flex', flexDirection: 'column', gap: '6px', paddingLeft: '8px', borderLeft: '2px solid var(--border-primary)' }}>
-                                            {room.windows.map(win => (
-                                                <div key={win.id} style={{
-                                                    padding: '10px 12px', background: 'var(--bg-tertiary)', borderRadius: 'var(--radius-md)',
-                                                }}>
-                                                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '6px' }}>
-                                                        <span style={{ fontSize: '0.82rem', fontWeight: 700 }}>{win.fabric}</span>
-                                                        <span style={{ fontSize: '0.65rem', color: 'var(--text-tertiary)' }}>{win.installedDate}</span>
-                                                    </div>
-                                                    <div className="grid-3-col" style={{ gap: '4px', fontSize: '0.68rem', color: 'var(--text-secondary)', marginBottom: '8px' }}>
-                                                        <span>📐 {win.width}×{win.height}cm</span>
-                                                        <span>🎀 {win.style}</span>
-                                                        <span>🔩 {win.mechanism}</span>
-                                                    </div>
-                                                    <div style={{ display: 'flex', gap: '4px', fontSize: '0.68rem', color: 'var(--text-tertiary)', marginBottom: '8px' }}>
-                                                        <span>🌡️ {win.washTemp}°C yıkama</span>
-                                                        <span>•</span>
-                                                        <span>Her {win.washCycle} ayda</span>
-                                                    </div>
-                                                    <div style={{ display: 'flex', gap: '6px' }}>
-                                                        <button className="btn btn-ghost" style={{ fontSize: '0.65rem', padding: '3px 8px' }}
-                                                            onClick={() => navigate(`/quote?fabric=${encodeURIComponent(win.fabric)}&w=${win.width}&h=${win.height}&style=${encodeURIComponent(win.style)}`)}>🔄 Yenile</button>
-                                                        <button className="btn btn-ghost" style={{ fontSize: '0.65rem', padding: '3px 8px' }}
-                                                            onClick={() => navigate('/demo')}>🎯 3D'de Gör</button>
-                                                    </div>
-                                                </div>
-                                            ))}
+                            <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', marginBottom: '20px' }}>
+                                {[
+                                    ['📧', 'E-posta', customer.email],
+                                    ['📱', 'Telefon', customer.phone],
+                                    ['📍', 'Şehir', customer.city],
+                                    ['📅', 'Son Sipariş', customer.lastOrder],
+                                ].map(([icon, label, val]) => (
+                                    <div key={label} className="info-row info-row--lg">
+                                        <span>{icon}</span>
+                                        <div>
+                                            <div className="info-row__label">{label}</div>
+                                            <div className="info-row__value">{val}</div>
                                         </div>
                                     </div>
                                 ))}
                             </div>
 
-                            {/* Project Timeline */}
-                            <div>
-                                <h4 style={{ fontSize: '0.85rem', fontWeight: 700, marginBottom: '10px' }}>📅 Proje Geçmişi</h4>
-                                <div style={{ display: 'flex', flexDirection: 'column', gap: '0', paddingLeft: '12px', borderLeft: '2px solid var(--accent-blue)' }}>
-                                    {twin.projects.map((proj, i) => (
-                                        <div key={i} style={{
-                                            position: 'relative', paddingLeft: '16px', paddingBottom: '14px',
-                                        }}>
-                                            <div style={{
-                                                position: 'absolute', left: '-7px', top: '4px',
-                                                width: '12px', height: '12px', borderRadius: '50%',
-                                                background: proj.status === 'completed' ? 'var(--accent-blue)' : '#f39c12',
-                                                border: '2px solid var(--bg-secondary)',
-                                            }} />
-                                            <div style={{ fontSize: '0.65rem', color: 'var(--text-tertiary)', marginBottom: '2px' }}>{proj.date}</div>
-                                            <div style={{ fontSize: '0.82rem', fontWeight: 600, marginBottom: '2px' }}>{proj.room}</div>
-                                            <div style={{ fontSize: '0.72rem', color: 'var(--text-secondary)' }}>{proj.fabric}</div>
-                                            <div style={{ fontSize: '0.72rem', fontWeight: 700, color: 'var(--accent-blue)' }}>₺{proj.cost.toLocaleString('tr-TR')}</div>
+                            <div className="grid-2-col" style={{ marginBottom: '20px' }}>
+                                <div className="stat-cell" style={{ padding: '16px' }}>
+                                    <div className="stat-cell__value stat-cell__value--xl" style={{ color: 'var(--accent-blue)' }}>{customer.orders}</div>
+                                    <div className="stat-cell__label stat-cell__label--lg">Toplam Sipariş</div>
+                                </div>
+                                <div className="stat-cell" style={{ padding: '16px' }}>
+                                    <div className="stat-cell__value stat-cell__value--xl" style={{ background: 'var(--gradient-brand)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>
+                                        ₺{customer.totalSpent.toLocaleString('tr-TR')}
+                                    </div>
+                                    <div className="stat-cell__label stat-cell__label--lg">Toplam Ciro</div>
+                                </div>
+                            </div>
+
+                            <div className="action-col">
+                                <button className="btn btn-primary" style={{ width: '100%' }}
+                                    onClick={() => { onEdit(customer) }}>✏️ Bilgileri Düzenle</button>
+                                <button className="btn btn-secondary" style={{ width: '100%' }}
+                                    onClick={() => window.open(`tel:${customer.phone.replace(/\s/g, '')}`)}>📱 Ara</button>
+                                <button className="btn btn-secondary" style={{ width: '100%' }}
+                                    onClick={() => window.open(`mailto:${customer.email}`)}>📧 E-posta Gönder</button>
+                                <button className="btn btn-secondary" style={{ width: '100%', color: '#e74c3c', borderColor: 'rgba(231,76,60,0.3)' }}
+                                    onClick={() => { if (confirm('Bu müşteriyi silmek istediğinizden emin misiniz?')) onDelete(customer.id) }}>🗑️ Sil</button>
+                            </div>
+                        </>
+                    )}
+
+                    {/* TAB: Digital Twin */}
+                    {detailTab === 'twin' && (() => {
+                        const twin = digitalTwins[customer.id]
+                        if (!twin) return (
+                            <div style={{ textAlign: 'center', padding: '40px 0' }}>
+                                <div style={{ fontSize: '3rem', marginBottom: '12px', opacity: 0.3 }}>🏠</div>
+                                <div style={{ fontSize: '0.9rem', fontWeight: 600, marginBottom: '6px' }}>Dijital İkiz Henüz Yok</div>
+                                <div style={{ fontSize: '0.78rem', color: 'var(--text-tertiary)', marginBottom: '16px' }}>Bu müşteri için pencere arşivi oluşturulmamış.</div>
+                                <button className="btn btn-primary"
+                                    onClick={() => alert('Yeni sipariş tamamlandığında otomatik oluşturulur.')}>🏠 Dijital İkiz Başlat</button>
+                            </div>
+                        )
+
+                        const totalWindows = twin.rooms.reduce((s, r) => s + r.windows.length, 0)
+                        const totalProjectCost = twin.projects.reduce((s, p) => s + p.cost, 0)
+
+                        // Check maintenance reminders
+                        const now = new Date()
+                        const reminders = []
+                        twin.rooms.forEach(room => {
+                            room.windows.forEach(w => {
+                                const installed = new Date(w.installedDate)
+                                const monthsSince = (now.getFullYear() - installed.getFullYear()) * 12 + (now.getMonth() - installed.getMonth())
+                                const washCycle = w.washCycle || 6 // Default to 6 if undefined
+                                if (monthsSince >= washCycle) {
+                                    reminders.push({ room: room.name, fabric: w.fabric, months: monthsSince, cycle: washCycle })
+                                }
+                            })
+                        })
+
+                        return (
+                            <>
+                                {/* Twin Stats */}
+                                <div className="grid-3" style={{ gap: '8px', marginBottom: '16px' }}>
+                                    <div style={{ padding: '10px', background: 'var(--bg-tertiary)', borderRadius: 'var(--radius-md)', textAlign: 'center' }}>
+                                        <div style={{ fontSize: '1.2rem', fontWeight: 800, color: 'var(--accent-blue)' }}>{twin.rooms.length}</div>
+                                        <div style={{ fontSize: '0.6rem', color: 'var(--text-tertiary)' }}>Oda</div>
+                                    </div>
+                                    <div style={{ padding: '10px', background: 'var(--bg-tertiary)', borderRadius: 'var(--radius-md)', textAlign: 'center' }}>
+                                        <div style={{ fontSize: '1.2rem', fontWeight: 800, color: '#bc8cff' }}>{totalWindows}</div>
+                                        <div style={{ fontSize: '0.6rem', color: 'var(--text-tertiary)' }}>Pencere</div>
+                                    </div>
+                                    <div style={{ padding: '10px', background: 'var(--bg-tertiary)', borderRadius: 'var(--radius-md)', textAlign: 'center' }}>
+                                        <div style={{ fontSize: '1.2rem', fontWeight: 800, background: 'var(--gradient-brand)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>₺{(totalProjectCost / 1000).toFixed(0)}k</div>
+                                        <div style={{ fontSize: '0.6rem', color: 'var(--text-tertiary)' }}>Toplam</div>
+                                    </div>
+                                </div>
+
+                                {/* Maintenance Alerts */}
+                                {reminders.length > 0 && (
+                                    <div style={{
+                                        padding: '10px 14px', marginBottom: '16px',
+                                        background: 'rgba(243,156,18,0.08)', border: '1px solid rgba(243,156,18,0.25)',
+                                        borderRadius: 'var(--radius-md)', fontSize: '0.75rem',
+                                    }}>
+                                        <div style={{ fontWeight: 700, color: '#f39c12', marginBottom: '6px' }}>🧹 Bakım Hatırlatması ({reminders.length})</div>
+                                        {reminders.map((r, i) => (
+                                            <div key={i} style={{ color: 'var(--text-secondary)', marginBottom: '3px' }}>
+                                                {r.room} — {r.fabric}: {r.months} aydır yıkanmadı (önerilen: her {r.cycle} ay)
+                                            </div>
+                                        ))}
+                                    </div>
+                                )}
+
+                                {/* Rooms & Windows */}
+                                <div style={{ marginBottom: '20px' }}>
+                                    <h4 style={{ fontSize: '0.85rem', fontWeight: 700, marginBottom: '10px' }}>🏠 Odalar & Pencereler</h4>
+                                    {twin.rooms.map(room => (
+                                        <div key={room.name} style={{ marginBottom: '12px' }}>
+                                            <div style={{ fontSize: '0.8rem', fontWeight: 700, marginBottom: '6px', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                                                <span>{room.icon}</span> {room.name}
+                                                <span style={{ fontSize: '0.65rem', color: 'var(--text-tertiary)', fontWeight: 400 }}>({room.windows.length} pencere)</span>
+                                            </div>
+                                            <div style={{ display: 'flex', flexDirection: 'column', gap: '6px', paddingLeft: '8px', borderLeft: '2px solid var(--border-primary)' }}>
+                                                {room.windows.map(win => (
+                                                    <div key={win.id} style={{
+                                                        padding: '10px 12px', background: 'var(--bg-tertiary)', borderRadius: 'var(--radius-md)',
+                                                    }}>
+                                                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '6px' }}>
+                                                            <span style={{ fontSize: '0.82rem', fontWeight: 700 }}>{win.fabric}</span>
+                                                            <span style={{ fontSize: '0.65rem', color: 'var(--text-tertiary)' }}>{win.installedDate}</span>
+                                                        </div>
+                                                        <div className="grid-3" style={{ gap: '4px', fontSize: '0.68rem', color: 'var(--text-secondary)', marginBottom: '8px' }}>
+                                                            <span>📐 {win.width}×{win.height}cm</span>
+                                                            <span>🎀 {win.style}</span>
+                                                            <span>🔩 {win.mechanism}</span>
+                                                        </div>
+                                                        <div style={{ display: 'flex', gap: '4px', fontSize: '0.68rem', color: 'var(--text-tertiary)', marginBottom: '8px' }}>
+                                                            <span>🌡️ {win.washTemp}°C yıkama</span>
+                                                            <span>•</span>
+                                                            <span>Her {win.washCycle} ayda</span>
+                                                        </div>
+                                                        <div style={{ display: 'flex', gap: '6px' }}>
+                                                            <button className="btn btn-ghost" style={{ fontSize: '0.65rem', padding: '3px 8px' }}
+                                                                onClick={() => navigate(`/quote?fabric=${encodeURIComponent(win.fabric)}&w=${win.width}&h=${win.height}&style=${encodeURIComponent(win.style)}`)}>🔄 Yenile</button>
+                                                            <button className="btn btn-ghost" style={{ fontSize: '0.65rem', padding: '3px 8px' }}
+                                                                onClick={() => navigate('/demo')}>🎯 3D'de Gör</button>
+                                                        </div>
+                                                    </div>
+                                                ))}
+                                            </div>
                                         </div>
                                     ))}
                                 </div>
-                            </div>
-                        </>
-                    )
-                })()}
+
+                                {/* Project Timeline */}
+                                <div>
+                                    <h4 style={{ fontSize: '0.85rem', fontWeight: 700, marginBottom: '10px' }}>📅 Proje Geçmişi</h4>
+                                    <div style={{ display: 'flex', flexDirection: 'column', gap: '0', paddingLeft: '12px', borderLeft: '2px solid var(--accent-blue)' }}>
+                                        {twin.projects.map((proj, i) => (
+                                            <div key={i} style={{
+                                                position: 'relative', paddingLeft: '16px', paddingBottom: '14px',
+                                            }}>
+                                                <div style={{
+                                                    position: 'absolute', left: '-7px', top: '4px',
+                                                    width: '12px', height: '12px', borderRadius: '50%',
+                                                    background: proj.status === 'completed' ? 'var(--accent-blue)' : '#f39c12',
+                                                    border: '2px solid var(--bg-secondary)',
+                                                }} />
+                                                <div style={{ fontSize: '0.65rem', color: 'var(--text-tertiary)', marginBottom: '2px' }}>{proj.date}</div>
+                                                <div style={{ fontSize: '0.82rem', fontWeight: 600, marginBottom: '2px' }}>{proj.room}</div>
+                                                <div style={{ fontSize: '0.72rem', color: 'var(--text-secondary)' }}>{proj.fabric}</div>
+                                                <div style={{ fontSize: '0.72rem', fontWeight: 700, color: 'var(--accent-blue)' }}>₺{proj.cost.toLocaleString('tr-TR')}</div>
+                                            </div>
+                                        ))}
+                                    </div>
+                                </div>
+                            </>
+                        )
+                    })()}
+                </div>
             </div>
         </div>
     )
@@ -492,28 +494,27 @@ export default function Customers() {
 
             {/* Add/Edit Modal */}
             {modalOpen && (
-                <div className="overlay overlay--center" onClick={() => setModalOpen(false)}>
-                    <div className="overlay__backdrop" />
-                    <div onClick={e => e.stopPropagation()} className="modal-panel modal-panel--md">
-                        <h3 style={{ fontSize: '1.1rem', fontWeight: 700, marginBottom: '20px' }}>
+                <div className="modal-overlay" onClick={() => setModalOpen(false)}>
+                    <div onClick={e => e.stopPropagation()} className="modal">
+                        <h3 className="modal-title">
                             {editingCustomer ? '✏️ Müşteri Düzenle' : '➕ Yeni Müşteri'}
                         </h3>
                         <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
                             <div>
-                                <label style={{ fontSize: '0.78rem', color: 'var(--text-secondary)', marginBottom: '4px', display: 'block' }}>İsim *</label>
+                                <label className="form-label">İsim *</label>
                                 <input className="input" value={form.name} onChange={e => updateForm('name', e.target.value)} placeholder="Elif Kaya" />
                             </div>
                             <div>
-                                <label style={{ fontSize: '0.78rem', color: 'var(--text-secondary)', marginBottom: '4px', display: 'block' }}>E-posta</label>
+                                <label className="form-label">E-posta</label>
                                 <input className="input" type="email" value={form.email} onChange={e => updateForm('email', e.target.value)} placeholder="elif@email.com" />
                             </div>
-                            <div className="grid-2-col">
+                            <div className="grid-2">
                                 <div>
-                                    <label style={{ fontSize: '0.78rem', color: 'var(--text-secondary)', marginBottom: '4px', display: 'block' }}>Telefon</label>
+                                    <label className="form-label">Telefon</label>
                                     <input className="input" value={form.phone} onChange={e => updateForm('phone', e.target.value)} placeholder="0532 111 2233" />
                                 </div>
                                 <div>
-                                    <label style={{ fontSize: '0.78rem', color: 'var(--text-secondary)', marginBottom: '4px', display: 'block' }}>Şehir</label>
+                                    <label className="form-label">Şehir</label>
                                     <input className="input" value={form.city} onChange={e => updateForm('city', e.target.value)} placeholder="İstanbul" />
                                 </div>
                             </div>
