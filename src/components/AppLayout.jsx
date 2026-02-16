@@ -1,6 +1,7 @@
 import { useState, useRef, useEffect, useCallback } from 'react'
 import { Outlet, NavLink, useLocation, useNavigate } from 'react-router-dom'
 import { useTheme } from '../App'
+import useIsMobile from '../hooks/useIsMobile'
 
 const navItems = [
     { path: '/dashboard', label: 'Dashboard', icon: '📊', section: 'Ana Menü' },
@@ -33,6 +34,8 @@ export default function AppLayout() {
     const [notifications, setNotifications] = useState(mockNotifications)
     const [globalSearch, setGlobalSearch] = useState('')
     const [searchResults, setSearchResults] = useState([])
+    const [sidebarOpen, setSidebarOpen] = useState(false)
+    const isMobile = useIsMobile()
     const notifRef = useRef(null)
     const profileRef = useRef(null)
     const searchRef = useRef(null)
@@ -49,6 +52,11 @@ export default function AppLayout() {
         document.addEventListener('mousedown', handle)
         return () => document.removeEventListener('mousedown', handle)
     }, [])
+
+    // Close sidebar on route change (mobile)
+    useEffect(() => {
+        setSidebarOpen(false)
+    }, [location.pathname])
 
     const markAllRead = useCallback(() => {
         setNotifications(prev => prev.map(n => ({ ...n, read: true })))
@@ -85,9 +93,17 @@ export default function AppLayout() {
 
     return (
         <div className="app-layout">
+            {/* Sidebar Backdrop (mobile) — only rendered when open */}
+            {sidebarOpen && (
+                <div
+                    className="sidebar-backdrop visible"
+                    onClick={() => setSidebarOpen(false)}
+                />
+            )}
+
             {/* Sidebar */}
-            <aside className="sidebar" role="navigation" aria-label="Ana navigasyon">
-                <div className="sidebar-header">
+            <aside className={`sidebar${sidebarOpen ? ' open' : ''}`} role="navigation" aria-label="Ana navigasyon">
+                <div className="sidebar-header" onClick={() => setSidebarOpen(false)} style={{ cursor: 'pointer' }}>
                     <div className="sidebar-logo" aria-hidden="true">P</div>
                     <div className="sidebar-brand">
                         <h1>Perdemo</h1>
@@ -126,6 +142,13 @@ export default function AppLayout() {
                 {/* Header */}
                 <header className="header">
                     <div className="header-left">
+                        <button
+                            className="sidebar-toggle"
+                            onClick={() => setSidebarOpen(o => !o)}
+                            aria-label="Menüyü aç/kapat"
+                        >
+                            <span /><span /><span />
+                        </button>
                         <div className="search-bar" ref={searchRef} style={{ position: 'relative' }}>
                             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                                 <circle cx="11" cy="11" r="8" />
@@ -175,12 +198,7 @@ export default function AppLayout() {
                             </button>
 
                             {notifOpen && (
-                                <div style={{
-                                    position: 'absolute', top: '100%', right: 0, marginTop: '8px', width: '360px',
-                                    background: 'var(--bg-secondary)', borderRadius: 'var(--radius-lg)',
-                                    border: '1px solid var(--border-primary)', boxShadow: '0 12px 40px rgba(0,0,0,0.35)',
-                                    zIndex: 200, overflow: 'hidden',
-                                }}>
+                                <div className="dropdown-panel notif-dropdown">
                                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '14px 16px', borderBottom: '1px solid var(--border-primary)' }}>
                                         <span style={{ fontWeight: 700, fontSize: '0.9rem' }}>Bildirimler</span>
                                         {unreadCount > 0 && (
@@ -226,12 +244,7 @@ export default function AppLayout() {
                                 onClick={() => { setProfileOpen(!profileOpen); setNotifOpen(false) }}>AY</div>
 
                             {profileOpen && (
-                                <div style={{
-                                    position: 'absolute', top: '100%', right: 0, marginTop: '8px', width: '220px',
-                                    background: 'var(--bg-secondary)', borderRadius: 'var(--radius-lg)',
-                                    border: '1px solid var(--border-primary)', boxShadow: '0 12px 40px rgba(0,0,0,0.35)',
-                                    zIndex: 200, overflow: 'hidden',
-                                }}>
+                                <div className="dropdown-panel profile-dropdown">
                                     <div style={{ padding: '14px 16px', borderBottom: '1px solid var(--border-primary)' }}>
                                         <div style={{ fontWeight: 700, fontSize: '0.9rem' }}>Ahmet Yılmaz</div>
                                         <div style={{ fontSize: '0.75rem', color: 'var(--text-tertiary)' }}>Mağaza Sahibi</div>
@@ -265,6 +278,19 @@ export default function AppLayout() {
                 <main className="main-content">
                     <Outlet />
                 </main>
+
+                {/* Mobile Footer Banner — always visible */}
+                {isMobile && (
+                    <div className="mobile-footer-banner">
+                        <div className="mobile-footer-banner-content">
+                            <span className="mobile-footer-banner-icon">🖥️</span>
+                            <p>
+                                Tam deneyim için masaüstü cihaz kullanın.
+                                3D, AI ve Gelişmiş Yönetim büyük ekranda mevcuttur.
+                            </p>
+                        </div>
+                    </div>
+                )}
             </div>
         </div>
     )

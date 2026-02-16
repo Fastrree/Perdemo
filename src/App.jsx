@@ -2,6 +2,7 @@ import { useState, createContext, useContext, lazy, Suspense } from 'react'
 import { Routes, Route } from 'react-router-dom'
 import Landing from './pages/Landing'
 import AppLayout from './components/AppLayout'
+import DesktopOnly from './components/DesktopOnly'
 
 // Lazy load pages for performance — only loaded when navigated to
 const Dashboard = lazy(() => import('./pages/Dashboard'))
@@ -55,13 +56,13 @@ function App() {
             <Route path="/products" element={<Products />} />
             <Route path="/orders" element={<Orders />} />
             <Route path="/customers" element={<Customers />} />
-            <Route path="/demo" element={<DemoViewer />} />
+            <Route path="/demo" element={<DesktopOnly><DemoViewer /></DesktopOnly>} />
             <Route path="/quote" element={<SmartQuote />} />
-            <Route path="/measure" element={<MeasureAssistant />} />
-            <Route path="/moodboard" element={<Moodboard />} />
-            <Route path="/analytics" element={<Analytics />} />
-            <Route path="/inventory-oracle" element={<InventoryOracle />} />
-            <Route path="/white-label" element={<WhiteLabel />} />
+            <Route path="/measure" element={<DesktopOnly><MeasureAssistant /></DesktopOnly>} />
+            <Route path="/moodboard" element={<DesktopOnly><Moodboard /></DesktopOnly>} />
+            <Route path="/analytics" element={<DesktopOnly><Analytics /></DesktopOnly>} />
+            <Route path="/inventory-oracle" element={<DesktopOnly><InventoryOracle /></DesktopOnly>} />
+            <Route path="/white-label" element={<DesktopOnly><WhiteLabel /></DesktopOnly>} />
           </Route>
         </Routes>
       </Suspense>

@@ -1,3 +1,4 @@
+import { useState } from 'react'
 import { Link } from 'react-router-dom'
 import { useTheme } from '../App'
 
@@ -90,6 +91,7 @@ const pricingPlans = [
 
 export default function Landing() {
     const { theme, toggleTheme } = useTheme()
+    const [menuOpen, setMenuOpen] = useState(false)
 
     return (
         <div className="landing">
@@ -99,7 +101,15 @@ export default function Landing() {
                     <div className="logo-icon" aria-hidden="true">P</div>
                     <h1>Perdemo</h1>
                 </div>
-                <div className="landing-nav-links">
+                <button
+                    className="landing-menu-toggle"
+                    onClick={() => setMenuOpen(o => !o)}
+                    aria-label="Menüyü aç/kapat"
+                    aria-expanded={menuOpen}
+                >
+                    <span /><span /><span />
+                </button>
+                <div className={`landing-nav-links${menuOpen ? ' open' : ''}`}>
                     <a href="#features" className="landing-nav-link">Özellikler</a>
                     <a href="#pricing" className="landing-nav-link">Fiyatlandırma</a>
                     <button

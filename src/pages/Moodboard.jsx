@@ -1,6 +1,7 @@
 import { useState, useRef, useCallback, useMemo } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { extractDominantColors, getFabricPairingSuggestion, getColorMatchSuggestion } from '../utils/aiProxy'
+import useCanHover from '../hooks/useCanHover'
 
 // Catalog names for AI response parsing
 const CATALOG_NAMES = ['Kadife Bordo', 'İpek Krem', 'Keten Lacivert', 'Pamuk Gri', 'Blackout Siyah', 'Tül Beyaz', 'Jakar Altın', 'Kadife Zümrüt']
@@ -193,6 +194,7 @@ function FabricPairing() {
     const [hovered, setHovered] = useState(null)
     const [aiPairing, setAiPairing] = useState(null)
     const [loading, setLoading] = useState(false)
+    const canHover = useCanHover()
 
     const fabric = fabricPalette[selected]
 
@@ -222,11 +224,11 @@ function FabricPairing() {
             </p>
 
             {/* Fabric grid with hover tooltip */}
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '8px', marginBottom: '14px' }}>
+            <div className="grid-4-col" style={{ gap: '8px', marginBottom: '14px' }}>
                 {fabricPalette.map((f, i) => (
                     <div key={i} style={{ position: 'relative' }}
-                        onMouseEnter={() => setHovered(i)}
-                        onMouseLeave={() => setHovered(null)}>
+                        onMouseEnter={canHover ? () => setHovered(i) : undefined}
+                        onMouseLeave={canHover ? () => setHovered(null) : undefined}>
                         <button
                             onClick={() => setSelected(i)}
                             style={{
@@ -340,8 +342,8 @@ function FabricPairing() {
                                             cursor: 'pointer', transition: 'all 0.2s',
                                             color: 'var(--text-primary)', fontFamily: 'var(--font-primary)',
                                         }}
-                                        onMouseEnter={e => e.currentTarget.style.background = 'rgba(88, 166, 255, 0.2)'}
-                                        onMouseLeave={e => e.currentTarget.style.background = 'rgba(88, 166, 255, 0.12)'}
+                                        onMouseEnter={canHover ? e => e.currentTarget.style.background = 'rgba(88, 166, 255, 0.2)' : undefined}
+                                        onMouseLeave={canHover ? e => e.currentTarget.style.background = 'rgba(88, 166, 255, 0.12)' : undefined}
                                     >
                                         <div style={{
                                             width: '24px', height: '24px', borderRadius: '6px',
@@ -374,7 +376,7 @@ export default function Moodboard() {
                 </div>
             </div>
 
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '24px', alignItems: 'start' }}>
+            <div className="grid-2-col" style={{ gap: '24px', alignItems: 'start' }}>
                 <FabricPairing />
                 <RoomAnalyzer />
             </div>

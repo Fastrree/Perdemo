@@ -177,7 +177,7 @@ const CustomerDetailSlideOver = memo(function CustomerDetailSlideOver({ customer
                             ))}
                         </div>
 
-                        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px', marginBottom: '20px' }}>
+                        <div className="grid-2-col" style={{ marginBottom: '20px' }}>
                             <div className="stat-cell" style={{ padding: '16px' }}>
                                 <div className="stat-cell__value stat-cell__value--xl" style={{ color: 'var(--accent-blue)' }}>{customer.orders}</div>
                                 <div className="stat-cell__label stat-cell__label--lg">Toplam Sipariş</div>
@@ -235,7 +235,7 @@ const CustomerDetailSlideOver = memo(function CustomerDetailSlideOver({ customer
                     return (
                         <>
                             {/* Twin Stats */}
-                            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '8px', marginBottom: '16px' }}>
+                            <div className="grid-3-col" style={{ gap: '8px', marginBottom: '16px' }}>
                                 <div style={{ padding: '10px', background: 'var(--bg-tertiary)', borderRadius: 'var(--radius-md)', textAlign: 'center' }}>
                                     <div style={{ fontSize: '1.2rem', fontWeight: 800, color: 'var(--accent-blue)' }}>{twin.rooms.length}</div>
                                     <div style={{ fontSize: '0.6rem', color: 'var(--text-tertiary)' }}>Oda</div>
@@ -284,7 +284,7 @@ const CustomerDetailSlideOver = memo(function CustomerDetailSlideOver({ customer
                                                         <span style={{ fontSize: '0.82rem', fontWeight: 700 }}>{win.fabric}</span>
                                                         <span style={{ fontSize: '0.65rem', color: 'var(--text-tertiary)' }}>{win.installedDate}</span>
                                                     </div>
-                                                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '4px', fontSize: '0.68rem', color: 'var(--text-secondary)', marginBottom: '8px' }}>
+                                                    <div className="grid-3-col" style={{ gap: '4px', fontSize: '0.68rem', color: 'var(--text-secondary)', marginBottom: '8px' }}>
                                                         <span>📐 {win.width}×{win.height}cm</span>
                                                         <span>🎀 {win.style}</span>
                                                         <span>🔩 {win.mechanism}</span>
@@ -449,8 +449,8 @@ export default function Customers() {
                                 </div>
                             </div>
 
-                            <div style={{
-                                display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '8px',
+                            <div className="grid-3-col" style={{
+                                gap: '8px',
                                 padding: '12px', background: 'var(--bg-tertiary)', borderRadius: 'var(--radius-md)',
                             }}>
                                 <div style={{ textAlign: 'center' }}>
@@ -507,7 +507,7 @@ export default function Customers() {
                                 <label style={{ fontSize: '0.78rem', color: 'var(--text-secondary)', marginBottom: '4px', display: 'block' }}>E-posta</label>
                                 <input className="input" type="email" value={form.email} onChange={e => updateForm('email', e.target.value)} placeholder="elif@email.com" />
                             </div>
-                            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
+                            <div className="grid-2-col">
                                 <div>
                                     <label style={{ fontSize: '0.78rem', color: 'var(--text-secondary)', marginBottom: '4px', display: 'block' }}>Telefon</label>
                                     <input className="input" value={form.phone} onChange={e => updateForm('phone', e.target.value)} placeholder="0532 111 2233" />

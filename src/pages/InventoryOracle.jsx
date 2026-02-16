@@ -323,7 +323,7 @@ export default function InventoryOracle() {
                 ))}
             </div>
 
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 380px', gap: '20px', alignItems: 'start' }}>
+            <div className="grid-sidebar-layout">
                 {/* Left — Stock Risk Table */}
                 <div>
                     <div className="card" style={{ marginBottom: '20px' }}>
@@ -415,7 +415,7 @@ export default function InventoryOracle() {
                                     {aiInsight.prediction}
                                 </div>
 
-                                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' }}>
+                                <div className="grid-2-col" style={{ gap: '10px' }}>
                                     <div style={{ padding: '12px', background: 'var(--bg-tertiary)', borderRadius: 'var(--radius-md)', textAlign: 'center' }}>
                                         <div style={{ fontSize: '1.4rem', fontWeight: 800, color: 'var(--accent-blue)' }}>{aiInsight.reorderQty}</div>
                                         <div style={{ fontSize: '0.65rem', color: 'var(--text-tertiary)' }}>Önerilen Sipariş</div>

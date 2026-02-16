@@ -26,7 +26,7 @@ const fabricInsulation = {
 }
 
 const styles = {
-    grid2: { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' },
+    grid2: 'grid-2-col',
     label: { fontSize: '0.8rem', color: 'var(--text-secondary)', marginBottom: '4px', display: 'block', fontWeight: 500 },
     total: {
         fontSize: '1.8rem', fontWeight: 800,
@@ -122,6 +122,20 @@ function SignaturePad({ signatureRef }) {
             }
         })
     }, [])
+
+    // Register touch events with { passive: false } to allow preventDefault
+    useEffect(() => {
+        const canvas = canvasRef.current
+        if (!canvas) return
+        canvas.addEventListener('touchstart', start, { passive: false })
+        canvas.addEventListener('touchmove', draw, { passive: false })
+        canvas.addEventListener('touchend', end, { passive: false })
+        return () => {
+            canvas.removeEventListener('touchstart', start)
+            canvas.removeEventListener('touchmove', draw)
+            canvas.removeEventListener('touchend', end)
+        }
+    })
 
     const getPos = (e) => {
         const rect = canvasRef.current.getBoundingClientRect()
@@ -302,7 +316,6 @@ function SignaturePad({ signatureRef }) {
                         transition: 'border-color 0.3s, box-shadow 0.3s',
                     }}
                     onMouseDown={start} onMouseMove={draw} onMouseUp={end} onMouseLeave={end}
-                    onTouchStart={start} onTouchMove={draw} onTouchEnd={end}
                 />
             ) : (
                 <div style={{
@@ -397,7 +410,7 @@ function SustainabilityScore({ fabric, widthCm, heightCm }) {
                 </div>
             </div>
 
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '10px', marginBottom: '12px' }}>
+            <div className="grid-3-col" style={{ gap: '10px', marginBottom: '12px' }}>
                 <div style={{
                     padding: '10px', borderRadius: 'var(--radius-md)',
                     background: 'rgba(46, 204, 113, 0.08)', textAlign: 'center',
@@ -501,13 +514,13 @@ export default function SmartQuote() {
                 </button>
             </div>
 
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 380px', gap: '24px', alignItems: 'start' }}>
+            <div className="grid-sidebar-layout" style={{ gap: '24px' }}>
                 {/* ─── Form ─── */}
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
                     {/* Customer Info */}
                     <div className="card">
                         <h3 style={{ fontSize: '0.95rem', fontWeight: 700, marginBottom: '14px' }}>Müşteri Bilgileri</h3>
-                        <div style={styles.grid2}>
+                        <div className={styles.grid2}>
                             <div>
                                 <label style={styles.label}>Ad Soyad *</label>
                                 <input className="input" value={form.customerName}
@@ -532,7 +545,7 @@ export default function SmartQuote() {
                     {/* Product Config */}
                     <div className="card">
                         <h3 style={{ fontSize: '0.95rem', fontWeight: 700, marginBottom: '14px' }}>Ürün Konfigürasyonu</h3>
-                        <div style={styles.grid2}>
+                        <div className={styles.grid2}>
                             <div>
                                 <label style={styles.label}>Kumaş</label>
                                 <select className="input" value={form.fabric}

@@ -236,7 +236,7 @@ export default function Orders() {
                                 <label className="form-label">Ürün *</label>
                                 <input className="input" value={form.product} onChange={e => setForm(f => ({ ...f, product: e.target.value }))} placeholder="Kadife Perde - Bordo" />
                             </div>
-                            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '12px' }}>
+                            <div className="grid-3-col" style={{ gap: '12px' }}>
                                 <div>
                                     <label className="form-label">Adet</label>
                                     <input className="input" type="number" value={form.qty} onChange={e => setForm(f => ({ ...f, qty: e.target.value }))} />

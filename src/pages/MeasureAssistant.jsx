@@ -22,7 +22,7 @@ const referenceObjects = [
 
 const s = {
     label: { fontSize: '0.8rem', color: 'var(--text-secondary)', marginBottom: '4px', display: 'block', fontWeight: 500 },
-    grid2: { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' },
+    grid2: 'grid-2-col',
     resultBox: {
         padding: '16px', borderRadius: 'var(--radius-md)',
         background: 'rgba(88, 166, 255, 0.06)', border: '1px solid rgba(88, 166, 255, 0.15)',
@@ -118,7 +118,7 @@ function PhotoMeasure() {
             {/* Image + point marking */}
             {image && (
                 <>
-                    <div style={s.grid2}>
+                    <div className={s.grid2}>
                         <div>
                             <label style={s.label}>Referans Nesne</label>
                             <select className="input" value={refObj.id}
@@ -217,7 +217,7 @@ function CostSimulator() {
                 Metretül, fire ve toplam maliyeti hesaplayın
             </p>
 
-            <div style={s.grid2}>
+            <div className={s.grid2}>
                 <div>
                     <label style={s.label}>Pencere Eni (cm)</label>
                     <input className="input" type="number" value={windowW}
@@ -249,7 +249,7 @@ function CostSimulator() {
             </div>
 
             {/* Results */}
-            <div style={{ marginTop: '16px', display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '12px' }}>
+            <div className="grid-3-col" style={{ marginTop: '16px', gap: '12px' }}>
                 <div style={s.resultBox}>
                     <div style={{ fontSize: '0.7rem', color: 'var(--text-tertiary)' }}>Metretül</div>
                     <div style={s.bigNum}>{cost.totalMeters}m</div>
@@ -486,7 +486,7 @@ function MagicMeasure() {
                         <div className="magic-data" style={{ fontSize: '0.65rem', marginBottom: '12px', letterSpacing: '2px' }}>
                             ━━━ PENCERE ÖLÇÜM RAPORU ━━━
                         </div>
-                        <div style={{ display: 'grid', gridTemplateColumns: '1fr auto 1fr auto', gap: '16px', alignItems: 'center' }}>
+                        <div className="grid-result-hud">
                             <div style={{ textAlign: 'center' }}>
                                 <div className="magic-data" style={{ fontSize: '0.6rem', opacity: 0.6 }}>GENİŞLİK</div>
                                 <div className="magic-data" style={{ fontSize: '2rem', fontWeight: 800 }}>{result.width}</div>

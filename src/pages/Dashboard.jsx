@@ -35,7 +35,7 @@ const statusMap = {
 function MiniChart() {
     const canvasRef = useRef(null)
 
-    useEffect(() => {
+    function drawChart() {
         const canvas = canvasRef.current
         if (!canvas) return
         const ctx = canvas.getContext('2d')
@@ -51,7 +51,9 @@ function MiniChart() {
         const data = [30, 45, 38, 55, 48, 62, 58, 72, 68, 85, 78, 92]
         const months = ['Oca', 'Şub', 'Mar', 'Nis', 'May', 'Haz', 'Tem', 'Ağu', 'Eyl', 'Eki', 'Kas', 'Ara']
         const max = Math.max(...data) * 1.15
-        const padding = { top: 20, right: 20, bottom: 40, left: 50 }
+        const isMobileChart = w < 400
+        const fontSize = isMobileChart ? '9px Inter' : '11px Inter'
+        const padding = { top: 20, right: 15, bottom: 40, left: isMobileChart ? 40 : 50 }
         const chartW = w - padding.left - padding.right
         const chartH = h - padding.top - padding.bottom
 
@@ -73,17 +75,19 @@ function MiniChart() {
             ctx.stroke()
 
             ctx.fillStyle = textColor
-            ctx.font = '11px Inter'
+            ctx.font = fontSize
             ctx.textAlign = 'right'
             const val = Math.round(max - (max / 4) * i)
             ctx.fillText(`₺${val}k`, padding.left - 8, y + 4)
         }
 
-        // Month labels
+        // Month labels — skip every other on narrow screens
+        const labelStep = isMobileChart ? 2 : 1
         ctx.fillStyle = textColor
-        ctx.font = '11px Inter'
+        ctx.font = fontSize
         ctx.textAlign = 'center'
         data.forEach((_, i) => {
+            if (i % labelStep !== 0) return
             const x = padding.left + (chartW / (data.length - 1)) * i
             ctx.fillText(months[i], x, h - 10)
         })
@@ -133,6 +137,13 @@ function MiniChart() {
             ctx.fillStyle = '#0d1117'
             ctx.fill()
         })
+    }
+
+    useEffect(() => {
+        drawChart()
+        const ro = new ResizeObserver(() => drawChart())
+        if (canvasRef.current) ro.observe(canvasRef.current)
+        return () => ro.disconnect()
     }, [])
 
     return (

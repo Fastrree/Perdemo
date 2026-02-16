@@ -188,7 +188,7 @@ export default function Analytics() {
             </div>
 
             {/* KPIs */}
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '16px', marginBottom: '24px' }}>
+            <div className="grid-4-col" style={{ marginBottom: '24px' }}>
                 <KPICard label="Toplam Gelir" value={`₺${(totalRevenue / 1000).toFixed(0)}K`} trend={12.4} icon="💰" />
                 <KPICard label="Toplam Sipariş" value={totalOrders} trend={8.2} icon="📦" />
                 <KPICard label="Dönüşüm Oranı" value={avgConversion} suffix="%" trend={3.1} icon="🎯" />
@@ -196,7 +196,7 @@ export default function Analytics() {
             </div>
 
             {/* Charts Row */}
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '24px', marginBottom: '24px' }}>
+            <div className="grid-2-col" style={{ gap: '24px', marginBottom: '24px' }}>
                 <div className="card">
                     <h3 style={{ fontSize: '0.95rem', fontWeight: 700, marginBottom: '14px' }}>📈 Aylık Gelir</h3>
                     <CanvasChart data={revenueData} labels={months} color="#58A6FF" width={480} height={200} />
@@ -208,7 +208,7 @@ export default function Analytics() {
             </div>
 
             {/* Heatmap + Team */}
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '24px' }}>
+            <div className="grid-2-col" style={{ gap: '24px' }}>
                 {/* Fabric Heatmap */}
                 <div className="card">
                     <h3 style={{ fontSize: '0.95rem', fontWeight: 700, marginBottom: '4px' }}>🔥 Kumaş Sıcak Harita</h3>
@@ -278,7 +278,7 @@ export default function Analytics() {
                                             %{t.efficiency}
                                         </span>
                                     </div>
-                                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '8px', fontSize: '0.72rem' }}>
+                                    <div className="grid-3-col" style={{ gap: '8px', fontSize: '0.72rem' }}>
                                         <div>
                                             <span style={{ color: 'var(--text-tertiary)' }}>Hız</span>
                                             <div style={{ fontWeight: 600 }}>{t.avgSpeed}/100</div>

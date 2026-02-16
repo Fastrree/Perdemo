@@ -215,7 +215,7 @@ export default function Products() {
                             {stockBadge(selectedProduct.status).label}
                         </span>
 
-                        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px', marginTop: '16px' }}>
+                        <div className="grid-2-col" style={{ marginTop: '16px' }}>
                             {[
                                 ['Kategori', selectedProduct.category],
                                 ['Kumaş', selectedProduct.fabric],
@@ -259,7 +259,7 @@ export default function Products() {
                                 <label style={{ fontSize: '0.78rem', color: 'var(--text-secondary)', marginBottom: '4px', display: 'block' }}>Ürün Adı *</label>
                                 <input className="input" value={form.name} onChange={e => updateForm('name', e.target.value)} placeholder="Kadife Fon Perde" />
                             </div>
-                            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
+                            <div className="grid-2-col">
                                 <div>
                                     <label style={{ fontSize: '0.78rem', color: 'var(--text-secondary)', marginBottom: '4px', display: 'block' }}>Kumaş</label>
                                     <input className="input" value={form.fabric} onChange={e => updateForm('fabric', e.target.value)} placeholder="Kadife" />
@@ -269,7 +269,7 @@ export default function Products() {
                                     <input className="input" value={form.color} onChange={e => updateForm('color', e.target.value)} placeholder="Bordo" />
                                 </div>
                             </div>
-                            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
+                            <div className="grid-2-col">
                                 <div>
                                     <label style={{ fontSize: '0.78rem', color: 'var(--text-secondary)', marginBottom: '4px', display: 'block' }}>Fiyat (₺) *</label>
                                     <input className="input" type="number" value={form.price} onChange={e => updateForm('price', e.target.value)} placeholder="1300" />

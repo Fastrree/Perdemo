@@ -1,4 +1,5 @@
 import { useState, useMemo, useCallback, memo, startTransition } from 'react'
+import useCanHover from '../hooks/useCanHover'
 
 /* ═══════════════════════════════════════════════════
    MOCK DATA — Dealers & Performance
@@ -51,6 +52,7 @@ const legendStyle = {
 }
 
 const TurkeyMap = memo(function TurkeyMap({ dealers: dealerList, onSelect }) {
+    const canHover = useCanHover()
     // Memoize dot computations to prevent recalc on hover/re-render
     const dots = useMemo(() => {
         const maxRevenue = Math.max(...dealerList.map(d => d.monthlyRevenue))
@@ -77,8 +79,8 @@ const TurkeyMap = memo(function TurkeyMap({ dealers: dealerList, onSelect }) {
                         borderRadius: '50%', border: 'none', cursor: 'pointer',
                         background: bg, boxShadow: shadow, transition: 'all 0.2s',
                     }}
-                    onMouseEnter={e => { e.currentTarget.style.transform = 'translate(-50%, -50%) scale(1.4)'; e.currentTarget.style.zIndex = 10 }}
-                    onMouseLeave={e => { e.currentTarget.style.transform = 'translate(-50%, -50%) scale(1)'; e.currentTarget.style.zIndex = 1 }}
+                    onMouseEnter={canHover ? e => { e.currentTarget.style.transform = 'translate(-50%, -50%) scale(1.4)'; e.currentTarget.style.zIndex = 10 } : undefined}
+                    onMouseLeave={canHover ? e => { e.currentTarget.style.transform = 'translate(-50%, -50%) scale(1)'; e.currentTarget.style.zIndex = 1 } : undefined}
                 />
             ))}
 
@@ -128,7 +130,7 @@ const DealerDetailSlideOver = memo(function DealerDetailSlideOver({ dealer, onCl
                 </div>
 
                 {/* Performance Stats */}
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px', marginBottom: '20px' }}>
+                <div className="grid-2-col" style={{ marginBottom: '20px' }}>
                     {[
                         { value: `₺${dealer.monthlyRevenue.toLocaleString('tr-TR')}`, label: 'Aylık Ciro', color: 'var(--accent-blue)' },
                         { value: dealer.orders, label: 'Sipariş', color: '#bc8cff' },
@@ -176,6 +178,7 @@ export default function WhiteLabel() {
     const [pushModalOpen, setPushModalOpen] = useState(false)
     const [pushTargets, setPushTargets] = useState([])
     const [pushSent, setPushSent] = useState(false)
+    const canHover = useCanHover()
 
     /* Wrap dealer selection in startTransition so the heavy parent
        re-render (map, table, KPIs) doesn't block user input */
@@ -270,7 +273,7 @@ export default function WhiteLabel() {
                 <TurkeyMap dealers={filtered} onSelect={selectDealer} />
             </div>
 
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 380px', gap: '20px', alignItems: 'start' }}>
+            <div className="grid-sidebar-layout">
                 {/* Left — Dealer Table */}
                 <div className="card">
                     <h3 style={{ fontSize: '1rem', fontWeight: 700, marginBottom: '14px' }}>📋 Bayi Listesi</h3>
@@ -315,8 +318,8 @@ export default function WhiteLabel() {
                                     padding: '10px 12px', background: 'var(--bg-tertiary)', borderRadius: 'var(--radius-md)',
                                     cursor: 'pointer', transition: 'all 0.15s',
                                 }} onClick={() => selectDealer(d)}
-                                    onMouseEnter={e => e.currentTarget.style.background = 'rgba(88,166,255,0.08)'}
-                                    onMouseLeave={e => e.currentTarget.style.background = 'var(--bg-tertiary)'}>
+                                    onMouseEnter={canHover ? e => e.currentTarget.style.background = 'rgba(88,166,255,0.08)' : undefined}
+                                    onMouseLeave={canHover ? e => e.currentTarget.style.background = 'var(--bg-tertiary)' : undefined}>
                                     <span style={{
                                         width: '26px', height: '26px', borderRadius: 'var(--radius-sm)',
                                         background: i === 0 ? 'linear-gradient(135deg, #FFD700, #FFA500)' : i === 1 ? 'linear-gradient(135deg, #C0C0C0, #A0A0A0)' : i === 2 ? 'linear-gradient(135deg, #CD7F32, #A0522D)' : 'var(--bg-primary)',
