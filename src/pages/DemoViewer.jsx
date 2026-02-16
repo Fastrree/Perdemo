@@ -1,6 +1,6 @@
 import { useState, useRef, useMemo, useCallback, useEffect, Suspense } from 'react'
 import { useLocation } from 'react-router-dom'
-import { Canvas, useFrame, useThree } from '@react-three/fiber'
+import { Canvas, useFrame } from '@react-three/fiber'
 import { OrbitControls } from '@react-three/drei'
 import * as THREE from 'three'
 import { getAtmosphereRecipe } from '../utils/aiProxy'
@@ -271,7 +271,7 @@ function fastSin(x) {
     return SIN_TABLE[(idx / (Math.PI * 2) * SIN_TABLE_SIZE) | 0]
 }
 
-function CurtainPanel({ side, fabric, openAmount, style, windEnabled }) {
+function CurtainPanel({ side, fabric, openAmount, windEnabled }) {
     const meshRef = useRef()
     const timeRef = useRef(0)
     const frameCount = useRef(0)
@@ -339,7 +339,7 @@ function CurtainPanel({ side, fabric, openAmount, style, windEnabled }) {
             const ao = bakeData.aoValues[i]
             colors.setXYZ(i, ao, ao, ao)
         }
-        colors.needsUpdate = true
+        colors.needsUpdate = true // eslint-disable-line react-hooks/immutability
     }, [geometry, bakeData])
 
     // PBR material (cached per fabric)
@@ -387,7 +387,7 @@ function CurtainPanel({ side, fabric, openAmount, style, windEnabled }) {
 
         const posArr = meshRef.current.geometry.attributes.position.array
         const count = w * w
-        const { staticZ, aoValues } = bakeData
+        const { staticZ } = bakeData
         const { waveAmp, breezeAmp, breezeSpeed } = windParams
 
         // Wind modulator (computed once per frame, not per vertex)
@@ -778,7 +778,7 @@ function useCollabSync({ onReceive }) {
     const disconnect = useCallback(() => {
         if (channelRef.current) {
             if (roleRef.current === 'guest') {
-                try { channelRef.current.postMessage({ type: 'leave' }) } catch { }
+                try { channelRef.current.postMessage({ type: 'leave' }) } catch { /* ignore */ }
             }
             channelRef.current.close()
             channelRef.current = null
@@ -794,7 +794,7 @@ function useCollabSync({ onReceive }) {
     useEffect(() => () => {
         if (channelRef.current) {
             if (roleRef.current === 'guest') {
-                try { channelRef.current.postMessage({ type: 'leave' }) } catch { }
+                try { channelRef.current.postMessage({ type: 'leave' }) } catch { /* ignore */ }
             }
             channelRef.current.close()
             channelRef.current = null
@@ -839,7 +839,7 @@ export default function DemoViewer() {
             backdrop,
             windEnabled,
         })
-    }, [selectedFabric.id, openAmount, backdrop, windEnabled, collab.broadcast])
+    }, [selectedFabric.id, openAmount, backdrop, windEnabled, collab])
 
     // Read combo from Moodboard URL params
     useEffect(() => {
@@ -847,7 +847,7 @@ export default function DemoViewer() {
         const mainFabric = params.get('main')
         if (mainFabric) {
             const found = fabrics.find(f => f.name === mainFabric)
-            if (found) setSelectedFabric(found)
+            if (found) setSelectedFabric(found) // eslint-disable-line react-hooks/set-state-in-effect
         }
     }, [location.search])
 
@@ -897,7 +897,7 @@ export default function DemoViewer() {
     useEffect(() => {
         // Debounce: 2 saniye bekleme — her değişiklikte anında çağırma
         clearTimeout(atmosphereTimer.current)
-        setAtmosphereLoading(true)
+        setAtmosphereLoading(true) // eslint-disable-line react-hooks/set-state-in-effect
         atmosphereTimer.current = setTimeout(async () => {
             const openPercent = Math.round(openAmount * 100)
             const result = await getAtmosphereRecipe(selectedFabric.name, backdrop, openPercent)

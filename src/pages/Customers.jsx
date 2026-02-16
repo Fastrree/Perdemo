@@ -343,7 +343,6 @@ const CustomerDetailSlideOver = memo(function CustomerDetailSlideOver({ customer
    MAIN COMPONENT
    ═══════════════════════════════════════════════════ */
 export default function Customers() {
-    const navigate = useNavigate()
     const [customers, setCustomers] = useState(initialCustomers)
     const [search, setSearch] = useState('')
     const [selectedCustomer, setSelectedCustomer] = useState(null)

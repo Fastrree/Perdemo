@@ -55,7 +55,7 @@ export default function AppLayout() {
 
     // Close sidebar on route change (mobile)
     useEffect(() => {
-        setSidebarOpen(false)
+        setSidebarOpen(false) // eslint-disable-line react-hooks/set-state-in-effect
     }, [location.pathname])
 
     const markAllRead = useCallback(() => {

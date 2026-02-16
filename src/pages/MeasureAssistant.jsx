@@ -41,7 +41,6 @@ function PhotoMeasure() {
     const [points, setPoints] = useState([]) // {x, y} pairs
     const [phase, setPhase] = useState('ref') // 'ref' | 'window' | 'done'
     const [result, setResult] = useState(null)
-    const canvasRef = useRef(null)
     const imgRef = useRef(null)
 
     const handleImageLoad = useCallback((e) => {
@@ -286,7 +285,6 @@ function CostSimulator() {
 /* ─── Magic Measure (Camera + Scanner HUD) ─── */
 function MagicMeasure() {
     const videoRef = useRef(null)
-    const overlayRef = useRef(null)
     const streamRef = useRef(null)
     const [cameraActive, setCameraActive] = useState(false)
     const [refObj, setRefObj] = useState(referenceObjects[0])

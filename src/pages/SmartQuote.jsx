@@ -66,6 +66,23 @@ function SignaturePad({ signatureRef }) {
         { color: '#2ecc71', label: 'Yeşil' },
     ]
 
+    const drawGuideLine = (ctx, w, h) => {
+        const y = h * 0.72
+        ctx.save()
+        ctx.strokeStyle = 'rgba(255,255,255,0.06)'
+        ctx.lineWidth = 1
+        ctx.setLineDash([6, 4])
+        ctx.beginPath()
+        ctx.moveTo(20, y)
+        ctx.lineTo(w - 20, y)
+        ctx.stroke()
+        ctx.setLineDash([])
+        ctx.fillStyle = 'rgba(255,255,255,0.08)'
+        ctx.font = 'italic 14px Georgia, serif'
+        ctx.fillText('✗', 12, y - 4)
+        ctx.restore()
+    }
+
     // Initialize high-DPI canvas
     useEffect(() => {
         const canvas = canvasRef.current
@@ -77,26 +94,7 @@ function SignaturePad({ signatureRef }) {
         const ctx = canvas.getContext('2d')
         ctx.scale(dpr, dpr)
         drawGuideLine(ctx, rect.width, rect.height)
-    }, [])
-
-    const drawGuideLine = (ctx, w, h) => {
-        // Subtle signature guide line
-        const y = h * 0.72
-        ctx.save()
-        ctx.strokeStyle = 'rgba(255,255,255,0.06)'
-        ctx.lineWidth = 1
-        ctx.setLineDash([6, 4])
-        ctx.beginPath()
-        ctx.moveTo(20, y)
-        ctx.lineTo(w - 20, y)
-        ctx.stroke()
-        ctx.setLineDash([])
-        // "X" marker
-        ctx.fillStyle = 'rgba(255,255,255,0.08)'
-        ctx.font = 'italic 14px Georgia, serif'
-        ctx.fillText('✗', 12, y - 4)
-        ctx.restore()
-    }
+    }, []) // eslint-disable-line react-hooks/exhaustive-deps
 
     const redrawAll = useCallback(() => {
         const canvas = canvasRef.current
@@ -122,20 +120,6 @@ function SignaturePad({ signatureRef }) {
             }
         })
     }, [])
-
-    // Register touch events with { passive: false } to allow preventDefault
-    useEffect(() => {
-        const canvas = canvasRef.current
-        if (!canvas) return
-        canvas.addEventListener('touchstart', start, { passive: false })
-        canvas.addEventListener('touchmove', draw, { passive: false })
-        canvas.addEventListener('touchend', end, { passive: false })
-        return () => {
-            canvas.removeEventListener('touchstart', start)
-            canvas.removeEventListener('touchmove', draw)
-            canvas.removeEventListener('touchend', end)
-        }
-    })
 
     const getPos = (e) => {
         const rect = canvasRef.current.getBoundingClientRect()
@@ -169,11 +153,9 @@ function SignaturePad({ signatureRef }) {
         const dist = Math.sqrt(dx * dx + dy * dy)
         const velocity = dist / dt // px/ms
 
-        // Velocity-based stroke width: faster = thinner, slower = thicker
         const minW = 1.0
         const maxW = 4.5
         const targetW = Math.max(minW, maxW - velocity * 3)
-        // Smooth transition from previous width
         const prevW = currentStroke.current.length > 0 ? currentStroke.current[currentStroke.current.length - 1].width : 2
         const smoothW = prevW + (targetW - prevW) * 0.4
 
@@ -203,6 +185,20 @@ function SignaturePad({ signatureRef }) {
         currentStroke.current = []
         if (signatureRef) signatureRef.current = canvasRef.current.toDataURL()
     }
+
+    // Register touch events with { passive: false } to allow preventDefault
+    useEffect(() => {
+        const canvas = canvasRef.current
+        if (!canvas) return
+        canvas.addEventListener('touchstart', start, { passive: false })
+        canvas.addEventListener('touchmove', draw, { passive: false })
+        canvas.addEventListener('touchend', end, { passive: false })
+        return () => {
+            canvas.removeEventListener('touchstart', start)
+            canvas.removeEventListener('touchmove', draw)
+            canvas.removeEventListener('touchend', end)
+        }
+    }) // eslint-disable-line react-hooks/exhaustive-deps
 
     const undo = useCallback(() => {
         if (strokes.current.length === 0) return
