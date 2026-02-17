@@ -1,468 +1,466 @@
-import { useState, useEffect, useRef } from 'react'
+import { useState, useEffect, useRef, memo } from 'react'
 import { Link } from 'react-router-dom'
 import { useTheme } from '../App'
 
+/* ═══════════════════════════════════════════════════════════════
+   DATA
+   ═══════════════════════════════════════════════════════════════ */
 const features = [
-    {
-        icon: '📊',
-        title: 'Akıllı Dashboard',
-        desc: 'Satışlarınızı, stoklarınızı ve müşteri eğilimlerini gerçek zamanlı takip edin. Yapay zeka destekli tahminlerle bir adım önde olun.',
-        gradient: 'linear-gradient(135deg, #58a6ff 0%, #1e3a5f 100%)',
-        glow: 'rgba(88, 166, 255, 0.3)',
-    },
-    {
-        icon: '🪟',
-        title: '360° Perde Demo',
-        desc: 'Müşterilerinize perdeleri bir referans pencerede canlı deneyim sunun. Kumaş, renk, desen — anında değiştirin.',
-        gradient: 'linear-gradient(135deg, #bc8cff 0%, #4a2c7a 100%)',
-        glow: 'rgba(188, 140, 255, 0.3)',
-    },
-    {
-        icon: '📦',
-        title: 'Sipariş Yönetimi',
-        desc: 'Üretimden teslimata kadar tüm süreci tek ekrandan yönetin. Ölçü, dikim, montaj — her adım kontrol altında.',
-        gradient: 'linear-gradient(135deg, #f778ba 0%, #7a2c4a 100%)',
-        glow: 'rgba(247, 120, 186, 0.3)',
-    },
-    {
-        icon: '🧵',
-        title: 'Stok & Kumaş Takibi',
-        desc: 'Kumaş rulolarını metre bazında izleyin. Minimum stok uyarıları ile hiçbir siparişi kaçırmayın.',
-        gradient: 'linear-gradient(135deg, #f0b429 0%, #7a5a14 100%)',
-        glow: 'rgba(240, 180, 41, 0.3)',
-    },
-    {
-        icon: '👥',
-        title: 'Müşteri CRM',
-        desc: 'Müşteri geçmişi, ölçü kayıtları, tercih analizleri — kişiselleştirilmiş hizmetin anahtarı.',
-        gradient: 'linear-gradient(135deg, #2ecc71 0%, #145a32 100%)',
-        glow: 'rgba(46, 204, 113, 0.3)',
-    },
-    {
-        icon: '📈',
-        title: 'Raporlama & Analiz',
-        desc: 'Dönemsel satış raporları, kârlılık analizleri ve popüler ürün trendleri ile stratejik kararlar alın.',
-        gradient: 'linear-gradient(135deg, #76e4f7 0%, #1a5a6e 100%)',
-        glow: 'rgba(118, 228, 247, 0.3)',
-    },
-]
-
-const pricingPlans = [
-    {
-        name: 'Başlangıç',
-        desc: 'Küçük perde atölyeleri için',
-        price: '₺499',
-        period: '/ay',
-        features: ['Tek mağaza desteği', '500 ürün kapasitesi', 'Temel raporlama', '360° Demo (limitli)', 'E-posta desteği'],
-        popular: false,
-        gradient: 'linear-gradient(135deg, rgba(88,166,255,0.1) 0%, rgba(88,166,255,0.02) 100%)',
-    },
-    {
-        name: 'Profesyonel',
-        desc: 'Büyüyen perde mağazaları için',
-        price: '₺999',
-        period: '/ay',
-        features: ['3 mağaza desteği', 'Sınırsız ürün', 'Gelişmiş raporlama', '360° Demo (sınırsız)', 'API erişimi', 'Öncelikli destek'],
-        popular: true,
-        gradient: 'linear-gradient(135deg, rgba(188,140,255,0.15) 0%, rgba(88,166,255,0.1) 100%)',
-    },
-    {
-        name: 'Kurumsal',
-        desc: 'Perde zincirleri ve bayiler için',
-        price: '₺2.499',
-        period: '/ay',
-        features: ['Sınırsız mağaza', 'Sınırsız ürün', 'Özel raporlama', '360° Demo (premium)', 'API + Webhook', 'Özel entegrasyonlar', '7/24 canlı destek'],
-        popular: false,
-        gradient: 'linear-gradient(135deg, rgba(247,120,186,0.1) 0%, rgba(188,140,255,0.05) 100%)',
-    },
+    { icon: '🎯', title: '360° Canlı Demo', desc: 'Müşterilerinize perdeleri gerçek zamanlı gösterin. Kumaş, renk, ışık — hepsini anında değiştirin.', tag: 'EN POPÜLER', color: '#bc8cff' },
+    { icon: '📊', title: 'Akıllı Dashboard', desc: 'AI destekli satış tahminleri, stok uyarıları ve müşteri analizleri tek ekranda.', color: '#58a6ff' },
+    { icon: '📦', title: 'Sipariş Takibi', desc: 'Üretimden montaja kadar her adımı izleyin. Müşterilerinizi otomatik bilgilendirin.', color: '#2ecc71' },
+    { icon: '🧵', title: 'Stok Yönetimi', desc: 'Kumaş rulolarını metre bazında takip edin. Kritik stok uyarıları alın.', color: '#f0b429' },
+    { icon: '👥', title: 'Müşteri CRM', desc: 'Ölçü geçmişi, tercihler, satın alma davranışları — hepsi kayıt altında.', color: '#f778ba' },
+    { icon: '📈', title: 'Gelişmiş Raporlar', desc: 'Kârlılık analizleri, trend raporları, bayi performansları.', color: '#76e4f7' },
 ]
 
 const stats = [
-    { value: '2.5K+', label: 'Aktif Kullanıcı' },
-    { value: '150K+', label: 'İşlenen Sipariş' },
-    { value: '99.9%', label: 'Uptime' },
-    { value: '4.9★', label: 'Kullanıcı Puanı' },
+    { value: '2,847', label: 'Aktif Perdeci', suffix: '' },
+    { value: '156', label: 'Bin Sipariş', suffix: 'K+' },
+    { value: '99.9', label: 'Uptime', suffix: '%' },
+    { value: '4.9', label: 'App Store', suffix: '★' },
 ]
+
+const logos = ['Koçtaş', 'Bauhaus', 'Tekzen', 'Evidea', 'Kelebek', 'İstikbal']
 
 const testimonials = [
-    { name: 'Ahmet Yılmaz', role: 'Perde Dünyası, İstanbul', text: 'Perdemo ile sipariş takibimiz %40 hızlandı. Müşterilerimiz 3D demo özelliğine bayılıyor!', avatar: '👨‍💼' },
-    { name: 'Elif Kaya', role: 'Elif Perde, Ankara', text: 'Stok yönetimi artık çok kolay. Hangi kumaştan ne kadar kaldığını anında görebiliyorum.', avatar: '👩‍💼' },
-    { name: 'Mehmet Demir', role: 'Demir Tekstil, İzmir', text: 'Bayi ağımızı tek platformdan yönetiyoruz. Raporlama özellikleri muhteşem!', avatar: '👨‍💼' },
+    { text: 'Perdemo ile siparişlerimiz %40 arttı. 3D demo müşterileri ikna ediyor.', author: 'Ahmet Y.', company: 'Perde Dünyası', city: 'İstanbul' },
+    { text: 'Stok takibi artık çocuk oyuncağı. Hangi kumaştan ne kaldı anında görüyorum.', author: 'Elif K.', company: 'Elif Perde', city: 'Ankara' },
+    { text: '12 bayimizi tek panelden yönetiyoruz. Raporlama muhteşem.', author: 'Mehmet D.', company: 'Demir Tekstil', city: 'İzmir' },
 ]
 
-function AnimatedCounter({ target, duration = 2000 }) {
+const plans = [
+    { name: 'Starter', price: '499', desc: 'Küçük atölyeler için', features: ['1 mağaza', '500 ürün', 'Temel raporlar', 'E-posta destek'] },
+    { name: 'Pro', price: '999', desc: 'Büyüyen mağazalar için', features: ['3 mağaza', 'Sınırsız ürün', '360° Demo', 'API erişimi', 'Öncelikli destek'], popular: true },
+    { name: 'Enterprise', price: '2,499', desc: 'Zincirler ve bayiler için', features: ['Sınırsız mağaza', 'Özel entegrasyon', 'Dedicated manager', '7/24 destek', 'SLA garantisi'] },
+]
+
+/* ═══════════════════════════════════════════════════════════════
+   COMPONENTS
+   ═══════════════════════════════════════════════════════════════ */
+const Counter = memo(function Counter({ value, suffix = '' }) {
     const [count, setCount] = useState(0)
     const ref = useRef(null)
-    const hasAnimated = useRef(false)
+    const animated = useRef(false)
 
     useEffect(() => {
-        const observer = new IntersectionObserver(
-            ([entry]) => {
-                if (entry.isIntersecting && !hasAnimated.current) {
-                    hasAnimated.current = true
-                    const numericValue = parseInt(target.replace(/[^0-9]/g, ''))
-                    const startTime = Date.now()
-                    const animate = () => {
-                        const elapsed = Date.now() - startTime
-                        const progress = Math.min(elapsed / duration, 1)
-                        const easeOut = 1 - Math.pow(1 - progress, 3)
-                        setCount(Math.floor(numericValue * easeOut))
-                        if (progress < 1) requestAnimationFrame(animate)
-                    }
-                    animate()
+        const observer = new IntersectionObserver(([e]) => {
+            if (e.isIntersecting && !animated.current) {
+                animated.current = true
+                const target = parseFloat(value.replace(/,/g, ''))
+                const duration = 2000
+                const start = performance.now()
+                const tick = (now) => {
+                    const p = Math.min((now - start) / duration, 1)
+                    const ease = 1 - Math.pow(1 - p, 4)
+                    setCount(target * ease)
+                    if (p < 1) requestAnimationFrame(tick)
                 }
-            },
-            { threshold: 0.5 }
-        )
+                requestAnimationFrame(tick)
+            }
+        }, { threshold: 0.5 })
         if (ref.current) observer.observe(ref.current)
         return () => observer.disconnect()
-    }, [target, duration])
+    }, [value])
 
-    const suffix = target.replace(/[0-9.,]/g, '')
-    return <span ref={ref}>{count.toLocaleString('tr-TR')}{suffix}</span>
-}
+    const formatted = count >= 1000 ? count.toLocaleString('tr-TR', { maximumFractionDigits: 0 }) 
+        : count % 1 === 0 ? count.toFixed(0) : count.toFixed(1)
+    return <span ref={ref}>{formatted}{suffix}</span>
+})
 
+const Marquee = memo(function Marquee({ items }) {
+    return (
+        <div className="marquee">
+            <div className="marquee__track">
+                {[...items, ...items].map((item, i) => (
+                    <span key={i} className="marquee__item">{item}</span>
+                ))}
+            </div>
+        </div>
+    )
+})
+
+/* ═══════════════════════════════════════════════════════════════
+   MAIN COMPONENT
+   ═══════════════════════════════════════════════════════════════ */
 export default function Landing() {
     const { theme, toggleTheme } = useTheme()
     const [menuOpen, setMenuOpen] = useState(false)
     const [scrolled, setScrolled] = useState(false)
-    const [activeTestimonial, setActiveTestimonial] = useState(0)
+    const [activeTesti, setActiveTesti] = useState(0)
+    const heroRef = useRef(null)
 
     useEffect(() => {
-        const handleScroll = () => setScrolled(window.scrollY > 50)
-        window.addEventListener('scroll', handleScroll)
-        return () => window.removeEventListener('scroll', handleScroll)
+        const onScroll = () => setScrolled(window.scrollY > 20)
+        window.addEventListener('scroll', onScroll, { passive: true })
+        return () => window.removeEventListener('scroll', onScroll)
     }, [])
 
     useEffect(() => {
-        const interval = setInterval(() => {
-            setActiveTestimonial(prev => (prev + 1) % testimonials.length)
-        }, 5000)
-        return () => clearInterval(interval)
+        const id = setInterval(() => setActiveTesti(p => (p + 1) % testimonials.length), 5000)
+        return () => clearInterval(id)
+    }, [])
+
+    // Mouse parallax for hero
+    useEffect(() => {
+        const hero = heroRef.current
+        if (!hero) return
+        const onMove = (e) => {
+            const { clientX, clientY } = e
+            const { innerWidth, innerHeight } = window
+            const x = (clientX / innerWidth - 0.5) * 30
+            const y = (clientY / innerHeight - 0.5) * 30
+            hero.style.setProperty('--mx', `${x}px`)
+            hero.style.setProperty('--my', `${y}px`)
+        }
+        window.addEventListener('mousemove', onMove, { passive: true })
+        return () => window.removeEventListener('mousemove', onMove)
     }, [])
 
     return (
-        <div className="landing-page">
-            {/* ══════════════════════════════════════════════
-                NAVIGATION — Glassmorphism + Scroll Effect
-                ══════════════════════════════════════════════ */}
-            <nav className={`nav ${scrolled ? 'nav--scrolled' : ''}`} role="navigation" aria-label="Ana navigasyon">
-                <div className="nav__container">
-                    <Link to="/" className="nav__logo">
-                        <div className="nav__logo-icon">
-                            <span>P</span>
-                            <div className="nav__logo-glow" />
-                        </div>
-                        <span className="nav__logo-text">Perdemo</span>
+        <div className="lp">
+            {/* ═══════ NAVBAR ═══════ */}
+            <header className={`lp-nav ${scrolled ? 'lp-nav--scrolled' : ''}`}>
+                <div className="lp-nav__inner">
+                    <Link to="/" className="lp-nav__brand">
+                        <div className="lp-nav__logo">P</div>
+                        <span className="lp-nav__wordmark">Perdemo</span>
                     </Link>
 
-                    <button
-                        className={`nav__toggle ${menuOpen ? 'nav__toggle--active' : ''}`}
-                        onClick={() => setMenuOpen(o => !o)}
-                        aria-label="Menüyü aç/kapat"
-                        aria-expanded={menuOpen}
-                    >
-                        <span /><span /><span />
-                    </button>
+                    <nav className={`lp-nav__menu ${menuOpen ? 'lp-nav__menu--open' : ''}`}>
+                        <a href="#features" onClick={() => setMenuOpen(false)}>Özellikler</a>
+                        <a href="#pricing" onClick={() => setMenuOpen(false)}>Fiyatlar</a>
+                        <a href="#testimonials" onClick={() => setMenuOpen(false)}>Referanslar</a>
+                        <Link to="/demo" onClick={() => setMenuOpen(false)}>Demo</Link>
+                    </nav>
 
-                    <div className={`nav__menu ${menuOpen ? 'nav__menu--open' : ''}`}>
-                        <a href="#features" className="nav__link" onClick={() => setMenuOpen(false)}>Özellikler</a>
-                        <a href="#pricing" className="nav__link" onClick={() => setMenuOpen(false)}>Fiyatlandırma</a>
-                        <a href="#testimonials" className="nav__link" onClick={() => setMenuOpen(false)}>Referanslar</a>
-                        <button className="nav__theme-toggle" onClick={toggleTheme} aria-label={`Temayı ${theme === 'dark' ? 'açık' : 'koyu'} moda geçir`}>
-                            <span className="nav__theme-icon">{theme === 'dark' ? '☀️' : '🌙'}</span>
+                    <div className="lp-nav__actions">
+                        <button className="lp-nav__theme" onClick={toggleTheme} aria-label="Tema değiştir">
+                            {theme === 'dark' ? '☀️' : '🌙'}
                         </button>
-                        <Link to="/dashboard" className="nav__cta">
-                            Panele Giriş
-                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                                <path d="M5 12h14M12 5l7 7-7 7" />
-                            </svg>
+                        <Link to="/dashboard" className="lp-nav__cta">
+                            Giriş Yap <span>→</span>
                         </Link>
+                        <button className={`lp-nav__burger ${menuOpen ? 'active' : ''}`} onClick={() => setMenuOpen(!menuOpen)} aria-label="Menü">
+                            <span /><span /><span />
+                        </button>
                     </div>
                 </div>
-            </nav>
+            </header>
 
-            {/* ══════════════════════════════════════════════
-                HERO — Immersive 3D-like Experience
-                ══════════════════════════════════════════════ */}
-            <section className="hero" aria-labelledby="hero-title">
-                <div className="hero__bg">
-                    <div className="hero__grid" />
-                    <div className="hero__orb hero__orb--1" />
-                    <div className="hero__orb hero__orb--2" />
-                    <div className="hero__orb hero__orb--3" />
-                    <div className="hero__particles">
-                        {[...Array(20)].map((_, i) => (
-                            <div key={i} className="hero__particle" style={{
-                                '--delay': `${i * 0.5}s`,
-                                '--x': `${Math.random() * 100}%`,
-                                '--duration': `${15 + Math.random() * 10}s`,
-                            }} />
-                        ))}
-                    </div>
+            {/* ═══════ HERO ═══════ */}
+            <section className="lp-hero" ref={heroRef}>
+                <div className="lp-hero__bg">
+                    <div className="lp-hero__gradient" />
+                    <div className="lp-hero__grid" />
+                    <div className="lp-hero__orb lp-hero__orb--1" />
+                    <div className="lp-hero__orb lp-hero__orb--2" />
+                    <div className="lp-hero__orb lp-hero__orb--3" />
+                    <div className="lp-hero__glow" />
                 </div>
 
-                <div className="hero__content">
-                    <div className="hero__badge">
-                        <span className="hero__badge-dot" />
-                        <span>Perde sektörünün dijital dönüşümü</span>
-                        <span className="hero__badge-new">YENİ</span>
+                <div className="lp-hero__content">
+                    <div className="lp-hero__eyebrow">
+                        <span className="lp-hero__pulse" />
+                        <span>Türkiye'nin #1 Perde Yönetim Platformu</span>
                     </div>
 
-                    <h1 id="hero-title" className="hero__title">
-                        <span className="hero__title-line">Perdeciliği</span>
-                        <span className="hero__title-gradient">Yeniden Tanımlıyoruz</span>
+                    <h1 className="lp-hero__title">
+                        Perdeciliği<br />
+                        <span className="lp-hero__gradient-text">Yeniden Keşfedin</span>
                     </h1>
 
-                    <p className="hero__desc">
-                        Stok takibinden 360° canlı perde demosuna, müşteri yönetiminden akıllı raporlamaya —
-                        <strong> perdecilik işinizi tek platformdan yönetin.</strong>
+                    <p className="lp-hero__subtitle">
+                        Stok takibi, 3D demo, sipariş yönetimi, müşteri CRM —<br />
+                        <strong>tüm perdecilik operasyonunuz tek platformda.</strong>
                     </p>
 
-                    <div className="hero__actions">
-                        <Link to="/dashboard" className="hero__btn hero__btn--primary">
-                            <span className="hero__btn-bg" />
-                            <span className="hero__btn-content">
-                                <span className="hero__btn-icon">✨</span>
-                                Ücretsiz Deneyin
-                            </span>
+                    <div className="lp-hero__ctas">
+                        <Link to="/dashboard" className="lp-btn lp-btn--primary lp-btn--xl">
+                            <span className="lp-btn__shine" />
+                            <span className="lp-btn__text">Ücretsiz Başla</span>
+                            <span className="lp-btn__arrow">→</span>
                         </Link>
-                        <Link to="/demo" className="hero__btn hero__btn--secondary">
-                            <span className="hero__btn-content">
-                                <span className="hero__btn-icon">🎯</span>
-                                360° Demo'yu Keşfet
-                            </span>
+                        <Link to="/demo" className="lp-btn lp-btn--ghost lp-btn--xl">
+                            <span className="lp-btn__icon">▶</span>
+                            <span className="lp-btn__text">Demo İzle</span>
                         </Link>
                     </div>
 
-                    <div className="hero__stats">
-                        {stats.map((stat, i) => (
-                            <div key={i} className="hero__stat">
-                                <div className="hero__stat-value">
-                                    <AnimatedCounter target={stat.value} />
-                                </div>
-                                <div className="hero__stat-label">{stat.label}</div>
+                    <div className="lp-hero__proof">
+                        <div className="lp-hero__avatars">
+                            {['🧑‍💼', '👩‍💼', '👨‍💼', '👩‍🦰', '🧔'].map((a, i) => (
+                                <div key={i} className="lp-hero__avatar" style={{ '--i': i }}>{a}</div>
+                            ))}
+                        </div>
+                        <div className="lp-hero__proof-text">
+                            <strong>2,500+</strong> perdeci güveniyor
+                            <span className="lp-hero__stars">★★★★★</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div className="lp-hero__visual">
+                    <div className="lp-hero__mockup">
+                        <div className="lp-hero__screen">
+                            <div className="lp-hero__screen-header">
+                                <span /><span /><span />
                             </div>
-                        ))}
-                    </div>
-                </div>
-
-                <div className="hero__scroll-indicator">
-                    <span>Keşfet</span>
-                    <div className="hero__scroll-arrow">
-                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                            <path d="M12 5v14M5 12l7 7 7-7" />
-                        </svg>
-                    </div>
-                </div>
-            </section>
-
-            {/* ══════════════════════════════════════════════
-                FEATURES — Bento Grid Style
-                ══════════════════════════════════════════════ */}
-            <section className="features" id="features" aria-labelledby="features-title">
-                <div className="features__container">
-                    <div className="section-header">
-                        <span className="section-header__label">
-                            <span className="section-header__label-icon">⚡</span>
-                            Özellikler
-                        </span>
-                        <h2 className="section-header__title" id="features-title">
-                            Perdeciniz İçin <span className="text-gradient">Her Şey</span> Tek Yerde
-                        </h2>
-                        <p className="section-header__desc">
-                            Modern perdeciliğin ihtiyaç duyduğu tüm araçlar, güçlü ve sezgisel bir arayüzde.
-                        </p>
-                    </div>
-
-                    <div className="features__grid">
-                        {features.map((f, i) => (
-                            <article
-                                key={i}
-                                className={`feature-card feature-card--${i === 0 ? 'large' : 'normal'}`}
-                                style={{ '--card-gradient': f.gradient, '--card-glow': f.glow, '--delay': `${i * 0.1}s` }}
-                            >
-                                <div className="feature-card__glow" />
-                                <div className="feature-card__icon">
-                                    <span>{f.icon}</span>
+                            <div className="lp-hero__screen-content">
+                                <div className="lp-hero__ui-row">
+                                    <div className="lp-hero__ui-card lp-hero__ui-card--blue">
+                                        <div className="lp-hero__ui-label">Bugünkü Satış</div>
+                                        <div className="lp-hero__ui-value">₺24,850</div>
+                                        <div className="lp-hero__ui-trend">↑ 12%</div>
+                                    </div>
+                                    <div className="lp-hero__ui-card lp-hero__ui-card--purple">
+                                        <div className="lp-hero__ui-label">Aktif Sipariş</div>
+                                        <div className="lp-hero__ui-value">47</div>
+                                        <div className="lp-hero__ui-trend">↑ 8%</div>
+                                    </div>
                                 </div>
-                                <h3 className="feature-card__title">{f.title}</h3>
-                                <p className="feature-card__desc">{f.desc}</p>
-                                <div className="feature-card__arrow">
-                                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                                        <path d="M5 12h14M12 5l7 7-7 7" />
+                                <div className="lp-hero__ui-chart">
+                                    <svg viewBox="0 0 200 60" preserveAspectRatio="none">
+                                        <defs>
+                                            <linearGradient id="chartGrad" x1="0" y1="0" x2="0" y2="1">
+                                                <stop offset="0%" stopColor="#58a6ff" stopOpacity="0.3" />
+                                                <stop offset="100%" stopColor="#58a6ff" stopOpacity="0" />
+                                            </linearGradient>
+                                        </defs>
+                                        <path d="M0,50 Q25,45 50,35 T100,25 T150,30 T200,15 V60 H0 Z" fill="url(#chartGrad)" />
+                                        <path d="M0,50 Q25,45 50,35 T100,25 T150,30 T200,15" fill="none" stroke="#58a6ff" strokeWidth="2" />
                                     </svg>
                                 </div>
-                            </article>
-                        ))}
-                    </div>
-                </div>
-            </section>
-
-            {/* ══════════════════════════════════════════════
-                TESTIMONIALS — Social Proof
-                ══════════════════════════════════════════════ */}
-            <section className="testimonials" id="testimonials" aria-labelledby="testimonials-title">
-                <div className="testimonials__container">
-                    <div className="section-header">
-                        <span className="section-header__label">
-                            <span className="section-header__label-icon">💬</span>
-                            Referanslar
-                        </span>
-                        <h2 className="section-header__title" id="testimonials-title">
-                            Müşterilerimiz <span className="text-gradient">Ne Diyor?</span>
-                        </h2>
-                    </div>
-
-                    <div className="testimonials__carousel">
-                        {testimonials.map((t, i) => (
-                            <div key={i} className={`testimonial-card ${i === activeTestimonial ? 'testimonial-card--active' : ''}`}>
-                                <div className="testimonial-card__quote">"</div>
-                                <p className="testimonial-card__text">{t.text}</p>
-                                <div className="testimonial-card__author">
-                                    <div className="testimonial-card__avatar">{t.avatar}</div>
-                                    <div className="testimonial-card__info">
-                                        <div className="testimonial-card__name">{t.name}</div>
-                                        <div className="testimonial-card__role">{t.role}</div>
-                                    </div>
-                                </div>
                             </div>
-                        ))}
+                        </div>
                     </div>
+                </div>
 
-                    <div className="testimonials__dots">
-                        {testimonials.map((_, i) => (
-                            <button
-                                key={i}
-                                className={`testimonials__dot ${i === activeTestimonial ? 'testimonials__dot--active' : ''}`}
-                                onClick={() => setActiveTestimonial(i)}
-                                aria-label={`Referans ${i + 1}`}
-                            />
-                        ))}
-                    </div>
+                <a href="#features" className="lp-hero__scroll">
+                    <span>Keşfet</span>
+                    <div className="lp-hero__scroll-icon">↓</div>
+                </a>
+            </section>
+
+            {/* ═══════ LOGOS ═══════ */}
+            <section className="lp-logos">
+                <p className="lp-logos__label">Türkiye'nin önde gelen markaları güveniyor</p>
+                <Marquee items={logos} />
+            </section>
+
+            {/* ═══════ STATS ═══════ */}
+            <section className="lp-stats">
+                <div className="lp-stats__inner">
+                    {stats.map((s, i) => (
+                        <div key={i} className="lp-stat">
+                            <div className="lp-stat__value">
+                                <Counter value={s.value} suffix={s.suffix} />
+                            </div>
+                            <div className="lp-stat__label">{s.label}</div>
+                        </div>
+                    ))}
                 </div>
             </section>
 
-            {/* ══════════════════════════════════════════════
-                PRICING — Premium Cards
-                ══════════════════════════════════════════════ */}
-            <section className="pricing" id="pricing" aria-labelledby="pricing-title">
-                <div className="pricing__container">
-                    <div className="section-header">
-                        <span className="section-header__label">
-                            <span className="section-header__label-icon">💎</span>
-                            Fiyatlandırma
-                        </span>
-                        <h2 className="section-header__title" id="pricing-title">
-                            İşletmenize <span className="text-gradient">Uygun Plan</span>
+            {/* ═══════ FEATURES ═══════ */}
+            <section className="lp-features" id="features">
+                <div className="lp-section__header">
+                    <span className="lp-section__eyebrow">✦ Özellikler</span>
+                    <h2 className="lp-section__title">
+                        Perdeciniz için<br /><span className="lp-gradient-text">ihtiyacınız olan her şey</span>
+                    </h2>
+                    <p className="lp-section__desc">
+                        Satıştan üretime, stoktan müşteri ilişkilerine — tek platform.
+                    </p>
+                </div>
+
+                <div className="lp-features__grid">
+                    {features.map((f, i) => (
+                        <article key={i} className={`lp-feature ${i === 0 ? 'lp-feature--hero' : ''}`} style={{ '--accent': f.color, '--delay': `${i * 0.1}s` }}>
+                            {f.tag && <span className="lp-feature__tag">{f.tag}</span>}
+                            <div className="lp-feature__icon">{f.icon}</div>
+                            <h3 className="lp-feature__title">{f.title}</h3>
+                            <p className="lp-feature__desc">{f.desc}</p>
+                            <div className="lp-feature__link">
+                                Daha fazla <span>→</span>
+                            </div>
+                        </article>
+                    ))}
+                </div>
+            </section>
+
+            {/* ═══════ SHOWCASE ═══════ */}
+            <section className="lp-showcase">
+                <div className="lp-showcase__inner">
+                    <div className="lp-showcase__content">
+                        <span className="lp-section__eyebrow">✦ 360° Demo</span>
+                        <h2 className="lp-section__title">
+                            Perdeyi satmadan<br /><span className="lp-gradient-text">önce gösterin</span>
                         </h2>
-                        <p className="section-header__desc">
-                            Her ölçekteki perdecilik işletmesi için esnek fiyatlandırma. <strong>14 gün ücretsiz deneyin.</strong>
+                        <p className="lp-section__desc">
+                            Müşteriniz kumaşı, rengi, deseni gerçek zamanlı değiştirsin. 
+                            Satın alma kararını kolaylaştırın.
                         </p>
-                    </div>
-
-                    <div className="pricing__grid">
-                        {pricingPlans.map((plan, i) => (
-                            <article
-                                key={i}
-                                className={`pricing-card ${plan.popular ? 'pricing-card--popular' : ''}`}
-                                style={{ '--card-bg': plan.gradient, '--delay': `${i * 0.15}s` }}
-                            >
-                                {plan.popular && (
-                                    <div className="pricing-card__badge">
-                                        <span>⭐ En Popüler</span>
-                                    </div>
-                                )}
-                                <div className="pricing-card__header">
-                                    <h3 className="pricing-card__name">{plan.name}</h3>
-                                    <p className="pricing-card__desc">{plan.desc}</p>
-                                </div>
-                                <div className="pricing-card__price">
-                                    <span className="pricing-card__price-value">{plan.price}</span>
-                                    <span className="pricing-card__price-period">{plan.period}</span>
-                                </div>
-                                <ul className="pricing-card__features">
-                                    {plan.features.map((feat, fi) => (
-                                        <li key={fi}>
-                                            <span className="pricing-card__check">✓</span>
-                                            {feat}
-                                        </li>
-                                    ))}
-                                </ul>
-                                <Link
-                                    to="/dashboard"
-                                    className={`pricing-card__btn ${plan.popular ? 'pricing-card__btn--primary' : ''}`}
-                                >
-                                    {plan.popular ? 'Hemen Başla' : 'Deneyin'}
-                                </Link>
-                            </article>
-                        ))}
-                    </div>
-                </div>
-            </section>
-
-            {/* ══════════════════════════════════════════════
-                CTA — Final Push
-                ══════════════════════════════════════════════ */}
-            <section className="cta">
-                <div className="cta__bg">
-                    <div className="cta__orb cta__orb--1" />
-                    <div className="cta__orb cta__orb--2" />
-                </div>
-                <div className="cta__container">
-                    <h2 className="cta__title">Perdeciliğinizi Dijitalleştirmeye Hazır mısınız?</h2>
-                    <p className="cta__desc">14 gün ücretsiz deneyin, kredi kartı gerekmez.</p>
-                    <div className="cta__actions">
-                        <Link to="/dashboard" className="cta__btn cta__btn--primary">
-                            Ücretsiz Başla
-                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                                <path d="M5 12h14M12 5l7 7-7 7" />
-                            </svg>
+                        <ul className="lp-showcase__list">
+                            <li><span>✓</span> Gerçek zamanlı kumaş değişimi</li>
+                            <li><span>✓</span> Gün ışığı simülasyonu</li>
+                            <li><span>✓</span> Ölçü bazlı görselleştirme</li>
+                            <li><span>✓</span> Müşteri ile canlı paylaşım</li>
+                        </ul>
+                        <Link to="/demo" className="lp-btn lp-btn--primary">
+                            Demo'yu Dene <span>→</span>
                         </Link>
-                        <a href="#features" className="cta__btn cta__btn--secondary">Daha Fazla Bilgi</a>
+                    </div>
+                    <div className="lp-showcase__visual">
+                        <div className="lp-showcase__frame">
+                            <div className="lp-showcase__window">
+                                <div className="lp-showcase__curtain" />
+                                <div className="lp-showcase__curtain" />
+                            </div>
+                            <div className="lp-showcase__controls">
+                                <div className="lp-showcase__swatch" style={{ background: '#8B4513' }} />
+                                <div className="lp-showcase__swatch lp-showcase__swatch--active" style={{ background: '#DC143C' }} />
+                                <div className="lp-showcase__swatch" style={{ background: '#1E3A5F' }} />
+                                <div className="lp-showcase__swatch" style={{ background: '#F5F5DC' }} />
+                            </div>
+                        </div>
                     </div>
                 </div>
             </section>
 
-            {/* ══════════════════════════════════════════════
-                FOOTER
-                ══════════════════════════════════════════════ */}
-            <footer className="footer">
-                <div className="footer__container">
-                    <div className="footer__brand">
-                        <div className="footer__logo">
-                            <div className="footer__logo-icon">P</div>
+            {/* ═══════ TESTIMONIALS ═══════ */}
+            <section className="lp-testimonials" id="testimonials">
+                <div className="lp-section__header">
+                    <span className="lp-section__eyebrow">✦ Referanslar</span>
+                    <h2 className="lp-section__title">
+                        Perdeciler<br /><span className="lp-gradient-text">ne diyor?</span>
+                    </h2>
+                </div>
+
+                <div className="lp-testimonials__carousel">
+                    {testimonials.map((t, i) => (
+                        <blockquote key={i} className={`lp-testimonial ${i === activeTesti ? 'lp-testimonial--active' : ''}`}>
+                            <p className="lp-testimonial__text">"{t.text}"</p>
+                            <footer className="lp-testimonial__author">
+                                <div className="lp-testimonial__avatar">{t.author[0]}</div>
+                                <div>
+                                    <strong>{t.author}</strong>
+                                    <span>{t.company}, {t.city}</span>
+                                </div>
+                            </footer>
+                        </blockquote>
+                    ))}
+                </div>
+
+                <div className="lp-testimonials__dots">
+                    {testimonials.map((_, i) => (
+                        <button key={i} className={`lp-dot ${i === activeTesti ? 'lp-dot--active' : ''}`} onClick={() => setActiveTesti(i)} aria-label={`Referans ${i + 1}`} />
+                    ))}
+                </div>
+            </section>
+
+            {/* ═══════ PRICING ═══════ */}
+            <section className="lp-pricing" id="pricing">
+                <div className="lp-section__header">
+                    <span className="lp-section__eyebrow">✦ Fiyatlandırma</span>
+                    <h2 className="lp-section__title">
+                        İşletmenize<br /><span className="lp-gradient-text">uygun plan</span>
+                    </h2>
+                    <p className="lp-section__desc">
+                        14 gün ücretsiz deneyin. Kredi kartı gerekmez.
+                    </p>
+                </div>
+
+                <div className="lp-pricing__grid">
+                    {plans.map((p, i) => (
+                        <article key={i} className={`lp-plan ${p.popular ? 'lp-plan--popular' : ''}`} style={{ '--delay': `${i * 0.15}s` }}>
+                            {p.popular && <div className="lp-plan__badge">En Popüler</div>}
+                            <div className="lp-plan__header">
+                                <h3 className="lp-plan__name">{p.name}</h3>
+                                <p className="lp-plan__desc">{p.desc}</p>
+                            </div>
+                            <div className="lp-plan__price">
+                                <span className="lp-plan__currency">₺</span>
+                                <span className="lp-plan__amount">{p.price}</span>
+                                <span className="lp-plan__period">/ay</span>
+                            </div>
+                            <ul className="lp-plan__features">
+                                {p.features.map((f, fi) => (
+                                    <li key={fi}><span>✓</span>{f}</li>
+                                ))}
+                            </ul>
+                            <Link to="/dashboard" className={`lp-btn ${p.popular ? 'lp-btn--primary' : 'lp-btn--outline'} lp-btn--full`}>
+                                {p.popular ? 'Hemen Başla' : 'Deneyin'}
+                            </Link>
+                        </article>
+                    ))}
+                </div>
+            </section>
+
+            {/* ═══════ CTA ═══════ */}
+            <section className="lp-cta">
+                <div className="lp-cta__bg">
+                    <div className="lp-cta__orb lp-cta__orb--1" />
+                    <div className="lp-cta__orb lp-cta__orb--2" />
+                </div>
+                <div className="lp-cta__inner">
+                    <h2 className="lp-cta__title">Perdeciliğinizi<br />dijitalleştirmeye hazır mısınız?</h2>
+                    <p className="lp-cta__desc">14 gün ücretsiz, kredi kartı yok, iptal ücreti yok.</p>
+                    <div className="lp-cta__actions">
+                        <Link to="/dashboard" className="lp-btn lp-btn--white lp-btn--xl">
+                            Ücretsiz Başla <span>→</span>
+                        </Link>
+                        <Link to="/demo" className="lp-btn lp-btn--ghost-light lp-btn--xl">
+                            Demo İzle
+                        </Link>
+                    </div>
+                </div>
+            </section>
+
+            {/* ═══════ FOOTER ═══════ */}
+            <footer className="lp-footer">
+                <div className="lp-footer__inner">
+                    <div className="lp-footer__brand">
+                        <div className="lp-footer__logo">
+                            <div className="lp-nav__logo">P</div>
                             <span>Perdemo</span>
                         </div>
-                        <p className="footer__tagline">Perde sektörünün dijital platformu</p>
+                        <p>Perde sektörünün dijital platformu.</p>
+                        <div className="lp-footer__social">
+                            <a href="#" aria-label="Twitter">𝕏</a>
+                            <a href="#" aria-label="LinkedIn">in</a>
+                            <a href="#" aria-label="Instagram">📷</a>
+                        </div>
                     </div>
-                    <div className="footer__links">
-                        <div className="footer__column">
+                    <div className="lp-footer__links">
+                        <div className="lp-footer__col">
                             <h4>Ürün</h4>
                             <a href="#features">Özellikler</a>
-                            <a href="#pricing">Fiyatlandırma</a>
+                            <a href="#pricing">Fiyatlar</a>
                             <Link to="/demo">Demo</Link>
+                            <a href="#">API</a>
                         </div>
-                        <div className="footer__column">
+                        <div className="lp-footer__col">
                             <h4>Şirket</h4>
-                            <a href="#testimonials">Hakkımızda</a>
-                            <a href="#testimonials">Referanslar</a>
-                            <a href="#pricing">İletişim</a>
+                            <a href="#">Hakkımızda</a>
+                            <a href="#">Blog</a>
+                            <a href="#">Kariyer</a>
+                            <a href="#">İletişim</a>
                         </div>
-                        <div className="footer__column">
+                        <div className="lp-footer__col">
                             <h4>Destek</h4>
-                            <a href="#features">Yardım Merkezi</a>
-                            <a href="#features">API Dokümantasyon</a>
-                            <a href="#features">Durum</a>
+                            <a href="#">Yardım Merkezi</a>
+                            <a href="#">Dokümantasyon</a>
+                            <a href="#">Durum</a>
+                            <a href="#">Güvenlik</a>
                         </div>
                     </div>
                 </div>
-                <div className="footer__bottom">
-                    <p>© 2026 Perdemo — Tüm hakları saklıdır.</p>
-                    <div className="footer__social">
-                        <a href="#" aria-label="Twitter">𝕏</a>
-                        <a href="#" aria-label="LinkedIn">in</a>
-                        <a href="#" aria-label="Instagram">📷</a>
+                <div className="lp-footer__bottom">
+                    <p>© 2026 Perdemo. Tüm hakları saklıdır.</p>
+                    <div className="lp-footer__legal">
+                        <a href="#">Gizlilik</a>
+                        <a href="#">Kullanım Şartları</a>
                     </div>
                 </div>
             </footer>
