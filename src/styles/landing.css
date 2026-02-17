@@ -22,12 +22,20 @@
     background: var(--bg-primary);
     color: var(--text-primary);
     overflow-x: hidden;
-    font-feature-settings: 'ss01' on, 'ss02' on;
     -webkit-font-smoothing: antialiased;
 }
 
 .lp *, .lp *::before, .lp *::after {
     box-sizing: border-box;
+}
+
+/* Reduce motion for users who prefer it */
+@media (prefers-reduced-motion: reduce) {
+    .lp *, .lp *::before, .lp *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+    }
 }
 
 /* ═══════ TYPOGRAPHY ═══════ */
@@ -247,42 +255,45 @@
     -webkit-mask-image: radial-gradient(ellipse 70% 50% at 50% 30%, black 20%, transparent 70%);
 }
 
+/* Orbs - GPU accelerated, reduced blur for performance */
 .lp-hero__orb {
     position: absolute;
     border-radius: 50%;
-    filter: blur(100px);
+    filter: blur(60px); /* Reduced from 100px */
     will-change: transform;
-    transition: transform 0.1s linear;
+    transform: translateZ(0); /* Force GPU layer */
+    backface-visibility: hidden;
+    contain: layout style paint;
 }
 
 .lp-hero__orb--1 {
-    width: 600px;
-    height: 600px;
-    top: -20%;
+    width: 500px; /* Reduced size */
+    height: 500px;
+    top: -15%;
     left: -10%;
-    background: linear-gradient(135deg, #58a6ff 0%, rgba(88, 166, 255, 0.3) 100%);
-    opacity: 0.5;
-    transform: translate(calc(var(--mx) * 0.5), calc(var(--my) * 0.5));
+    background: #58a6ff;
+    opacity: 0.25; /* Reduced opacity */
+    transform: translate3d(calc(var(--mx) * 0.3), calc(var(--my) * 0.3), 0);
 }
 
 .lp-hero__orb--2 {
-    width: 500px;
-    height: 500px;
+    width: 400px;
+    height: 400px;
     top: 30%;
-    right: -15%;
-    background: linear-gradient(135deg, #bc8cff 0%, rgba(188, 140, 255, 0.3) 100%);
-    opacity: 0.4;
-    transform: translate(calc(var(--mx) * -0.3), calc(var(--my) * -0.3));
+    right: -10%;
+    background: #bc8cff;
+    opacity: 0.2;
+    transform: translate3d(calc(var(--mx) * -0.2), calc(var(--my) * -0.2), 0);
 }
 
 .lp-hero__orb--3 {
-    width: 400px;
-    height: 400px;
-    bottom: -10%;
+    width: 350px;
+    height: 350px;
+    bottom: -5%;
     left: 30%;
-    background: linear-gradient(135deg, #f778ba 0%, rgba(247, 120, 186, 0.3) 100%);
-    opacity: 0.3;
-    transform: translate(calc(var(--mx) * 0.2), calc(var(--my) * 0.4));
+    background: #f778ba;
+    opacity: 0.15;
+    transform: translate3d(calc(var(--mx) * 0.15), calc(var(--my) * 0.25), 0);
 }
 
 .lp-hero__glow {
@@ -345,8 +356,7 @@
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     background-clip: text;
-    background-size: 200% 200%;
-    animation: gradientShift 5s ease infinite;
+    /* Removed infinite animation for performance */
 }
 
 @keyframes gradientShift {
@@ -677,13 +687,15 @@
 .marquee__track {
     display: flex;
     gap: 80px;
-    animation: marquee 30s linear infinite;
+    animation: marquee 40s linear infinite;
     width: max-content;
+    will-change: transform;
+    transform: translateZ(0);
 }
 
 @keyframes marquee {
-    0% { transform: translateX(0); }
-    100% { transform: translateX(-50%); }
+    0% { transform: translate3d(0, 0, 0); }
+    100% { transform: translate3d(-50%, 0, 0); }
 }
 
 .marquee__item {
@@ -992,16 +1004,7 @@
     background: linear-gradient(180deg, #DC143C 0%, #8B0000 100%);
     border-radius: 4px 4px 0 0;
     position: relative;
-    animation: curtainSway 4s ease-in-out infinite;
-}
-
-.lp-showcase__curtain:nth-child(2) {
-    animation-delay: -2s;
-}
-
-@keyframes curtainSway {
-    0%, 100% { transform: skewX(0deg); }
-    50% { transform: skewX(2deg); }
+    /* Removed animation - static is cleaner and faster */
 }
 
 .lp-showcase__curtain::before {
@@ -1284,25 +1287,26 @@
 .lp-cta__orb {
     position: absolute;
     border-radius: 50%;
-    filter: blur(100px);
+    filter: blur(50px); /* Reduced */
+    contain: layout style paint;
 }
 
 .lp-cta__orb--1 {
-    width: 500px;
-    height: 500px;
-    top: -30%;
+    width: 400px;
+    height: 400px;
+    top: -20%;
     left: 10%;
-    background: linear-gradient(135deg, #58a6ff 0%, rgba(88, 166, 255, 0.3) 100%);
-    opacity: 0.4;
+    background: #58a6ff;
+    opacity: 0.2;
 }
 
 .lp-cta__orb--2 {
-    width: 400px;
-    height: 400px;
-    bottom: -30%;
+    width: 350px;
+    height: 350px;
+    bottom: -20%;
     right: 10%;
-    background: linear-gradient(135deg, #bc8cff 0%, rgba(188, 140, 255, 0.3) 100%);
-    opacity: 0.3;
+    background: #bc8cff;
+    opacity: 0.15;
 }
 
 .lp-cta__inner {

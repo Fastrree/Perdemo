@@ -101,17 +101,21 @@ export default function Landing() {
         return () => clearInterval(id)
     }, [])
 
-    // Mouse parallax for hero
+    // Mouse parallax for hero - throttled for performance
     useEffect(() => {
         const hero = heroRef.current
         if (!hero) return
+        let ticking = false
         const onMove = (e) => {
-            const { clientX, clientY } = e
-            const { innerWidth, innerHeight } = window
-            const x = (clientX / innerWidth - 0.5) * 30
-            const y = (clientY / innerHeight - 0.5) * 30
-            hero.style.setProperty('--mx', `${x}px`)
-            hero.style.setProperty('--my', `${y}px`)
+            if (ticking) return
+            ticking = true
+            requestAnimationFrame(() => {
+                const x = (e.clientX / window.innerWidth - 0.5) * 20
+                const y = (e.clientY / window.innerHeight - 0.5) * 20
+                hero.style.setProperty('--mx', `${x}px`)
+                hero.style.setProperty('--my', `${y}px`)
+                ticking = false
+            })
         }
         window.addEventListener('mousemove', onMove, { passive: true })
         return () => window.removeEventListener('mousemove', onMove)
