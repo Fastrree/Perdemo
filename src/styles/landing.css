@@ -230,8 +230,6 @@
     padding: 140px 60px 80px;
     position: relative;
     overflow: hidden;
-    --mx: 0px;
-    --my: 0px;
 }
 
 .lp-hero__bg {
@@ -249,66 +247,40 @@
                 radial-gradient(ellipse 50% 40% at 0% 80%, rgba(247, 120, 186, 0.06) 0%, transparent 50%);
 }
 
-.lp-hero__grid {
-    position: absolute;
-    inset: 0;
-    background-image: linear-gradient(rgba(88, 166, 255, 0.03) 1px, transparent 1px),
-                      linear-gradient(90deg, rgba(88, 166, 255, 0.03) 1px, transparent 1px);
-    background-size: 80px 80px;
-    mask-image: radial-gradient(ellipse 70% 50% at 50% 30%, black 20%, transparent 70%);
-    -webkit-mask-image: radial-gradient(ellipse 70% 50% at 50% 30%, black 20%, transparent 70%);
-}
 
-/* Orbs - GPU accelerated, reduced blur for performance */
+
+/* Orbs - Static, no blur for max performance */
 .lp-hero__orb {
     position: absolute;
     border-radius: 50%;
-    filter: blur(60px); /* Reduced from 100px */
-    will-change: transform;
-    transform: translateZ(0); /* Force GPU layer */
-    backface-visibility: hidden;
-    contain: layout style paint;
+    pointer-events: none;
 }
 
 .lp-hero__orb--1 {
-    width: 500px; /* Reduced size */
-    height: 500px;
-    top: -15%;
-    left: -10%;
-    background: #58a6ff;
-    opacity: 0.25; /* Reduced opacity */
-    transform: translate3d(calc(var(--mx) * 0.3), calc(var(--my) * 0.3), 0);
+    width: 400px;
+    height: 400px;
+    top: -10%;
+    left: -5%;
+    background: radial-gradient(circle, rgba(88, 166, 255, 0.15) 0%, transparent 70%);
 }
 
 .lp-hero__orb--2 {
-    width: 400px;
-    height: 400px;
+    width: 350px;
+    height: 350px;
     top: 30%;
-    right: -10%;
-    background: #bc8cff;
-    opacity: 0.2;
-    transform: translate3d(calc(var(--mx) * -0.2), calc(var(--my) * -0.2), 0);
+    right: -5%;
+    background: radial-gradient(circle, rgba(188, 140, 255, 0.12) 0%, transparent 70%);
 }
 
 .lp-hero__orb--3 {
-    width: 350px;
-    height: 350px;
+    width: 300px;
+    height: 300px;
     bottom: -5%;
     left: 30%;
     background: #f778ba;
-    opacity: 0.15;
-    transform: translate3d(calc(var(--mx) * 0.15), calc(var(--my) * 0.25), 0);
-}
-
-.lp-hero__glow {
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    width: 120%;
-    height: 120%;
-    transform: translate(-50%, -50%);
-    background: radial-gradient(circle at center, rgba(88, 166, 255, 0.05) 0%, transparent 50%);
-    pointer-events: none;
+    bottom: 0;
+    left: 25%;
+    background: radial-gradient(circle, rgba(247, 120, 186, 0.1) 0%, transparent 70%);
 }
 
 .lp-hero__content {

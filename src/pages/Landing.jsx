@@ -96,7 +96,6 @@ export default function Landing() {
     const [scrolled, setScrolled] = useState(false)
     const [activeTesti, setActiveTesti] = useState(0)
     const [curtainColor, setCurtainColor] = useState('#DC143C')
-    const heroRef = useRef(null)
 
     useEffect(() => {
         const onScroll = () => setScrolled(window.scrollY > 20)
@@ -109,25 +108,7 @@ export default function Landing() {
         return () => clearInterval(id)
     }, [])
 
-    // Mouse parallax for hero - throttled for performance
-    useEffect(() => {
-        const hero = heroRef.current
-        if (!hero) return
-        let ticking = false
-        const onMove = (e) => {
-            if (ticking) return
-            ticking = true
-            requestAnimationFrame(() => {
-                const x = (e.clientX / window.innerWidth - 0.5) * 20
-                const y = (e.clientY / window.innerHeight - 0.5) * 20
-                hero.style.setProperty('--mx', `${x}px`)
-                hero.style.setProperty('--my', `${y}px`)
-                ticking = false
-            })
-        }
-        window.addEventListener('mousemove', onMove, { passive: true })
-        return () => window.removeEventListener('mousemove', onMove)
-    }, [])
+
 
     return (
         <div className="lp">
@@ -165,14 +146,12 @@ export default function Landing() {
             </header>
 
             {/* ═══════ HERO ═══════ */}
-            <section className="lp-hero" ref={heroRef}>
+            <section className="lp-hero">
                 <div className="lp-hero__bg">
                     <div className="lp-hero__gradient" />
-                    <div className="lp-hero__grid" />
                     <div className="lp-hero__orb lp-hero__orb--1" />
                     <div className="lp-hero__orb lp-hero__orb--2" />
                     <div className="lp-hero__orb lp-hero__orb--3" />
-                    <div className="lp-hero__glow" />
                 </div>
 
                 <div className="lp-hero__content">
