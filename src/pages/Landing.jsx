@@ -134,10 +134,14 @@ export default function Landing() {
             {/* ═══════ NAVBAR ═══════ */}
             <header className={`lp-nav ${scrolled ? 'lp-nav--scrolled' : ''}`}>
                 <div className="lp-nav__inner">
-                    <Link to="/" className="lp-nav__brand">
+                    <button 
+                        className="lp-nav__brand" 
+                        onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
+                        aria-label="Sayfanın en üstüne git"
+                    >
                         <div className="lp-nav__logo">P</div>
                         <span className="lp-nav__wordmark">Perdemo</span>
-                    </Link>
+                    </button>
 
                     <nav className={`lp-nav__menu ${menuOpen ? 'lp-nav__menu--open' : ''}`}>
                         <a href="#features" onClick={() => setMenuOpen(false)}>Özellikler</a>
