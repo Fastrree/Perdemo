@@ -16,6 +16,7 @@ const Moodboard = lazy(() => import('./pages/Moodboard'))
 const Analytics = lazy(() => import('./pages/Analytics'))
 const InventoryOracle = lazy(() => import('./pages/InventoryOracle'))
 const WhiteLabel = lazy(() => import('./pages/WhiteLabel'))
+const NotFound = lazy(() => import('./pages/NotFound'))
 
 export const ThemeContext = createContext()
 
@@ -64,6 +65,7 @@ function App() {
             <Route path="/inventory-oracle" element={<DesktopOnly><InventoryOracle /></DesktopOnly>} />
             <Route path="/white-label" element={<DesktopOnly><WhiteLabel /></DesktopOnly>} />
           </Route>
+          <Route path="*" element={<NotFound />} />
         </Routes>
       </Suspense>
     </ThemeContext.Provider>
