@@ -280,15 +280,15 @@ export default function Landing() {
 
                 <div className="lp-features__grid">
                     {features.map((f, i) => (
-                        <article key={i} className={`lp-feature ${i === 0 ? 'lp-feature--hero' : ''}`} style={{ '--accent': f.color, '--delay': `${i * 0.1}s` }}>
+                        <Link key={i} to="/dashboard" className={`lp-feature ${i === 0 ? 'lp-feature--hero' : ''}`} style={{ '--accent': f.color, '--delay': `${i * 0.1}s`, textDecoration: 'none', color: 'inherit' }}>
                             {f.tag && <span className="lp-feature__tag">{f.tag}</span>}
                             <div className="lp-feature__icon">{f.icon}</div>
                             <h3 className="lp-feature__title">{f.title}</h3>
                             <p className="lp-feature__desc">{f.desc}</p>
                             <div className="lp-feature__link">
-                                Daha fazla <span>→</span>
+                                Keşfet <span>→</span>
                             </div>
-                        </article>
+                        </Link>
                     ))}
                 </div>
             </section>
@@ -430,11 +430,6 @@ export default function Landing() {
                             <span>Perdemo</span>
                         </div>
                         <p>Perde sektörünün dijital platformu.</p>
-                        <div className="lp-footer__social">
-                            <a href="#" aria-label="Twitter">𝕏</a>
-                            <a href="#" aria-label="LinkedIn">in</a>
-                            <a href="#" aria-label="Instagram">📷</a>
-                        </div>
                     </div>
                     <div className="lp-footer__links">
                         <div className="lp-footer__col">
@@ -442,30 +437,26 @@ export default function Landing() {
                             <a href="#features">Özellikler</a>
                             <a href="#pricing">Fiyatlar</a>
                             <Link to="/demo">Demo</Link>
-                            <a href="#">API</a>
+                            <Link to="/dashboard">Dashboard</Link>
                         </div>
                         <div className="lp-footer__col">
-                            <h4>Şirket</h4>
-                            <a href="#">Hakkımızda</a>
-                            <a href="#">Blog</a>
-                            <a href="#">Kariyer</a>
-                            <a href="#">İletişim</a>
+                            <h4>Sayfalar</h4>
+                            <Link to="/products">Ürünler</Link>
+                            <Link to="/orders">Siparişler</Link>
+                            <Link to="/customers">Müşteriler</Link>
+                            <Link to="/analytics">Analitik</Link>
                         </div>
                         <div className="lp-footer__col">
-                            <h4>Destek</h4>
-                            <a href="#">Yardım Merkezi</a>
-                            <a href="#">Dokümantasyon</a>
-                            <a href="#">Durum</a>
-                            <a href="#">Güvenlik</a>
+                            <h4>Araçlar</h4>
+                            <Link to="/quote">Teklif Oluştur</Link>
+                            <Link to="/measure">Ölçü Asistanı</Link>
+                            <Link to="/inventory-oracle">Stok Tahmin</Link>
+                            <Link to="/white-label">Bayi Ağı</Link>
                         </div>
                     </div>
                 </div>
                 <div className="lp-footer__bottom">
                     <p>© 2026 Perdemo. Tüm hakları saklıdır.</p>
-                    <div className="lp-footer__legal">
-                        <a href="#">Gizlilik</a>
-                        <a href="#">Kullanım Şartları</a>
-                    </div>
                 </div>
             </footer>
         </div>
