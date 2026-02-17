@@ -221,9 +221,7 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  background: var(--bg-glass);
-  backdrop-filter: blur(20px) saturate(180%);
-  -webkit-backdrop-filter: blur(20px) saturate(180%);
+  background: rgba(13, 17, 23, 0.95);
   border-bottom: 1px solid var(--border-secondary);
   position: sticky;
   top: 0;
@@ -301,8 +299,7 @@
   height: 8px;
   border-radius: 50%;
   background: var(--danger);
-  box-shadow: 0 0 6px rgba(248, 81, 73, 0.5);
-  animation: gentle-pulse 2s infinite;
+  box-shadow: 0 0 8px rgba(248, 81, 73, 0.6);
 }
 
 /* Theme Toggle */
@@ -510,8 +507,7 @@
   inset: 0;
   border-radius: 50%;
   border: 2px solid var(--accent-amber);
-  opacity: 0.2;
-  animation: ping 2s cubic-bezier(0, 0, 0.2, 1) infinite;
+  opacity: 0.25;
 }
 
 .gate-warning-ring::after {
@@ -546,8 +542,7 @@
   bottom: 0;
   left: 0;
   width: 100%;
-  background: rgba(10, 10, 10, 0.85);
-  backdrop-filter: blur(12px);
+  background: rgba(10, 10, 10, 0.95);
   border-top: 1px solid var(--border-primary);
   padding: 12px 20px;
   z-index: 100;
@@ -636,8 +631,7 @@
   .sidebar {
     transform: translateX(-100%);
     width: var(--sidebar-width);
-    background: rgba(10, 10, 10, 0.95);
-    backdrop-filter: blur(20px);
+    background: rgba(10, 10, 10, 0.98);
   }
 
   .sidebar.open {

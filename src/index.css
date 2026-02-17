@@ -13,6 +13,28 @@
   box-sizing: border-box;
 }
 
+/* ── Global Performance Optimizations ── */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+/* Disable heavy animations on lower-end devices */
+@media (max-width: 768px) {
+  .skeleton { animation: none; background: var(--bg-tertiary); }
+  .empty-state-icon { animation: none; }
+  .ai-note { animation: none; }
+  .ai-sparkle { animation: none; }
+  .magic-hud { animation: none; }
+  .magic-scan-line { animation: none; display: none; }
+  .magic-corner { animation: none; }
+  .magic-data { animation: none; }
+  .collab-dot { animation: none; }
+}
+
 /* ── Custom Properties: Dark Theme (Default) ── */
 :root,
 .dark {
@@ -382,15 +404,11 @@ a:hover {
    Loading, Empty, Error — Never blank spaces
    ══════════════════════════════════════════════ */
 
-/* Skeleton Loading */
+/* Skeleton Loading - Simplified for performance */
 .skeleton {
-  background: linear-gradient(90deg,
-    var(--bg-tertiary) 25%,
-    var(--bg-elevated) 50%,
-    var(--bg-tertiary) 75%);
-  background-size: 200% 100%;
-  animation: shimmer 1.5s infinite;
+  background: var(--bg-tertiary);
   border-radius: var(--radius-md);
+  opacity: 0.7;
 }
 
 /* Empty State */
@@ -412,7 +430,6 @@ a:hover {
   font-size: 3rem;
   margin-bottom: 16px;
   opacity: 0.4;
-  animation: float 4s ease-in-out infinite;
 }
 
 .empty-state-title {
@@ -608,13 +625,12 @@ a:hover {
 }
 
 .ai-note {
-  animation: ai-border-shimmer 3s ease-in-out infinite, pulse-glow 4s ease-in-out infinite;
   position: relative;
+  border-color: rgba(88, 166, 255, 0.25);
 }
 
 .ai-sparkle {
   display: inline-block;
-  animation: ai-sparkle-pulse 2.5s ease-in-out infinite;
 }
 
 .ai-text-appear {
@@ -648,23 +664,15 @@ a:hover {
 
 .magic-hud {
   border: 1px solid rgba(0, 255, 136, 0.4);
-  animation: hud-glow 2.5s ease-in-out infinite;
   position: relative;
   background: rgba(0, 20, 10, 0.85);
   border-radius: var(--radius-lg);
   overflow: hidden;
+  box-shadow: 0 0 20px rgba(0, 255, 136, 0.15);
 }
 
 .magic-scan-line {
-  position: absolute;
-  left: 0;
-  right: 0;
-  height: 2px;
-  background: linear-gradient(90deg, transparent, rgba(0, 255, 136, 0.8), rgba(0, 255, 136, 1), rgba(0, 255, 136, 0.8), transparent);
-  box-shadow: 0 0 12px rgba(0, 255, 136, 0.6), 0 0 40px rgba(0, 255, 136, 0.3);
-  animation: scan-line 2.5s ease-in-out infinite;
-  pointer-events: none;
-  z-index: 10;
+  display: none; /* Removed for performance */
 }
 
 .magic-corner {
@@ -673,7 +681,6 @@ a:hover {
   height: 20px;
   border-color: rgba(0, 255, 136, 0.8);
   border-style: solid;
-  animation: corner-pulse 2s ease-in-out infinite;
   pointer-events: none;
   z-index: 5;
 }
@@ -687,7 +694,6 @@ a:hover {
   font-family: 'Courier New', monospace;
   color: rgba(0, 255, 136, 0.9);
   text-shadow: 0 0 8px rgba(0, 255, 136, 0.4);
-  animation: data-flicker 3s ease-in-out infinite;
 }
 
 /* ── Sustainability Card ── */
@@ -695,7 +701,6 @@ a:hover {
   background: linear-gradient(135deg, rgba(46, 204, 113, 0.08), rgba(39, 174, 96, 0.04));
   border: 1px solid rgba(46, 204, 113, 0.25);
   border-radius: var(--radius-lg);
-  animation: ai-border-shimmer 3s ease-in-out infinite;
 }
 
 /* ── Collab Badge ── */
@@ -722,7 +727,7 @@ a:hover {
   height: 8px;
   border-radius: 50%;
   background: #e74c3c;
-  animation: live-pulse 1.5s ease-in-out infinite;
+  box-shadow: 0 0 6px rgba(231, 76, 60, 0.5);
 }
 
 /* ═══════════════════════════════════════════════════
