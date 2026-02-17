@@ -6,12 +6,19 @@ import { useTheme } from '../App'
    DATA
    ═══════════════════════════════════════════════════════════════ */
 const features = [
-    { icon: '🎯', title: '360° Canlı Demo', desc: 'Müşterilerinize perdeleri gerçek zamanlı gösterin. Kumaş, renk, ışık — hepsini anında değiştirin.', tag: 'EN POPÜLER', color: '#bc8cff' },
-    { icon: '📊', title: 'Akıllı Dashboard', desc: 'AI destekli satış tahminleri, stok uyarıları ve müşteri analizleri tek ekranda.', color: '#58a6ff' },
-    { icon: '📦', title: 'Sipariş Takibi', desc: 'Üretimden montaja kadar her adımı izleyin. Müşterilerinizi otomatik bilgilendirin.', color: '#2ecc71' },
-    { icon: '🧵', title: 'Stok Yönetimi', desc: 'Kumaş rulolarını metre bazında takip edin. Kritik stok uyarıları alın.', color: '#f0b429' },
-    { icon: '👥', title: 'Müşteri CRM', desc: 'Ölçü geçmişi, tercihler, satın alma davranışları — hepsi kayıt altında.', color: '#f778ba' },
-    { icon: '📈', title: 'Gelişmiş Raporlar', desc: 'Kârlılık analizleri, trend raporları, bayi performansları.', color: '#76e4f7' },
+    { icon: '🎯', title: '360° Canlı Demo', desc: 'Müşterilerinize perdeleri gerçek zamanlı gösterin. Kumaş, renk, ışık — hepsini anında değiştirin.', tag: 'EN POPÜLER', color: '#bc8cff', link: '/demo' },
+    { icon: '📊', title: 'Akıllı Dashboard', desc: 'AI destekli satış tahminleri, stok uyarıları ve müşteri analizleri tek ekranda.', color: '#58a6ff', link: '/dashboard' },
+    { icon: '📦', title: 'Sipariş Takibi', desc: 'Üretimden montaja kadar her adımı izleyin. Müşterilerinizi otomatik bilgilendirin.', color: '#2ecc71', link: '/orders' },
+    { icon: '🧵', title: 'Stok Yönetimi', desc: 'Kumaş rulolarını metre bazında takip edin. Kritik stok uyarıları alın.', color: '#f0b429', link: '/inventory-oracle' },
+    { icon: '👥', title: 'Müşteri CRM', desc: 'Ölçü geçmişi, tercihler, satın alma davranışları — hepsi kayıt altında.', color: '#f778ba', link: '/customers' },
+    { icon: '📈', title: 'Gelişmiş Raporlar', desc: 'Kârlılık analizleri, trend raporları, bayi performansları.', color: '#76e4f7', link: '/analytics' },
+]
+
+const curtainColors = [
+    { color: '#8B4513', name: 'Kahverengi' },
+    { color: '#DC143C', name: 'Bordo' },
+    { color: '#1E3A5F', name: 'Lacivert' },
+    { color: '#F5F5DC', name: 'Krem' },
 ]
 
 const stats = [
@@ -88,6 +95,7 @@ export default function Landing() {
     const [menuOpen, setMenuOpen] = useState(false)
     const [scrolled, setScrolled] = useState(false)
     const [activeTesti, setActiveTesti] = useState(0)
+    const [curtainColor, setCurtainColor] = useState('#DC143C')
     const heroRef = useRef(null)
 
     useEffect(() => {
@@ -280,7 +288,7 @@ export default function Landing() {
 
                 <div className="lp-features__grid">
                     {features.map((f, i) => (
-                        <Link key={i} to="/dashboard" className={`lp-feature ${i === 0 ? 'lp-feature--hero' : ''}`} style={{ '--accent': f.color, '--delay': `${i * 0.1}s`, textDecoration: 'none', color: 'inherit' }}>
+                        <Link key={i} to={f.link} className={`lp-feature ${i === 0 ? 'lp-feature--hero' : ''}`} style={{ '--accent': f.color, '--delay': `${i * 0.1}s`, textDecoration: 'none', color: 'inherit' }}>
                             {f.tag && <span className="lp-feature__tag">{f.tag}</span>}
                             <div className="lp-feature__icon">{f.icon}</div>
                             <h3 className="lp-feature__title">{f.title}</h3>
@@ -318,14 +326,19 @@ export default function Landing() {
                     <div className="lp-showcase__visual">
                         <div className="lp-showcase__frame">
                             <div className="lp-showcase__window">
-                                <div className="lp-showcase__curtain" />
-                                <div className="lp-showcase__curtain" />
+                                <div className="lp-showcase__curtain" style={{ background: `linear-gradient(180deg, ${curtainColor} 0%, ${curtainColor}99 100%)` }} />
+                                <div className="lp-showcase__curtain" style={{ background: `linear-gradient(180deg, ${curtainColor} 0%, ${curtainColor}99 100%)` }} />
                             </div>
                             <div className="lp-showcase__controls">
-                                <div className="lp-showcase__swatch" style={{ background: '#8B4513' }} />
-                                <div className="lp-showcase__swatch lp-showcase__swatch--active" style={{ background: '#DC143C' }} />
-                                <div className="lp-showcase__swatch" style={{ background: '#1E3A5F' }} />
-                                <div className="lp-showcase__swatch" style={{ background: '#F5F5DC' }} />
+                                {curtainColors.map((c) => (
+                                    <button
+                                        key={c.color}
+                                        className={`lp-showcase__swatch ${curtainColor === c.color ? 'lp-showcase__swatch--active' : ''}`}
+                                        style={{ background: c.color }}
+                                        onClick={() => setCurtainColor(c.color)}
+                                        aria-label={`${c.name} rengi seç`}
+                                    />
+                                ))}
                             </div>
                         </div>
                     </div>
@@ -433,24 +446,24 @@ export default function Landing() {
                     </div>
                     <div className="lp-footer__links">
                         <div className="lp-footer__col">
-                            <h4>Ürün</h4>
+                            <h4>Başlangıç</h4>
                             <a href="#features">Özellikler</a>
                             <a href="#pricing">Fiyatlar</a>
-                            <Link to="/demo">Demo</Link>
-                            <Link to="/dashboard">Dashboard</Link>
+                            <Link to="/demo">3D Demo</Link>
+                            <Link to="/dashboard">Panele Git</Link>
                         </div>
                         <div className="lp-footer__col">
-                            <h4>Sayfalar</h4>
-                            <Link to="/products">Ürünler</Link>
-                            <Link to="/orders">Siparişler</Link>
-                            <Link to="/customers">Müşteriler</Link>
-                            <Link to="/analytics">Analitik</Link>
+                            <h4>Yönetim</h4>
+                            <Link to="/products">Ürün Kataloğu</Link>
+                            <Link to="/orders">Sipariş Takibi</Link>
+                            <Link to="/customers">Müşteri CRM</Link>
+                            <Link to="/inventory-oracle">Stok Tahmini</Link>
                         </div>
                         <div className="lp-footer__col">
                             <h4>Araçlar</h4>
-                            <Link to="/quote">Teklif Oluştur</Link>
+                            <Link to="/quote">Akıllı Teklif</Link>
                             <Link to="/measure">Ölçü Asistanı</Link>
-                            <Link to="/inventory-oracle">Stok Tahmin</Link>
+                            <Link to="/analytics">Raporlar</Link>
                             <Link to="/white-label">Bayi Ağı</Link>
                         </div>
                     </div>
