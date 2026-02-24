@@ -49,10 +49,11 @@ export default function Register() {
             })
             setSuccess(true)
         } catch (err) {
+            console.error('🔴 Signup error:', err)
             if (err.message?.includes('already registered')) {
                 setError(t('register.errors.emailExists'))
             } else {
-                setError(t('register.errors.generic'))
+                setError(err.message || t('register.errors.generic'))
             }
         } finally {
             setLoading(false)

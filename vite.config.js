@@ -3,7 +3,7 @@ import react from '@vitejs/plugin-react'
 
 // https://vite.dev/config/
 export default defineConfig(({ mode }) => {
-  const env = loadEnv(mode, '.',  '')
+  const env = loadEnv(mode, '.', '')
   return {
     plugins: [react()],
     server: {
@@ -17,6 +17,11 @@ export default defineConfig(({ mode }) => {
               proxyReq.setHeader('Authorization', `Bearer ${env.VITE_AI_API_KEY}`)
             })
           },
+        },
+        '/api': {
+          target: 'https://perdemo.vercel.app',
+          changeOrigin: true,
+          secure: true,
         },
       },
     },
