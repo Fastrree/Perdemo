@@ -10,7 +10,14 @@
  * Production'da backend proxy şart.
  */
 
-const AI_API_BASE = '/api/ai' // Vite proxy → gerçek AI API
+/**
+ * AI API Base URL:
+ * - Dev mode (npm run dev): Vite proxy /api/ai → 127.0.0.1:8045/v1
+ * - Production build: Doğrudan VITE_AI_API_BASE kullanılır
+ */
+const IS_DEV = import.meta.env.DEV
+const AI_API_BASE = IS_DEV ? '/api/ai' : (import.meta.env.VITE_AI_API_BASE || 'http://127.0.0.1:8045/v1')
+const AI_API_KEY = import.meta.env.VITE_AI_API_KEY || ''
 
 // Bizim ürün kataloğumuz — AI sadece bunlardan önerecek
 const OUR_CATALOG = `
@@ -32,15 +39,24 @@ ${OUR_CATALOG}
 KRİTİK KURAL: Sadece yukarıdaki 8 ürünümüzden öneri yap. Katalogumuzda olmayan ürün ÖNERİLMEZ.`
 
 /**
- * AI API'ye güvenli istek atar (proxy üzerinden)
+ * AI API'ye istek atar.
+ * Dev: Vite proxy üzerinden (key proxy tarafında enjekte edilir)
+ * Production: Doğrudan sunucuya (key header olarak gönderilir)
  */
 export async function queryAI(prompt, options = {}) {
     const { maxTokens = 1500, temperature = 0.7 } = options
 
+    // Header'ları oluştur
+    const headers = { 'Content-Type': 'application/json' }
+    // Production'da Authorization header'ını ekle (dev'de Vite proxy hallediyor)
+    if (!IS_DEV && AI_API_KEY) {
+        headers['Authorization'] = `Bearer ${AI_API_KEY}`
+    }
+
     try {
         const response = await fetch(AI_API_BASE + '/chat/completions', {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
+            headers,
             body: JSON.stringify({
                 model: options.model || 'gemini-3-flash',
                 messages: [
@@ -53,14 +69,14 @@ export async function queryAI(prompt, options = {}) {
         })
 
         if (!response.ok) {
-            console.warn('AI API error:', response.status)
+            console.warn('AI API error:', response.status, await response.text().catch(() => ''))
             return null
         }
 
         const data = await response.json()
         return data.choices?.[0]?.message?.content || null
     } catch (err) {
-        console.warn('AI proxy error:', err.message)
+        console.warn('AI bağlantı hatası:', err.message)
         return null
     }
 }
