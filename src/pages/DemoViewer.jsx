@@ -842,11 +842,17 @@ export default function DemoViewer() {
     }, [selectedFabric.id, openAmount, backdrop, windEnabled, collab])
 
     // Read combo from Moodboard URL params
+    // Moodboard sends: /demo?main=SelectedFabric&pair=PairedFabric
+    // pair = kullanıcının tıkladığı eşleştirme kumaşı → onu seçiyoruz
     useEffect(() => {
         const params = new URLSearchParams(location.search)
         const mainFabric = params.get('main')
-        if (mainFabric) {
-            const found = fabrics.find(f => f.name === mainFabric)
+        const pairFabric = params.get('pair')
+
+        // Önce pair'ı dene (kullanıcı o butona tıkladı), sonra main'e düş
+        const targetName = pairFabric || mainFabric
+        if (targetName) {
+            const found = fabrics.find(f => f.name === targetName)
             if (found) setSelectedFabric(found) // eslint-disable-line react-hooks/set-state-in-effect
         }
     }, [location.search])
