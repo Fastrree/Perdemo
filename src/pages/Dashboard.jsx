@@ -1,12 +1,14 @@
 import { useEffect, useRef, useCallback, memo } from 'react'
 import { useNavigate } from 'react-router-dom'
+import { useTranslation } from 'react-i18next'
+import { generateDashboardReport } from '../utils/excelReport'
 
 // Mock data
-const stats = [
-    { label: 'Toplam Gelir', value: '₺247.580', change: '+12.5%', positive: true, icon: '💰', color: 'rgba(88, 166, 255, 0.12)', accent: 'var(--accent-blue)' },
-    { label: 'Siparişler', value: '156', change: '+8.2%', positive: true, icon: '📦', color: 'rgba(139, 92, 246, 0.12)', accent: '#bc8cff' },
-    { label: 'Ürünler', value: '89', change: '+4', positive: true, icon: '🪟', color: 'rgba(240, 180, 41, 0.12)', accent: '#f0b429' },
-    { label: 'Müşteriler', value: '342', change: '+23', positive: true, icon: '👥', color: 'rgba(63, 185, 80, 0.12)', accent: '#3fb950' },
+const statDefs = [
+    { labelKey: 'stats.totalRevenue', value: '₺247.580', change: '+12.5%', positive: true, icon: '💰', color: 'rgba(88, 166, 255, 0.12)', accent: 'var(--accent-blue)' },
+    { labelKey: 'stats.orders', value: '156', change: '+8.2%', positive: true, icon: '📦', color: 'rgba(139, 92, 246, 0.12)', accent: '#bc8cff' },
+    { labelKey: 'stats.products', value: '89', change: '+4', positive: true, icon: '🪟', color: 'rgba(240, 180, 41, 0.12)', accent: '#f0b429' },
+    { labelKey: 'stats.customers', value: '342', change: '+23', positive: true, icon: '👥', color: 'rgba(63, 185, 80, 0.12)', accent: '#3fb950' },
 ]
 
 const recentOrders = [
@@ -24,14 +26,14 @@ const topProducts = [
     { name: 'Zebra Perde', sales: 27, revenue: '₺37.800', trend: '+15%' },
 ]
 
-const statusMap = {
-    pending: { label: 'Beklemede', class: 'badge-warning' },
-    processing: { label: 'Hazırlanıyor', class: 'badge-info' },
-    shipped: { label: 'Kargoda', class: 'badge-purple' },
-    delivered: { label: 'Teslim Edildi', class: 'badge-success' },
+const statusKeys = {
+    pending: { labelKey: 'status.pending', class: 'badge-warning' },
+    processing: { labelKey: 'status.processing', class: 'badge-info' },
+    shipped: { labelKey: 'status.shipped', class: 'badge-purple' },
+    delivered: { labelKey: 'status.delivered', class: 'badge-success' },
 }
 
-const months = ['Oca', 'Şub', 'Mar', 'Nis', 'May', 'Haz', 'Tem', 'Ağu', 'Eyl', 'Eki', 'Kas', 'Ara']
+const monthKeys = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
 const chartData = [30, 45, 38, 55, 48, 62, 58, 72, 68, 85, 78, 92]
 const currentMonthIdx = 1
 
@@ -39,6 +41,8 @@ const currentMonthIdx = 1
    RESPONSIVE CANVAS CHART — containerRef pattern
    ═══════════════════════════════════════════════════ */
 const MiniChart = memo(function MiniChart() {
+    const { t } = useTranslation('dashboard')
+    const months = t('chart.months', { returnObjects: true })
     const canvasRef = useRef(null)
     const containerRef = useRef(null)
 
@@ -168,7 +172,7 @@ const MiniChart = memo(function MiniChart() {
         const ro = new ResizeObserver(() => drawChart())
         if (containerRef.current) ro.observe(containerRef.current)
         return () => ro.disconnect()
-    }, [])
+    }, [months])
 
     return (
         <div ref={containerRef} style={{ width: '100%' }}>
@@ -262,21 +266,52 @@ const avatarGradients = [
 
 export default function Dashboard() {
     const navigate = useNavigate()
+    const { t } = useTranslation('dashboard')
+
+    // Build translated data
+    const stats = statDefs.map(s => ({ ...s, label: t(s.labelKey) }))
+    const statusMap = Object.fromEntries(
+        Object.entries(statusKeys).map(([k, v]) => [k, { ...v, label: t(v.labelKey) }])
+    )
+    const months = t('chart.months', { returnObjects: true })
 
     const downloadReport = useCallback(() => {
-        const header = 'Sipariş No,Müşteri,Ürün,Tutar,Durum,Tarih\n'
-        const rows = recentOrders.map(o =>
-            `${o.id},${o.customer},${o.product},${o.amount},${statusMap[o.status].label},${o.date}`
-        ).join('\n')
-        const bom = '\uFEFF'
-        const blob = new Blob([bom + header + rows], { type: 'text/csv;charset=utf-8;' })
-        const url = URL.createObjectURL(blob)
-        const a = document.createElement('a')
-        a.href = url
-        a.download = `Perdemo_Rapor_${new Date().toISOString().slice(0, 10)}.csv`
-        a.click()
-        URL.revokeObjectURL(url)
-    }, [])
+        generateDashboardReport({
+            stats,
+            recentOrders,
+            topProducts,
+            months,
+            chartData,
+            statusMap,
+            columns: {
+                id: t('recentOrders.columns.id'),
+                customer: t('recentOrders.columns.customer'),
+                product: t('recentOrders.columns.product'),
+                amount: t('recentOrders.columns.amount'),
+                status: t('recentOrders.columns.status'),
+                date: t('recentOrders.columns.date'),
+            },
+            sheetNames: {
+                dashboard: t('report.sheets.dashboard'),
+                rawData: t('report.sheets.rawData'),
+            },
+            titles: {
+                kpi: t('report.titles.kpi'),
+                kpiMetric: t('report.titles.kpiMetric'),
+                kpiValue: t('report.titles.kpiValue'),
+                kpiChange: t('report.titles.kpiChange'),
+                monthly: t('report.titles.monthly'),
+                month: t('report.titles.month'),
+                revenue: t('report.titles.revenue'),
+                topProducts: t('report.titles.topProducts'),
+                productName: t('report.titles.productName'),
+                productSales: t('report.titles.productSales'),
+                productRevenue: t('report.titles.productRevenue'),
+                productTrend: t('report.titles.productTrend'),
+                orders: t('report.titles.orders'),
+            },
+        })
+    }, [stats, months, statusMap, t])
 
     const maxSales = Math.max(...topProducts.map(p => p.sales))
 
@@ -336,11 +371,11 @@ export default function Dashboard() {
                         Dashboard
                     </h1>
                     <p className="page-subtitle" style={{ marginTop: '4px' }}>
-                        Mağazanızın genel durumu — Şubat 2026
+                        {t('title')}
                     </p>
                 </div>
                 <button className="btn btn-primary" onClick={downloadReport} style={{ position: 'relative', zIndex: 1 }}>
-                    📥 Rapor İndir
+                    📥 {t('quickActions.reports')}
                 </button>
             </div>
 
@@ -435,7 +470,7 @@ export default function Dashboard() {
                                 fontSize: '0.65rem',
                             }}>{stat.positive ? '↑' : '↓'}</span>
                             <span style={{ fontWeight: 700 }}>{stat.change}</span>
-                            <span style={{ color: 'var(--text-tertiary)', fontWeight: 400 }}>geçen aya göre</span>
+                            <span style={{ color: 'var(--text-tertiary)', fontWeight: 400 }}>{t('recentOrders.columns.date') === 'Date' ? 'vs last month' : 'geçen aya göre'}</span>
                         </div>
                     </div>
                 ))}
@@ -470,9 +505,9 @@ export default function Dashboard() {
                         <h3 style={{
                             fontSize: '1.15rem', fontWeight: 700,
                             fontFamily: 'var(--font-display)',
-                        }}>📈 Gelir Grafiği</h3>
+                        }}>📈 {t('chart.title')}</h3>
                         <p style={{ fontSize: '0.8rem', color: 'var(--text-tertiary)', marginTop: '4px' }}>
-                            2025 yıllık gelir trendi (×1000 ₺) — <span style={{ color: 'var(--accent-blue)', fontWeight: 600 }}>Şub</span> mevcut ay
+                            2025 {t('chart.title')}
                         </p>
                     </div>
 
@@ -532,9 +567,9 @@ export default function Dashboard() {
                         <h3 style={{
                             fontSize: '1.15rem', fontWeight: 700,
                             fontFamily: 'var(--font-display)',
-                        }}>🏆 En Çok Satan Ürünler</h3>
+                        }}>🏆 {t('topProducts.title')}</h3>
                         <p style={{ fontSize: '0.8rem', color: 'var(--text-tertiary)', marginTop: '4px' }}>
-                            Bu ayki en popüler ürünler
+                            {t('topProducts.title')}
                         </p>
                     </div>
 
@@ -565,7 +600,7 @@ export default function Dashboard() {
                                 {topProducts[1].name}
                             </div>
                             <div style={{ fontSize: '0.65rem', color: 'var(--text-tertiary)' }}>
-                                {topProducts[1].sales} satış
+                                {topProducts[1].sales} {t('topProducts.columns.sales')}
                             </div>
                             <div style={{ fontSize: '0.8rem', fontWeight: 700, color: 'var(--text-primary)', marginTop: '4px' }}>
                                 {topProducts[1].revenue}
@@ -602,7 +637,7 @@ export default function Dashboard() {
                                 {topProducts[0].name}
                             </div>
                             <div style={{ fontSize: '0.65rem', color: 'var(--text-tertiary)' }}>
-                                {topProducts[0].sales} satış
+                                {topProducts[0].sales} {t('topProducts.columns.sales')}
                             </div>
                             <div style={{ fontSize: '0.9rem', fontWeight: 800, color: '#FFD700', marginTop: '6px' }}>
                                 {topProducts[0].revenue}
@@ -631,7 +666,7 @@ export default function Dashboard() {
                                 {topProducts[2].name}
                             </div>
                             <div style={{ fontSize: '0.65rem', color: 'var(--text-tertiary)' }}>
-                                {topProducts[2].sales} satış
+                                {topProducts[2].sales} {t('topProducts.columns.sales')}
                             </div>
                             <div style={{ fontSize: '0.8rem', fontWeight: 700, color: 'var(--text-primary)', marginTop: '4px' }}>
                                 {topProducts[2].revenue}
@@ -700,7 +735,7 @@ export default function Dashboard() {
                                             <span style={{
                                                 fontSize: '0.65rem', color: 'var(--text-tertiary)',
                                                 fontWeight: 500, flexShrink: 0,
-                                            }}>{product.sales} satış</span>
+                                            }}>{product.sales} {t('topProducts.columns.sales')}</span>
                                         </div>
                                     </div>
                                 </div>
@@ -751,14 +786,14 @@ export default function Dashboard() {
                         <h3 style={{
                             fontSize: '1.15rem', fontWeight: 700,
                             fontFamily: 'var(--font-display)',
-                        }}>📋 Son Siparişler</h3>
+                        }}>📋 {t('recentOrders.title')}</h3>
                         <p style={{ fontSize: '0.8rem', color: 'var(--text-tertiary)', marginTop: '4px' }}>
-                            En güncel sipariş hareketleri
+                            {t('recentOrders.title')}
                         </p>
                     </div>
                     <button className="btn btn-secondary" style={{ padding: '8px 18px', fontSize: '0.8rem' }}
                         onClick={() => navigate('/orders')}>
-                        Tümünü Gör →
+                        {t('recentOrders.viewAll')} →
                     </button>
                 </div>
 
@@ -766,12 +801,12 @@ export default function Dashboard() {
                     <table className="table" role="table" style={{ minWidth: '700px' }}>
                         <thead>
                             <tr>
-                                <th scope="col" style={{ padding: '14px 16px' }}>Sipariş No</th>
-                                <th scope="col" style={{ padding: '14px 16px' }}>Müşteri</th>
-                                <th scope="col" style={{ padding: '14px 16px' }}>Ürün</th>
-                                <th scope="col" style={{ padding: '14px 16px' }}>Tutar</th>
-                                <th scope="col" style={{ padding: '14px 16px' }}>Durum</th>
-                                <th scope="col" style={{ padding: '14px 16px' }}>Tarih</th>
+                                <th scope="col" style={{ padding: '14px 16px' }}>{t('recentOrders.columns.id')}</th>
+                                <th scope="col" style={{ padding: '14px 16px' }}>{t('recentOrders.columns.customer')}</th>
+                                <th scope="col" style={{ padding: '14px 16px' }}>{t('recentOrders.columns.product')}</th>
+                                <th scope="col" style={{ padding: '14px 16px' }}>{t('recentOrders.columns.amount')}</th>
+                                <th scope="col" style={{ padding: '14px 16px' }}>{t('recentOrders.columns.status')}</th>
+                                <th scope="col" style={{ padding: '14px 16px' }}>{t('recentOrders.columns.date')}</th>
                             </tr>
                         </thead>
                         <tbody>

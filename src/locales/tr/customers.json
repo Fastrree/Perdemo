@@ -1,0 +1,35 @@
+{
+    "title": "Müşteriler",
+    "addCustomer": "Yeni Müşteri",
+    "search": "Müşteri ara...",
+    "columns": {
+        "name": "Ad Soyad",
+        "email": "E-posta",
+        "phone": "Telefon",
+        "city": "Şehir",
+        "totalOrders": "Toplam Sipariş",
+        "totalSpent": "Toplam Harcama",
+        "lastOrder": "Son Sipariş",
+        "actions": "İşlemler"
+    },
+    "form": {
+        "firstName": "Ad",
+        "lastName": "Soyad",
+        "email": "E-posta",
+        "phone": "Telefon",
+        "city": "Şehir",
+        "address": "Adres",
+        "notes": "Notlar",
+        "company": "Firma"
+    },
+    "modal": {
+        "addTitle": "Yeni Müşteri Ekle",
+        "editTitle": "Müşteriyi Düzenle",
+        "detailTitle": "Müşteri Detayı",
+        "deleteTitle": "Müşteriyi Sil",
+        "deleteConfirm": "Bu müşteriyi silmek istediğinize emin misiniz?"
+    },
+    "empty": "Henüz müşteri eklenmemiş",
+    "orderHistory": "Sipariş Geçmişi",
+    "contactInfo": "İletişim Bilgileri"
+}

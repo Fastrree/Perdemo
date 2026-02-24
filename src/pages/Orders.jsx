@@ -1,4 +1,5 @@
 import { useState, useCallback, useMemo } from 'react'
+import { useTranslation } from 'react-i18next'
 
 const initialOrders = [
     { id: 'PD-2026-001', customer: 'Elif Kaya', product: 'Kadife Perde - Bordo', qty: 2, width: '240cm', height: '260cm', amount: 3450, status: 'shipped', date: '15 Şub 2026', payment: 'paid' },
@@ -73,9 +74,10 @@ const filterLabelToKey = {
 }
 
 export default function Orders() {
+    const { t } = useTranslation('orders')
     const [orders, setOrders] = useState(initialOrders)
     const [search, setSearch] = useState('')
-    const [statusFilter, setStatusFilter] = useState('Tümü')
+    const [statusFilter, setStatusFilter] = useState('all')
     const [expandedOrder, setExpandedOrder] = useState(null)
     const [modalOpen, setModalOpen] = useState(false)
     const [form, setForm] = useState({ customer: '', product: '', qty: '1', width: '', height: '', amount: '' })
@@ -84,7 +86,7 @@ export default function Orders() {
         const matchSearch = o.id.toLowerCase().includes(search.toLowerCase()) ||
             o.customer.toLowerCase().includes(search.toLowerCase()) ||
             o.product.toLowerCase().includes(search.toLowerCase())
-        const matchStatus = statusFilter === 'Tümü' || statusMap[o.status]?.label === statusFilter
+        const matchStatus = statusFilter === 'all' || o.status === statusFilter
         return matchSearch && matchStatus
     })
 
@@ -128,7 +130,7 @@ export default function Orders() {
     }, [])
 
     const handleNewOrder = useCallback(() => {
-        if (!form.customer.trim() || !form.product.trim()) return alert('Müşteri ve ürün bilgisi gerekli')
+        if (!form.customer.trim() || !form.product.trim()) return alert(t('form.customerProductRequired'))
         const newId = `PD-2026-${String(orders.length + 1).padStart(3, '0')}`
         setOrders(prev => [...prev, {
             id: newId, customer: form.customer, product: form.product,
@@ -170,10 +172,10 @@ export default function Orders() {
                                 background: 'var(--accent-blue)',
                                 animation: 'gentle-pulse 2s ease-in-out infinite',
                             }} />
-                            {orders.length} aktif sipariş
+                            {orders.length} {t('activeOrders')}
                         </span>
                         <span style={{ color: 'var(--text-tertiary)' }}>•</span>
-                        Toplam: ₺{totalAmount.toLocaleString('tr-TR')}
+                        {t('total')}: ₺{totalAmount.toLocaleString('tr-TR')}
                     </p>
                 </div>
                 <button className="btn btn-primary btn-lg" onClick={() => setModalOpen(true)}
@@ -185,7 +187,7 @@ export default function Orders() {
                         strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
                         <path d="M12 5v14M5 12h14" />
                     </svg>
-                    Yeni Sipariş
+                    {t('addOrder')}
                 </button>
             </div>
 

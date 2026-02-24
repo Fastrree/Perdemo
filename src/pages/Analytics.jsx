@@ -1,4 +1,5 @@
 import { useState, useMemo, useRef, useEffect, memo } from 'react'
+import { useTranslation } from 'react-i18next'
 
 /* ═══════════════════════════════════════════════════
    MOCK DATA
@@ -191,16 +192,16 @@ function ConversionBar({ demos, orders, conversion, color, name }) {
             position: 'relative',
             overflow: 'hidden',
         }}
-        onMouseEnter={e => {
-            e.currentTarget.style.borderColor = `${color}44`
-            e.currentTarget.style.boxShadow = `0 0 20px ${color}15, 0 4px 16px rgba(0,0,0,0.2)`
-            e.currentTarget.style.transform = 'translateY(-1px)'
-        }}
-        onMouseLeave={e => {
-            e.currentTarget.style.borderColor = 'var(--border-secondary)'
-            e.currentTarget.style.boxShadow = 'none'
-            e.currentTarget.style.transform = 'translateY(0)'
-        }}
+            onMouseEnter={e => {
+                e.currentTarget.style.borderColor = `${color}44`
+                e.currentTarget.style.boxShadow = `0 0 20px ${color}15, 0 4px 16px rgba(0,0,0,0.2)`
+                e.currentTarget.style.transform = 'translateY(-1px)'
+            }}
+            onMouseLeave={e => {
+                e.currentTarget.style.borderColor = 'var(--border-secondary)'
+                e.currentTarget.style.boxShadow = 'none'
+                e.currentTarget.style.transform = 'translateY(0)'
+            }}
         >
             {/* Hover glow overlay */}
             <div style={{
@@ -256,6 +257,7 @@ function ConversionBar({ demos, orders, conversion, color, name }) {
    MAIN COMPONENT
    ═══════════════════════════════════════════════════ */
 export default function Analytics() {
+    const { t } = useTranslation('analytics')
     const [period, setPeriod] = useState('year')
     const [activeChart, setActiveChart] = useState('revenue')
     const [selectedTeam, setSelectedTeam] = useState(null)
@@ -362,16 +364,16 @@ export default function Analytics() {
                         transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
                         cursor: 'default',
                     }}
-                    onMouseEnter={e => {
-                        e.currentTarget.style.transform = 'translateY(-4px)'
-                        e.currentTarget.style.borderColor = `${stat.gradientFrom}33`
-                        e.currentTarget.style.boxShadow = `0 12px 40px rgba(0,0,0,0.25), 0 0 30px ${stat.gradientFrom}12`
-                    }}
-                    onMouseLeave={e => {
-                        e.currentTarget.style.transform = 'translateY(0)'
-                        e.currentTarget.style.borderColor = 'var(--border-primary)'
-                        e.currentTarget.style.boxShadow = 'none'
-                    }}
+                        onMouseEnter={e => {
+                            e.currentTarget.style.transform = 'translateY(-4px)'
+                            e.currentTarget.style.borderColor = `${stat.gradientFrom}33`
+                            e.currentTarget.style.boxShadow = `0 12px 40px rgba(0,0,0,0.25), 0 0 30px ${stat.gradientFrom}12`
+                        }}
+                        onMouseLeave={e => {
+                            e.currentTarget.style.transform = 'translateY(0)'
+                            e.currentTarget.style.borderColor = 'var(--border-primary)'
+                            e.currentTarget.style.boxShadow = 'none'
+                        }}
                     >
                         {/* Top accent gradient line */}
                         <div style={{
@@ -713,14 +715,14 @@ export default function Analytics() {
                         position: 'relative', overflow: 'hidden',
                         transition: 'all 0.3s ease',
                     }}
-                    onMouseEnter={e => {
-                        e.currentTarget.style.borderColor = 'rgba(88, 166, 255, 0.25)'
-                        e.currentTarget.style.boxShadow = '0 0 30px rgba(88, 166, 255, 0.06)'
-                    }}
-                    onMouseLeave={e => {
-                        e.currentTarget.style.borderColor = 'rgba(88, 166, 255, 0.12)'
-                        e.currentTarget.style.boxShadow = 'none'
-                    }}
+                        onMouseEnter={e => {
+                            e.currentTarget.style.borderColor = 'rgba(88, 166, 255, 0.25)'
+                            e.currentTarget.style.boxShadow = '0 0 30px rgba(88, 166, 255, 0.06)'
+                        }}
+                        onMouseLeave={e => {
+                            e.currentTarget.style.borderColor = 'rgba(88, 166, 255, 0.12)'
+                            e.currentTarget.style.boxShadow = 'none'
+                        }}
                     >
                         {/* Top accent line */}
                         <div style={{
@@ -916,14 +918,14 @@ export default function Analytics() {
                                     position: 'relative',
                                     overflow: 'hidden',
                                 }}
-                                onMouseEnter={e => {
-                                    e.currentTarget.style.transform = 'translateY(-2px) translateX(2px)'
-                                    e.currentTarget.style.boxShadow = `0 6px 20px rgba(0,0,0,0.15), 0 0 12px ${insight.accent}10`
-                                }}
-                                onMouseLeave={e => {
-                                    e.currentTarget.style.transform = 'translateY(0) translateX(0)'
-                                    e.currentTarget.style.boxShadow = 'none'
-                                }}
+                                    onMouseEnter={e => {
+                                        e.currentTarget.style.transform = 'translateY(-2px) translateX(2px)'
+                                        e.currentTarget.style.boxShadow = `0 6px 20px rgba(0,0,0,0.15), 0 0 12px ${insight.accent}10`
+                                    }}
+                                    onMouseLeave={e => {
+                                        e.currentTarget.style.transform = 'translateY(0) translateX(0)'
+                                        e.currentTarget.style.boxShadow = 'none'
+                                    }}
                                 >
                                     {/* Icon background decoration */}
                                     <div style={{

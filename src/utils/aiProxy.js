@@ -7,11 +7,13 @@
  * 
  * API key ASLA frontend'e gömülmez. Her iki modda da sunucu tarafında kalır.
  */
+import i18next from 'i18next'
 
 const AI_API_BASE = '/api/ai'
 
 // Bizim ürün kataloğumuz — AI sadece bunlardan önerecek
-const OUR_CATALOG = `
+const CATALOG = {
+    tr: `
 ÜRÜN KATALOĞUMUZ (SADECE bunlardan öneri yap, dışına çıkma):
 1. Kadife Bordo — Ağır, lüks kadife, koyu kırmızı, ₺450/m
 2. İpek Krem — Hafif, parlak ipek, krem rengi, ₺680/m
@@ -20,14 +22,45 @@ const OUR_CATALOG = `
 5. Blackout Siyah — Ağır, karartma, siyah, ₺380/m
 6. Tül Beyaz — Çok hafif, şeffaf tül, beyaz, ₺150/m
 7. Jakar Altın — Ağır, desenli jakar, altın sarısı, ₺550/m
-8. Kadife Zümrüt — Ağır, lüks kadife, zümrüt yeşili, ₺470/m
-`.trim()
+8. Kadife Zümrüt — Ağır, lüks kadife, zümrüt yeşili, ₺470/m`.trim(),
 
-const SYSTEM_PROMPT = `Sen Perdemo markasının perde ve iç mekan uzmanısın. Türkçe yanıt ver, kısa ve net ol.
+    en: `
+OUR PRODUCT CATALOG (ONLY suggest from these, do NOT go outside):
+1. Velvet Burgundy — Heavy, luxury velvet, dark red, ₺450/m
+2. Silk Cream — Light, shiny silk, cream, ₺680/m
+3. Linen Navy — Medium weight, natural linen, navy blue, ₺320/m
+4. Cotton Gray — Medium weight, everyday cotton, gray, ₺220/m
+5. Blackout Black — Heavy, blackout, black, ₺380/m
+6. Tulle White — Very light, sheer tulle, white, ₺150/m
+7. Jacquard Gold — Heavy, patterned jacquard, gold, ₺550/m
+8. Velvet Emerald — Heavy, luxury velvet, emerald green, ₺470/m`.trim(),
+}
 
-${OUR_CATALOG}
+const SYSTEM_PROMPTS = {
+    tr: (catalog) => `Sen Perdemo markasının perde ve iç mekan uzmanısın. Türkçe yanıt ver, kısa ve net ol.
 
-KRİTİK KURAL: Sadece yukarıdaki 8 ürünümüzden öneri yap. Katalogumuzda olmayan ürün ÖNERİLMEZ.`
+${catalog}
+
+KRİTİK KURAL: Sadece yukarıdaki 8 ürünümüzden öneri yap. Katalogumuzda olmayan ürün ÖNERİLMEZ.`,
+
+    en: (catalog) => `You are Perdemo brand's curtain and interior design expert. Reply in English, be concise and clear.
+
+${catalog}
+
+CRITICAL RULE: Only suggest from our 8 products above. Products outside our catalog MUST NOT be suggested.`,
+}
+
+/** Returns current language key ('tr' or 'en') */
+function getLang() {
+    const lang = i18next.language || 'tr'
+    return lang.startsWith('en') ? 'en' : 'tr'
+}
+
+/** Builds the system prompt for the current language */
+function getSystemPrompt() {
+    const lang = getLang()
+    return SYSTEM_PROMPTS[lang](CATALOG[lang])
+}
 
 /**
  * AI API'ye istek atar.
@@ -45,7 +78,7 @@ export async function queryAI(prompt, options = {}) {
             body: JSON.stringify({
                 model: options.model || 'gemini-3-flash',
                 messages: [
-                    { role: 'system', content: SYSTEM_PROMPT },
+                    { role: 'system', content: getSystemPrompt() },
                     { role: 'user', content: prompt },
                 ],
                 max_tokens: maxTokens,
@@ -61,59 +94,88 @@ export async function queryAI(prompt, options = {}) {
         const data = await response.json()
         return data.choices?.[0]?.message?.content || null
     } catch (err) {
-        console.warn('AI bağlantı hatası:', err.message)
+        console.warn('AI connection error:', err.message)
         return null
     }
 }
 
 /**
- * Renk analizinden kumaş önerisi iste
+ * Renk analizinden kumaş önerisi iste / Color match suggestion
  */
 export async function getColorMatchSuggestion(dominantColors, roomType = 'salon') {
     const colorStr = dominantColors.map(c => c.hex).join(', ')
-    return queryAI(
-        `Oda tipi: ${roomType}. Baskın duvar renkleri: ${colorStr}. ` +
-        `KATALOĞUMUZDAKİ ürünlerden bu renklerle uyumlu olanları öner. ` +
-        `Maksimum 3 öneri, her öneri için: ürün adı (katalogumuzdan), neden uyumlu, hangi stille kullanılmalı.`
-    )
+    const lang = getLang()
+    const prompts = {
+        tr: `Oda tipi: ${roomType}. Baskın duvar renkleri: ${colorStr}. ` +
+            `KATALOĞUMUZDAKİ ürünlerden bu renklerle uyumlu olanları öner. ` +
+            `Maksimum 3 öneri, her öneri için: ürün adı (katalogumuzdan), neden uyumlu, hangi stille kullanılmalı.`,
+        en: `Room type: ${roomType}. Dominant wall colors: ${colorStr}. ` +
+            `Suggest products from OUR CATALOG that match these colors. ` +
+            `Maximum 3 suggestions, for each: product name (from our catalog), why it matches, which style to use.`,
+    }
+    return queryAI(prompts[lang])
 }
 
 /**
- * Kumaş eşleştirme önerisi
+ * Kumaş eşleştirme önerisi / Fabric pairing suggestion
  */
 export async function getFabricPairingSuggestion(fabricName, style) {
-    return queryAI(
-        `Müşteri şu kumaşı seçti: ${fabricName}. ` +
-        `KATALOĞUMUZDAKİ diğer ürünlerden bu kumaşın yanına tamamlayıcı fon perde veya tül öner. ` +
-        `2-3 öneri yap, her biri KATALOĞUMUZDAKİ bir ürün olmalı. Neden iyi eşleştiğini açıkla.`
-    )
+    const lang = getLang()
+    const prompts = {
+        tr: `Müşteri şu kumaşı seçti: ${fabricName}. ` +
+            `KATALOĞUMUZDAKİ diğer ürünlerden bu kumaşın yanına tamamlayıcı fon perde veya tül öner. ` +
+            `2-3 öneri yap, her biri KATALOĞUMUZDAKİ bir ürün olmalı. Neden iyi eşleştiğini açıkla.`,
+        en: `Customer selected this fabric: ${fabricName}. ` +
+            `Suggest complementary curtain or tulle from OUR CATALOG to pair with this fabric. ` +
+            `Make 2-3 suggestions, each must be a product from OUR CATALOG. Explain why they pair well.`,
+    }
+    return queryAI(prompts[lang])
 }
 
 /**
- * 3D sahne atmosfer yorumu — kumaş + manzara + ışık durumuna göre
+ * 3D sahne atmosfer yorumu / 3D scene atmosphere recipe
  */
 export async function getAtmosphereRecipe(fabricName, backdropName, openPercent) {
-    const timeOfDay = backdropName === 'city' ? 'gece' : backdropName === 'garden' ? 'sabah' : 'gündüz'
-    const lightDesc = openPercent > 60 ? 'Perde açık, bol ışık giriyor' : openPercent > 30 ? 'Perde yarı açık' : 'Perde büyük ölçüde kapalı'
-    return queryAI(
-        `3D perde sahnesinde şu durum var: Kumaş: "${fabricName}", Manzara: ${backdropName} (${timeOfDay}), ${lightDesc} (%${openPercent} açık). ` +
-        `Bu kombinasyonun odada yaratacağı atmosferi 2-3 cümleyle açıkla. ` +
-        `Işık yansıması, sıcaklık hissi ve ambiyans hakkında profesyonel bir yorum yap. Kısa ve etkileyici ol.`,
-        { maxTokens: 1500 }
-    )
+    const lang = getLang()
+    const timeLabels = {
+        tr: { city: 'gece', garden: 'sabah', _default: 'gündüz' },
+        en: { city: 'night', garden: 'morning', _default: 'daytime' },
+    }
+    const t = timeLabels[lang]
+    const timeOfDay = t[backdropName] || t._default
+
+    const lightDescs = {
+        tr: openPercent > 60 ? 'Perde açık, bol ışık giriyor' : openPercent > 30 ? 'Perde yarı açık' : 'Perde büyük ölçüde kapalı',
+        en: openPercent > 60 ? 'Curtain open, lots of light coming in' : openPercent > 30 ? 'Curtain half open' : 'Curtain mostly closed',
+    }
+
+    const prompts = {
+        tr: `3D perde sahnesinde şu durum var: Kumaş: "${fabricName}", Manzara: ${backdropName} (${timeOfDay}), ${lightDescs.tr} (%${openPercent} açık). ` +
+            `Bu kombinasyonun odada yaratacağı atmosferi 2-3 cümleyle açıkla. ` +
+            `Işık yansıması, sıcaklık hissi ve ambiyans hakkında profesyonel bir yorum yap. Kısa ve etkileyici ol.`,
+        en: `In the 3D curtain scene: Fabric: "${fabricName}", Backdrop: ${backdropName} (${timeOfDay}), ${lightDescs.en} (${openPercent}% open). ` +
+            `Describe the atmosphere this combination creates in 2-3 sentences. ` +
+            `Comment professionally on light reflection, warmth, and ambiance. Be brief and impactful.`,
+    }
+    return queryAI(prompts[lang], { maxTokens: 1500 })
 }
 
 /**
- * Smart Quote için AI tasarımcı notu — teklif PDF/web'ine eklenir
+ * Smart Quote için AI tasarımcı notu / Designer note for Smart Quote
  */
 export async function getDesignerNote(fabricName, windowWidth, windowHeight, style) {
-    return queryAI(
-        `Müşteriye perde teklifi hazırlanıyor. Detaylar: Kumaş: "${fabricName}", Pencere: ${windowWidth}×${windowHeight}cm, Stil: ${style}. ` +
-        `Bu kombinasyon için kısa ve profesyonel bir "Tasarımcı Notu" yaz. ` +
-        `Mekanın ışık, ferahlık ve estetik açısından nasıl etkileneceğini anlat. ` +
-        `Müşteriye güven veren, lüks bir tasarım ofisi tonu kullan. Maksimum 3 cümle.`,
-        { maxTokens: 1500 }
-    )
+    const lang = getLang()
+    const prompts = {
+        tr: `Müşteriye perde teklifi hazırlanıyor. Detaylar: Kumaş: "${fabricName}", Pencere: ${windowWidth}×${windowHeight}cm, Stil: ${style}. ` +
+            `Bu kombinasyon için kısa ve profesyonel bir "Tasarımcı Notu" yaz. ` +
+            `Mekanın ışık, ferahlık ve estetik açısından nasıl etkileneceğini anlat. ` +
+            `Müşteriye güven veren, lüks bir tasarım ofisi tonu kullan. Maksimum 3 cümle.`,
+        en: `A curtain quote is being prepared for the customer. Details: Fabric: "${fabricName}", Window: ${windowWidth}×${windowHeight}cm, Style: ${style}. ` +
+            `Write a short, professional "Designer Note" for this combination. ` +
+            `Explain how the space will be affected in terms of light, spaciousness, and aesthetics. ` +
+            `Use a tone that inspires confidence, like a luxury design studio. Maximum 3 sentences.`,
+    }
+    return queryAI(prompts[lang], { maxTokens: 1500 })
 }
 
 

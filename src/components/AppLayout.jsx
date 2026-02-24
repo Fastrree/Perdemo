@@ -1,37 +1,40 @@
 import { useState, useRef, useEffect, useCallback } from 'react'
 import { Outlet, NavLink, useLocation, useNavigate } from 'react-router-dom'
+import { useTranslation } from 'react-i18next'
 import { useTheme } from '../App'
 import useIsMobile from '../hooks/useIsMobile'
+import LanguageSwitcher from './LanguageSwitcher'
 
-const navItems = [
-    { path: '/dashboard', label: 'Dashboard', icon: '📊', section: 'Ana Menü' },
-    { path: '/products', label: 'Ürünler', icon: '🪟', section: 'Ana Menü' },
-    { path: '/orders', label: 'Siparişler', icon: '📦', section: 'Ana Menü' },
-    { path: '/customers', label: 'Müşteriler', icon: '👥', section: 'Ana Menü' },
-    { path: '/demo', label: '360° Demo', icon: '🎯', section: 'Araçlar' },
-    { path: '/quote', label: 'Smart Quote', icon: '📝', section: 'Araçlar' },
-    { path: '/measure', label: 'AI Ölçü', icon: '📐', section: 'Araçlar' },
-    { path: '/moodboard', label: 'Moodboard', icon: '🎨', section: 'Araçlar' },
-    { path: '/inventory-oracle', label: 'Stok Oracle', icon: '🔮', section: 'Araçlar' },
-    { path: '/analytics', label: 'Analitik', icon: '📈', section: 'Yönetim' },
-    { path: '/white-label', label: 'Bayi Ağı', icon: '🏢', section: 'Yönetim' },
+const navItemDefs = [
+    { path: '/dashboard', labelKey: 'nav.dashboard', icon: '📊', sectionKey: 'nav.sections.main' },
+    { path: '/products', labelKey: 'nav.products', icon: '🪟', sectionKey: 'nav.sections.main' },
+    { path: '/orders', labelKey: 'nav.orders', icon: '📦', sectionKey: 'nav.sections.main' },
+    { path: '/customers', labelKey: 'nav.customers', icon: '👥', sectionKey: 'nav.sections.main' },
+    { path: '/demo', labelKey: 'nav.demo', icon: '🎯', sectionKey: 'nav.sections.tools' },
+    { path: '/quote', labelKey: 'nav.quote', icon: '📝', sectionKey: 'nav.sections.tools' },
+    { path: '/measure', labelKey: 'nav.measure', icon: '📐', sectionKey: 'nav.sections.tools' },
+    { path: '/moodboard', labelKey: 'nav.moodboard', icon: '🎨', sectionKey: 'nav.sections.tools' },
+    { path: '/inventory-oracle', labelKey: 'nav.inventory', icon: '🔮', sectionKey: 'nav.sections.tools' },
+    { path: '/analytics', labelKey: 'nav.analytics', icon: '📈', sectionKey: 'nav.sections.management' },
+    { path: '/white-label', labelKey: 'nav.whitelabel', icon: '🏢', sectionKey: 'nav.sections.management' },
 ]
 
-const mockNotifications = [
-    { id: 1, text: 'Yeni sipariş: PD-2026-011 — Elif Kaya', time: '2 dk önce', read: false, link: '/orders' },
-    { id: 2, text: 'Stok uyarısı: Fon Perde Lacivert (8 adet)', time: '15 dk önce', read: false, link: '/products' },
-    { id: 3, text: 'Sipariş PD-2026-003 teslim edildi', time: '1 saat önce', read: true, link: '/orders' },
-    { id: 4, text: 'Yeni müşteri kaydı: Selin Yılmaz', time: '3 saat önce', read: true, link: '/customers' },
-    { id: 5, text: 'Aylık rapor hazır', time: '5 saat önce', read: true, link: '/analytics' },
+const mockNotificationDefs = [
+    { id: 1, textKey: 'notifications.mock.1', timeKey: 'notifications.times.1', read: false, link: '/orders' },
+    { id: 2, textKey: 'notifications.mock.2', timeKey: 'notifications.times.2', read: false, link: '/products' },
+    { id: 3, textKey: 'notifications.mock.3', timeKey: 'notifications.times.3', read: true, link: '/orders' },
+    { id: 4, textKey: 'notifications.mock.4', timeKey: 'notifications.times.4', read: true, link: '/customers' },
+    { id: 5, textKey: 'notifications.mock.5', timeKey: 'notifications.times.5', read: true, link: '/analytics' },
 ]
 
 export default function AppLayout() {
+    const { t } = useTranslation('common')
     const { theme, toggleTheme } = useTheme()
     const location = useLocation()
     const navigate = useNavigate()
     const [notifOpen, setNotifOpen] = useState(false)
     const [profileOpen, setProfileOpen] = useState(false)
-    const [notifications, setNotifications] = useState(mockNotifications)
+    const [notifications, setNotifications] = useState(mockNotificationDefs)
     const [globalSearch, setGlobalSearch] = useState('')
     const [searchResults, setSearchResults] = useState([])
     const [sidebarOpen, setSidebarOpen] = useState(false)
@@ -39,6 +42,13 @@ export default function AppLayout() {
     const notifRef = useRef(null)
     const profileRef = useRef(null)
     const searchRef = useRef(null)
+
+    // Build nav items with translated labels
+    const navItems = navItemDefs.map(item => ({
+        ...item,
+        label: t(item.labelKey),
+        section: t(item.sectionKey),
+    }))
 
     const unreadCount = notifications.filter(n => !n.read).length
 
@@ -102,7 +112,7 @@ export default function AppLayout() {
             )}
 
             {/* Sidebar */}
-            <aside className={`sidebar${sidebarOpen ? ' open' : ''}`} role="navigation" aria-label="Ana navigasyon">
+            <aside className={`sidebar${sidebarOpen ? ' open' : ''}`} role="navigation" aria-label={t('aria.mainNav')}>
                 <div className="sidebar-header" onClick={() => setSidebarOpen(false)} style={{ cursor: 'pointer' }}>
                     <div className="sidebar-logo" aria-hidden="true">P</div>
                     <div className="sidebar-brand">
@@ -131,7 +141,7 @@ export default function AppLayout() {
                         <div className="avatar avatar-sm">AY</div>
                         <div className="sidebar-user-info">
                             <div className="sidebar-user-name">Ahmet Yılmaz</div>
-                            <div className="sidebar-user-role">Mağaza Sahibi</div>
+                            <div className="sidebar-user-role">{t('profile.role')}</div>
                         </div>
                     </div>
                 </div>
@@ -145,7 +155,7 @@ export default function AppLayout() {
                         <button
                             className="sidebar-toggle"
                             onClick={() => setSidebarOpen(o => !o)}
-                            aria-label="Menüyü aç/kapat"
+                            aria-label={t('aria.toggleMenu')}
                         >
                             <span /><span /><span />
                         </button>
@@ -155,8 +165,8 @@ export default function AppLayout() {
                                 <path d="m21 21-4.35-4.35" />
                             </svg>
                             <input type="search" className="input input-with-icon"
-                                placeholder="Ürün, sipariş veya müşteri ara..."
-                                aria-label="Genel arama" value={globalSearch}
+                                placeholder={t('search.placeholder')}
+                                aria-label={t('aria.search')} value={globalSearch}
                                 onChange={e => handleSearch(e.target.value)}
                                 onFocus={() => globalSearch && handleSearch(globalSearch)} />
 
@@ -181,7 +191,7 @@ export default function AppLayout() {
                                             onMouseLeave={e => e.currentTarget.style.background = 'transparent'}>
                                             <span>{r.icon}</span>
                                             <span style={{ fontWeight: 500 }}>{r.label}</span>
-                                            <span style={{ marginLeft: 'auto', fontSize: '0.7rem', color: 'var(--text-tertiary)' }}>Sayfaya git</span>
+                                            <span style={{ marginLeft: 'auto', fontSize: '0.7rem', color: 'var(--text-tertiary)' }}>{t('search.goToPage')}</span>
                                         </button>
                                     ))}
                                 </div>
@@ -191,21 +201,21 @@ export default function AppLayout() {
                     <div className="header-right">
                         {/* Notification Bell */}
                         <div ref={notifRef} style={{ position: 'relative' }}>
-                            <button className="header-icon-btn" aria-label="Bildirimler" data-tooltip="Bildirimler"
+                            <button className="header-icon-btn" aria-label={t('aria.notifications')} data-tooltip={t('notifications.title')}
                                 onClick={() => { setNotifOpen(!notifOpen); setProfileOpen(false) }}>
                                 🔔
-                                {unreadCount > 0 && <span className="notification-dot" aria-label="Yeni bildirim var"></span>}
+                                {unreadCount > 0 && <span className="notification-dot" aria-label={t('aria.newNotification')}></span>}
                             </button>
 
                             {notifOpen && (
                                 <div className="dropdown-panel notif-dropdown">
                                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '14px 16px', borderBottom: '1px solid var(--border-primary)' }}>
-                                        <span style={{ fontWeight: 700, fontSize: '0.9rem' }}>Bildirimler</span>
+                                        <span style={{ fontWeight: 700, fontSize: '0.9rem' }}>{t('notifications.title')}</span>
                                         {unreadCount > 0 && (
                                             <button onClick={markAllRead} style={{
                                                 background: 'none', border: 'none', color: 'var(--accent-blue)',
                                                 fontSize: '0.75rem', cursor: 'pointer', fontFamily: 'var(--font-primary)',
-                                            }}>Tümünü okundu işaretle</button>
+                                            }}>{t('notifications.markAllRead')}</button>
                                         )}
                                     </div>
                                     <div style={{ maxHeight: '320px', overflowY: 'auto' }}>
@@ -221,8 +231,8 @@ export default function AppLayout() {
                                                 onMouseLeave={e => e.currentTarget.style.background = n.read ? 'transparent' : 'rgba(88,166,255,0.05)'}>
                                                 {!n.read && <div style={{ width: '6px', height: '6px', borderRadius: '50%', background: 'var(--accent-blue)', marginTop: '6px', flexShrink: 0 }} />}
                                                 <div style={{ flex: 1, minWidth: 0 }}>
-                                                    <div style={{ fontSize: '0.82rem', lineHeight: 1.4 }}>{n.text}</div>
-                                                    <div style={{ fontSize: '0.7rem', color: 'var(--text-tertiary)', marginTop: '2px' }}>{n.time}</div>
+                                                    <div style={{ fontSize: '0.82rem', lineHeight: 1.4 }}>{t(n.textKey)}</div>
+                                                    <div style={{ fontSize: '0.7rem', color: 'var(--text-tertiary)', marginTop: '2px' }}>{t(n.timeKey)}</div>
                                                 </div>
                                             </button>
                                         ))}
@@ -233,32 +243,36 @@ export default function AppLayout() {
 
                         {/* Theme Toggle */}
                         <button className="theme-toggle" onClick={toggleTheme}
-                            aria-label={`Temayı ${theme === 'dark' ? 'açık' : 'koyu'} moda geçir`}
-                            data-tooltip={theme === 'dark' ? 'Açık Tema' : 'Koyu Tema'}>
+                            aria-label={t('aria.toggleTheme', { mode: theme === 'dark' ? t('profile.lightTheme') : t('profile.darkTheme') })}
+                            data-tooltip={theme === 'dark' ? t('profile.lightTheme') : t('profile.darkTheme')}>
                             {theme === 'dark' ? '☀️' : '🌙'}
                         </button>
 
+                        {/* Language Switcher */}
+                        <LanguageSwitcher />
+
                         {/* Profile Avatar */}
                         <div ref={profileRef} style={{ position: 'relative' }}>
-                            <div className="avatar avatar-sm" style={{ cursor: 'pointer' }} data-tooltip="Profil"
+                            <div className="avatar avatar-sm" style={{ cursor: 'pointer' }} data-tooltip={t('aria.profile')}
                                 onClick={() => { setProfileOpen(!profileOpen); setNotifOpen(false) }}>AY</div>
 
                             {profileOpen && (
                                 <div className="dropdown-panel profile-dropdown">
                                     <div style={{ padding: '14px 16px', borderBottom: '1px solid var(--border-primary)' }}>
                                         <div style={{ fontWeight: 700, fontSize: '0.9rem' }}>Ahmet Yılmaz</div>
-                                        <div style={{ fontSize: '0.75rem', color: 'var(--text-tertiary)' }}>Mağaza Sahibi</div>
+                                        <div style={{ fontSize: '0.75rem', color: 'var(--text-tertiary)' }}>{t('profile.role')}</div>
                                     </div>
                                     {[
-                                        { icon: '⚙️', label: 'Ayarlar', action: () => alert('Ayarlar henüz aktif değil — backend gerekli') },
-                                        { icon: '🔔', label: 'Bildirim Tercihleri', action: () => alert('Bildirim ayarları — backend gerekli') },
-                                        { icon: '🌗', label: theme === 'dark' ? 'Açık Tema' : 'Koyu Tema', action: () => { toggleTheme(); setProfileOpen(false) } },
-                                        { icon: '🚪', label: 'Çıkış', action: () => { navigate('/'); setProfileOpen(false) } },
+                                        { icon: '⚙️', label: t('profile.settings'), action: () => alert(t('profile.settingsAlert')) },
+                                        { icon: '🔔', label: t('profile.notifPrefs'), action: () => alert(t('profile.notifPrefsAlert')) },
+                                        { icon: '🌗', label: theme === 'dark' ? t('profile.lightTheme') : t('profile.darkTheme'), action: () => { toggleTheme(); setProfileOpen(false) } },
+                                        { icon: '🌐', label: t('profile.visitWebsite'), action: () => { navigate('/'); setProfileOpen(false) } },
+                                        { icon: '🚪', label: t('profile.logout'), action: () => { navigate('/'); setProfileOpen(false) } },
                                     ].map((item) => (
                                         <button key={item.label} onClick={item.action} style={{
                                             display: 'flex', alignItems: 'center', gap: '10px', width: '100%',
                                             padding: '10px 16px', border: 'none', background: 'transparent',
-                                            color: item.label === 'Çıkış' ? '#e74c3c' : 'var(--text-primary)',
+                                            color: item.label === t('profile.logout') ? '#e74c3c' : 'var(--text-primary)',
                                             cursor: 'pointer', fontSize: '0.82rem', textAlign: 'left',
                                             fontFamily: 'var(--font-primary)', transition: 'background 0.15s',
                                         }}
@@ -285,8 +299,7 @@ export default function AppLayout() {
                         <div className="mobile-footer-banner-content">
                             <span className="mobile-footer-banner-icon">🖥️</span>
                             <p>
-                                Tam deneyim için masaüstü cihaz kullanın.
-                                3D, AI ve Gelişmiş Yönetim büyük ekranda mevcuttur.
+                                {t('mobile.desktopBanner')}
                             </p>
                         </div>
                     </div>

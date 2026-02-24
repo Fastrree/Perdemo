@@ -1,4 +1,5 @@
 import { useState, useRef, useEffect, useMemo, useCallback, memo } from 'react'
+import { useTranslation } from 'react-i18next'
 
 /* ═══════════════════════════════════════════════════
    MOCK DATA — Seasonal Sales History per Product
@@ -417,6 +418,7 @@ function ProductRiskCard({ product, isSelected, onClick, onAIAnalyze }) {
    MAIN COMPONENT
    ═══════════════════════════════════════════════════ */
 export default function InventoryOracle() {
+    const { t } = useTranslation('inventory')
     const [selectedProduct, setSelectedProduct] = useState(null)
     const [aiLoading, setAiLoading] = useState(false)
     const [aiInsight, setAiInsight] = useState(null)

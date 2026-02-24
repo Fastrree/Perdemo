@@ -1,0 +1,215 @@
+{
+    "nav": {
+        "features": "Features",
+        "pricing": "Pricing",
+        "testimonials": "Testimonials",
+        "demo": "Demo",
+        "login": "Sign In",
+        "scrollTop": "Scroll to top",
+        "toggleTheme": "Toggle theme",
+        "menu": "Menu"
+    },
+    "hero": {
+        "eyebrow": "Turkey's #1 Curtain Management Platform",
+        "title1": "Rediscover",
+        "title2": "Curtain Retail",
+        "subtitle": "Stock tracking, 3D demo, order management, customer CRM —",
+        "subtitleBold": "all your curtain operations in one platform.",
+        "cta": "Start Free",
+        "ctaDemo": "Watch Demo",
+        "proofCount": "2,500+",
+        "proofText": "curtain retailers trust us",
+        "scroll": "Explore",
+        "todaySales": "Today's Sales",
+        "activeOrders": "Active Orders"
+    },
+    "logos": {
+        "label": "Trusted by Turkey's leading brands"
+    },
+    "stats": [
+        {
+            "value": "2,847",
+            "label": "Active Retailers",
+            "suffix": ""
+        },
+        {
+            "value": "156",
+            "label": "Thousand Orders",
+            "suffix": "K+"
+        },
+        {
+            "value": "99.9",
+            "label": "Uptime",
+            "suffix": "%"
+        },
+        {
+            "value": "4.9",
+            "label": "App Store",
+            "suffix": "★"
+        }
+    ],
+    "features": {
+        "eyebrow": "✦ Features",
+        "title1": "Everything you need",
+        "title2": "for your curtain business",
+        "desc": "From sales to production, stock to customer relations — one platform.",
+        "explore": "Explore",
+        "items": [
+            {
+                "icon": "🎯",
+                "title": "360° Live Demo",
+                "desc": "Show curtains to your customers in real time. Change fabric, color, light — all instantly.",
+                "tag": "MOST POPULAR"
+            },
+            {
+                "icon": "📊",
+                "title": "Smart Dashboard",
+                "desc": "AI-powered sales forecasts, stock alerts, and customer analytics on one screen."
+            },
+            {
+                "icon": "📦",
+                "title": "Order Tracking",
+                "desc": "Track every step from production to installation. Automatically notify your customers."
+            },
+            {
+                "icon": "🧵",
+                "title": "Stock Management",
+                "desc": "Track fabric rolls by the meter. Get critical stock alerts."
+            },
+            {
+                "icon": "👥",
+                "title": "Customer CRM",
+                "desc": "Measurement history, preferences, purchasing behavior — all on record."
+            },
+            {
+                "icon": "📈",
+                "title": "Advanced Reports",
+                "desc": "Profitability analysis, trend reports, dealer performance."
+            }
+        ]
+    },
+    "showcase": {
+        "eyebrow": "✦ 360° Demo",
+        "title1": "Show the curtain",
+        "title2": "before selling it",
+        "desc": "Let your customer change fabric, color, and pattern in real time. Make the purchase decision easier.",
+        "list": [
+            "Real-time fabric switching",
+            "Daylight simulation",
+            "Measurement-based visualization",
+            "Live sharing with customers"
+        ],
+        "cta": "Try Demo",
+        "colors": {
+            "brown": "Brown",
+            "burgundy": "Burgundy",
+            "navy": "Navy",
+            "cream": "Cream"
+        }
+    },
+    "testimonials": {
+        "eyebrow": "✦ Testimonials",
+        "title1": "What do curtain",
+        "title2": "retailers say?",
+        "ariaLabel": "Testimonial",
+        "items": [
+            {
+                "text": "Our orders increased 40% with Perdemo. The 3D demo convinces customers.",
+                "author": "Ahmet Y.",
+                "company": "Perde Dünyası",
+                "city": "İstanbul"
+            },
+            {
+                "text": "Stock tracking is now a breeze. I can see what fabric is left instantly.",
+                "author": "Elif K.",
+                "company": "Elif Perde",
+                "city": "Ankara"
+            },
+            {
+                "text": "We manage 12 dealers from a single panel. Reporting is outstanding.",
+                "author": "Mehmet D.",
+                "company": "Demir Tekstil",
+                "city": "İzmir"
+            }
+        ]
+    },
+    "pricing": {
+        "eyebrow": "✦ Pricing",
+        "title1": "The right plan",
+        "title2": "for your business",
+        "desc": "Try free for 14 days. No credit card required.",
+        "popular": "Most Popular",
+        "period": "/mo",
+        "ctaPopular": "Get Started",
+        "ctaOther": "Try It",
+        "plans": [
+            {
+                "name": "Starter",
+                "price": "499",
+                "desc": "For small workshops",
+                "features": [
+                    "1 store",
+                    "500 products",
+                    "Basic reports",
+                    "Email support"
+                ]
+            },
+            {
+                "name": "Pro",
+                "price": "999",
+                "desc": "For growing stores",
+                "features": [
+                    "3 stores",
+                    "Unlimited products",
+                    "360° Demo",
+                    "API access",
+                    "Priority support"
+                ],
+                "popular": true
+            },
+            {
+                "name": "Enterprise",
+                "price": "2,499",
+                "desc": "For chains and dealers",
+                "features": [
+                    "Unlimited stores",
+                    "Custom integration",
+                    "Dedicated manager",
+                    "24/7 support",
+                    "SLA guarantee"
+                ]
+            }
+        ]
+    },
+    "cta": {
+        "title": "Ready to digitize your curtain business?",
+        "desc": "14 days free, no credit card, no cancellation fee.",
+        "btn": "Start Free",
+        "demo": "Watch Demo"
+    },
+    "footer": {
+        "tagline": "The digital platform for the curtain industry.",
+        "col1Title": "Getting Started",
+        "col1": {
+            "features": "Features",
+            "pricing": "Pricing",
+            "demo": "3D Demo",
+            "panel": "Go to Panel"
+        },
+        "col2Title": "Management",
+        "col2": {
+            "products": "Product Catalog",
+            "orders": "Order Tracking",
+            "customers": "Customer CRM",
+            "inventory": "Stock Forecast"
+        },
+        "col3Title": "Tools",
+        "col3": {
+            "quote": "Smart Quote",
+            "measure": "Measure Assistant",
+            "analytics": "Reports",
+            "whitelabel": "Dealer Network"
+        },
+        "rights": "© 2026 Perdemo. All rights reserved."
+    }
+}

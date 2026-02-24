@@ -1,4 +1,5 @@
 import { useState, useRef, useCallback, useMemo, useEffect } from 'react'
+import { useTranslation } from 'react-i18next'
 import { calculateFabricCost } from '../utils/aiProxy'
 
 /* ─── Fabric catalog ─── */
@@ -522,6 +523,7 @@ function MagicMeasure() {
 
 /* ─── Main ─── */
 export default function MeasureAssistant() {
+    const { t } = useTranslation('measure')
     const [tab, setTab] = useState('magic')
 
     return (

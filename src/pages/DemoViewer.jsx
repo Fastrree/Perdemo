@@ -1,5 +1,6 @@
 import { useState, useRef, useMemo, useCallback, useEffect, Suspense } from 'react'
 import { useLocation } from 'react-router-dom'
+import { useTranslation } from 'react-i18next'
 import { Canvas, useFrame } from '@react-three/fiber'
 import { OrbitControls } from '@react-three/drei'
 import * as THREE from 'three'
@@ -808,6 +809,7 @@ function useCollabSync({ onReceive }) {
    MAIN COMPONENT
    ═══════════════════════════════════════════════════ */
 export default function DemoViewer() {
+    const { t } = useTranslation('demo')
     const location = useLocation()
     const [selectedFabric, setSelectedFabric] = useState(fabrics[0])
     const [openAmount, setOpenAmount] = useState(0.3)

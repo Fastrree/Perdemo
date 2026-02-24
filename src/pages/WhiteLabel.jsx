@@ -1,5 +1,6 @@
 import { useState, useMemo, useCallback, memo, startTransition } from 'react'
 import { GoogleMap, LoadScript, Marker, InfoWindow } from '@react-google-maps/api'
+import { useTranslation } from 'react-i18next'
 import useCanHover from '../hooks/useCanHover'
 
 const GOOGLE_MAPS_API_KEY = import.meta.env.VITE_GOOGLE_MAPS_API_KEY || ''
@@ -497,6 +498,7 @@ const DealerDetailSlideOver = memo(function DealerDetailSlideOver({ dealer, onCl
    MAIN COMPONENT
    ═══════════════════════════════════════════════════ */
 export default function WhiteLabel() {
+    const { t } = useTranslation('whitelabel')
     const [selectedDealer, setSelectedDealer] = useState(null)
     const [regionFilter, setRegionFilter] = useState('Tumu')
     const [viewMode, setViewMode] = useState('cards')

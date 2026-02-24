@@ -1,0 +1,35 @@
+{
+    "title": "Customers",
+    "addCustomer": "New Customer",
+    "search": "Search customers...",
+    "columns": {
+        "name": "Full Name",
+        "email": "Email",
+        "phone": "Phone",
+        "city": "City",
+        "totalOrders": "Total Orders",
+        "totalSpent": "Total Spent",
+        "lastOrder": "Last Order",
+        "actions": "Actions"
+    },
+    "form": {
+        "firstName": "First Name",
+        "lastName": "Last Name",
+        "email": "Email",
+        "phone": "Phone",
+        "city": "City",
+        "address": "Address",
+        "notes": "Notes",
+        "company": "Company"
+    },
+    "modal": {
+        "addTitle": "Add New Customer",
+        "editTitle": "Edit Customer",
+        "detailTitle": "Customer Details",
+        "deleteTitle": "Delete Customer",
+        "deleteConfirm": "Are you sure you want to delete this customer?"
+    },
+    "empty": "No customers added yet",
+    "orderHistory": "Order History",
+    "contactInfo": "Contact Information"
+}

@@ -1,0 +1,45 @@
+{
+    "title": "Stok Oracle",
+    "subtitle": "AI destekli stok tahmin ve yönetim",
+    "overview": {
+        "title": "Stok Genel Bakış",
+        "totalProducts": "Toplam Ürün",
+        "lowStock": "Düşük Stok",
+        "outOfStock": "Tükenen",
+        "totalValue": "Toplam Değer"
+    },
+    "prediction": {
+        "title": "AI Stok Tahmini",
+        "nextMonth": "Gelecek Ay Tahmini",
+        "reorderPoint": "Yeniden Sipariş Noktası",
+        "safetyStock": "Güvenlik Stoku",
+        "leadTime": "Tedarik Süresi",
+        "days": "gün",
+        "confidence": "Güven Oranı"
+    },
+    "alerts": {
+        "title": "Stok Uyarıları",
+        "critical": "Kritik",
+        "warning": "Uyarı",
+        "info": "Bilgi",
+        "reorder": "Yeniden sipariş gerekli",
+        "lowStock": "Stok düşüyor",
+        "seasonal": "Mevsimsel talep artışı bekleniyor"
+    },
+    "history": {
+        "title": "Hareket Geçmişi",
+        "in": "Giriş",
+        "out": "Çıkış",
+        "adjustment": "Düzeltme",
+        "date": "Tarih",
+        "type": "Tür",
+        "quantity": "Miktar",
+        "note": "Not"
+    },
+    "actions": {
+        "addStock": "Stok Ekle",
+        "removeStock": "Stok Çıkar",
+        "exportReport": "Rapor İndir",
+        "refresh": "Yenile"
+    }
+}

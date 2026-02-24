@@ -1,0 +1,50 @@
+{
+    "title": "Bayi Ağı",
+    "subtitle": "White-label bayi yönetimi",
+    "overview": {
+        "title": "Bayi Genel Bakış",
+        "totalDealers": "Toplam Bayi",
+        "activeDealers": "Aktif Bayiler",
+        "totalRevenue": "Toplam Gelir",
+        "avgPerformance": "Ortalama Performans"
+    },
+    "dealer": {
+        "name": "Bayi Adı",
+        "owner": "Yetkili",
+        "city": "Şehir",
+        "phone": "Telefon",
+        "email": "E-posta",
+        "status": "Durum",
+        "performance": "Performans",
+        "orders": "Siparişler",
+        "revenue": "Gelir",
+        "joinDate": "Katılım Tarihi"
+    },
+    "branding": {
+        "title": "Marka Kişiselleştirme",
+        "logo": "Logo",
+        "primaryColor": "Ana Renk",
+        "secondaryColor": "İkincil Renk",
+        "companyName": "Firma Adı",
+        "domain": "Alt Alan Adı",
+        "preview": "Önizleme"
+    },
+    "actions": {
+        "addDealer": "Yeni Bayi Ekle",
+        "editDealer": "Bayiyi Düzenle",
+        "removeDealer": "Bayiyi Kaldır",
+        "sendInvite": "Davet Gönder",
+        "viewReport": "Rapor Görüntüle"
+    },
+    "catalog": {
+        "title": "Ürün Kataloğu",
+        "assignProducts": "Ürün Ata",
+        "pricing": "Fiyatlandırma",
+        "markup": "Kar Marjı (%)",
+        "customPrice": "Özel Fiyat"
+    },
+    "modal": {
+        "deleteTitle": "Bayiyi Kaldır",
+        "deleteConfirm": "Bu bayiyi kaldırmak istediğinize emin misiniz?"
+    }
+}

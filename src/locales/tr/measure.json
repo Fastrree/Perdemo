@@ -1,0 +1,38 @@
+{
+    "title": "AI Ölçü Asistanı",
+    "subtitle": "Fotoğraftan akıllı ölçüm",
+    "steps": {
+        "upload": "Fotoğraf Yükle",
+        "measure": "Ölçüm Yap",
+        "result": "Sonuçlar"
+    },
+    "upload": {
+        "title": "Pencere Fotoğrafı Yükle",
+        "description": "Pencerenizin fotoğrafını çekin veya yükleyin",
+        "dragDrop": "Sürükleyip bırakın veya tıklayın",
+        "formats": "JPG, PNG, HEIC desteklenir",
+        "referenceObject": "Referans Nesne",
+        "referenceDesc": "Doğru ölçüm için bilinen bir nesne seçin",
+        "creditCard": "Kredi Kartı",
+        "a4Paper": "A4 Kağıt",
+        "ruler": "Cetvel"
+    },
+    "measurement": {
+        "width": "Genişlik",
+        "height": "Yükseklik",
+        "area": "Alan",
+        "recommended": "Önerilen Perde Boyutu",
+        "fabricNeeded": "Gerekli Kumaş",
+        "meters": "metre"
+    },
+    "ai": {
+        "calculating": "AI hesaplıyor...",
+        "fabricCost": "Kumaş Maliyeti",
+        "error": "AI şu an yanıt veremiyor."
+    },
+    "actions": {
+        "calculate": "Hesapla",
+        "reset": "Sıfırla",
+        "addToQuote": "Teklife Ekle"
+    }
+}

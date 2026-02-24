@@ -1,0 +1,46 @@
+{
+    "title": "Moodboard",
+    "roomAnalysis": {
+        "title": "Oda Renk Analizi",
+        "description": "Oda fotoğrafı yükleyin — duvar rengine göre en uyumlu kumaşları bulalım",
+        "upload": "Oda fotoğrafı yükleyin",
+        "newPhoto": "Yeni Fotoğraf",
+        "dominantColors": "Baskın Renkler",
+        "matchingFabrics": "Uyumlu Kumaşlar",
+        "matching": "Uyumlu"
+    },
+    "ai": {
+        "suggest": "AI Stil Önerisi Al",
+        "matchSuggest": "AI Eşleştirme Önerisi",
+        "analyzing": "AI analiz ediyor...",
+        "error": "AI şu an yanıt veremiyor. Lütfen daha sonra tekrar deneyin."
+    },
+    "fabricPairing": {
+        "title": "Kumaş Eşleştirme",
+        "description": "Kumaşın üzerine gelin detayları görün — tıklayın seçin",
+        "pairWith": "ile eşleştir",
+        "getPairing": "AI Eşleştirme Önerisi Al",
+        "aiPairing": "AI eşleştirme önerisi alınıyor...",
+        "tryCombo": "Kombinasyonu 3D'de görün:",
+        "viewIn3D": "3D Demo"
+    },
+    "colorPalette": {
+        "title": "Renk Paleti Oluşturucu",
+        "description": "Mevsim ve tarzınıza uygun palet oluşturun",
+        "season": "Mevsim",
+        "seasons": {
+            "spring": "İlkbahar",
+            "summer": "Yaz",
+            "autumn": "Sonbahar",
+            "winter": "Kış"
+        },
+        "style": "Stil",
+        "styles": {
+            "modern": "Modern",
+            "classic": "Klasik",
+            "rustic": "Rustik",
+            "minimal": "Minimal"
+        },
+        "generate": "Palet Oluştur"
+    }
+}

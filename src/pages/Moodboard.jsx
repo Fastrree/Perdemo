@@ -1,5 +1,6 @@
 import { useState, useRef, useCallback, useMemo } from 'react'
 import { useNavigate } from 'react-router-dom'
+import { useTranslation } from 'react-i18next'
 import { extractDominantColors, getFabricPairingSuggestion, getColorMatchSuggestion } from '../utils/aiProxy'
 import useCanHover from '../hooks/useCanHover'
 
@@ -367,6 +368,7 @@ function FabricPairing() {
 
 /* ─── Main ─── */
 export default function Moodboard() {
+    const { t } = useTranslation('moodboard')
     return (
         <div>
             <div className="page-header">

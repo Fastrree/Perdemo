@@ -1,0 +1,69 @@
+{
+    "title": "Smart Quote",
+    "subtitle": "Intelligent Price Quote",
+    "form": {
+        "customer": "Customer Information",
+        "customerName": "Customer Name",
+        "phone": "Phone",
+        "email": "Email",
+        "address": "Address",
+        "room": "Room",
+        "roomSelect": "Select Room",
+        "rooms": {
+            "living": "Living Room",
+            "bedroom": "Bedroom",
+            "kitchen": "Kitchen",
+            "office": "Office",
+            "other": "Other"
+        },
+        "product": "Product Selection",
+        "fabricType": "Fabric Type",
+        "curtainModel": "Curtain Model",
+        "width": "Width (cm)",
+        "height": "Height (cm)",
+        "quantity": "Quantity",
+        "lining": "Lining",
+        "liningOptions": {
+            "none": "No Lining",
+            "standard": "Standard Lining",
+            "blackout": "Blackout Lining"
+        },
+        "mounting": "Installation",
+        "mountingOptions": {
+            "none": "No Installation",
+            "wall": "Wall Mount",
+            "ceiling": "Ceiling Mount"
+        },
+        "addItem": "Add Product",
+        "notes": "Additional Notes"
+    },
+    "quote": {
+        "title": "Quote Summary",
+        "subtotal": "Subtotal",
+        "discount": "Discount",
+        "tax": "VAT (20%)",
+        "total": "Grand Total",
+        "addDiscount": "Add Discount",
+        "validUntil": "Valid For",
+        "days": "days"
+    },
+    "actions": {
+        "generate": "Generate Quote",
+        "download": "Download PDF",
+        "send": "Send Email",
+        "print": "Print",
+        "sign": "Sign"
+    },
+    "signature": {
+        "title": "Customer Approval",
+        "clear": "Clear",
+        "confirm": "Confirm",
+        "signed": "Signed"
+    },
+    "ai": {
+        "designerNote": "Designer Note",
+        "loading": "AI analyzing...",
+        "error": "AI is currently unavailable."
+    },
+    "empty": "Add products to generate a quote"
+}

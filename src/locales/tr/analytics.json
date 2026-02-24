@@ -1,0 +1,47 @@
+{
+    "title": "Analitik",
+    "subtitle": "Satış ve performans analizi",
+    "revenue": {
+        "title": "Gelir Analizi",
+        "daily": "Günlük",
+        "weekly": "Haftalık",
+        "monthly": "Aylık",
+        "yearly": "Yıllık",
+        "total": "Toplam Gelir",
+        "average": "Ortalama",
+        "growth": "Büyüme"
+    },
+    "sales": {
+        "title": "Satış Dağılımı",
+        "byCategory": "Kategoriye Göre",
+        "byProduct": "Ürüne Göre",
+        "byRegion": "Bölgeye Göre",
+        "topSelling": "En Çok Satan"
+    },
+    "customers": {
+        "title": "Müşteri Analizi",
+        "newCustomers": "Yeni Müşteriler",
+        "returning": "Dönen Müşteriler",
+        "retention": "Müşteri Tutma Oranı",
+        "lifetime": "Yaşam Boyu Değer"
+    },
+    "performance": {
+        "title": "Performans Metrikleri",
+        "conversionRate": "Dönüşüm Oranı",
+        "avgOrderValue": "Ortalama Sipariş Değeri",
+        "processingTime": "İşlem Süresi",
+        "customerSatisfaction": "Müşteri Memnuniyeti"
+    },
+    "period": {
+        "last7Days": "Son 7 Gün",
+        "last30Days": "Son 30 Gün",
+        "last90Days": "Son 90 Gün",
+        "thisYear": "Bu Yıl",
+        "custom": "Özel Aralık"
+    },
+    "export": {
+        "title": "Rapor İndir",
+        "pdf": "PDF olarak indir",
+        "excel": "Excel olarak indir"
+    }
+}

@@ -1,4 +1,5 @@
 import { useState, useCallback } from 'react'
+import { useTranslation } from 'react-i18next'
 
 const initialProducts = [
     { id: 1, name: 'Kadife Fon Perde', fabric: 'Kadife', color: 'Bordo', price: 1300, stock: 24, status: 'active', category: 'Fon Perde' },
@@ -43,9 +44,10 @@ const labelStyle = {
 }
 
 export default function Products() {
+    const { t } = useTranslation('products')
     const [products, setProducts] = useState(initialProducts)
     const [search, setSearch] = useState('')
-    const [category, setCategory] = useState('Tümü')
+    const [category, setCategory] = useState('all')
     const [view, setView] = useState('grid')
     const [modalOpen, setModalOpen] = useState(false)
     const [editingProduct, setEditingProduct] = useState(null)
@@ -55,7 +57,7 @@ export default function Products() {
 
     const filtered = products.filter(p => {
         const matchSearch = p.name.toLowerCase().includes(search.toLowerCase())
-        const matchCat = category === 'Tümü' || p.category === category
+        const matchCat = category === 'all' || p.category === category
         return matchSearch && matchCat
     })
 
@@ -81,8 +83,8 @@ export default function Products() {
     }, [])
 
     const handleSave = useCallback(() => {
-        if (!form.name.trim()) return alert('Ürün adı gerekli')
-        if (!form.price) return alert('Fiyat gerekli')
+        if (!form.name.trim()) return alert(t('form.nameRequired'))
+        if (!form.price) return alert(t('form.priceRequired'))
         const stockNum = parseInt(form.stock) || 0
         const status = stockNum === 0 ? 'out' : stockNum < 10 ? 'low' : 'active'
         if (editingProduct) {
@@ -128,12 +130,12 @@ export default function Products() {
         <div>
             <div className="page-header">
                 <div>
-                    <h1 className="page-title">Ürünler</h1>
-                    <p className="page-subtitle">{products.length} ürün kayıtlı</p>
+                    <h1 className="page-title">{t('title')}</h1>
+                    <p className="page-subtitle">{products.length} {t('subtitle')}</p>
                 </div>
                 <button className="btn btn-primary" onClick={openAddModal}
                     style={{ position: 'relative', overflow: 'hidden' }}>
-                    <span style={{ position: 'relative', zIndex: 1 }}>+ Yeni Ürün</span>
+                    <span style={{ position: 'relative', zIndex: 1 }}>+ {t('addProduct')}</span>
                 </button>
             </div>
 
@@ -143,8 +145,8 @@ export default function Products() {
                     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                         <circle cx="11" cy="11" r="8" /><path d="m21 21-4.35-4.35" />
                     </svg>
-                    <input type="search" className="input input-with-icon" placeholder="Ürün ara..."
-                        value={search} onChange={e => setSearch(e.target.value)} aria-label="Ürün ara"
+                    <input type="search" className="input input-with-icon" placeholder={t('search')}
+                        value={search} onChange={e => setSearch(e.target.value)} aria-label={t('search')}
                         style={{ transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)' }} />
                 </div>
                 <div className="tabs" style={{ marginBottom: 0, position: 'relative' }}>
@@ -190,7 +192,7 @@ export default function Products() {
                     letterSpacing: '0.02em',
                     whiteSpace: 'nowrap',
                 }}>
-                    {filtered.length} sonuç
+                    {filtered.length} {t('results')}
                 </span>
 
                 {/* View toggle */}
@@ -722,16 +724,16 @@ export default function Products() {
                                     overflow: 'hidden',
                                     transition: 'all 0.25s ease',
                                 }}
-                                onMouseEnter={e => {
-                                    e.currentTarget.style.borderColor = `${accent}40`
-                                    e.currentTarget.style.transform = 'translateY(-2px)'
-                                    e.currentTarget.style.boxShadow = `0 4px 16px ${accent}10`
-                                }}
-                                onMouseLeave={e => {
-                                    e.currentTarget.style.borderColor = `${accent}15`
-                                    e.currentTarget.style.transform = 'translateY(0)'
-                                    e.currentTarget.style.boxShadow = 'none'
-                                }}>
+                                    onMouseEnter={e => {
+                                        e.currentTarget.style.borderColor = `${accent}40`
+                                        e.currentTarget.style.transform = 'translateY(-2px)'
+                                        e.currentTarget.style.boxShadow = `0 4px 16px ${accent}10`
+                                    }}
+                                    onMouseLeave={e => {
+                                        e.currentTarget.style.borderColor = `${accent}15`
+                                        e.currentTarget.style.transform = 'translateY(0)'
+                                        e.currentTarget.style.boxShadow = 'none'
+                                    }}>
                                     {/* Subtle inner glow */}
                                     <div style={{
                                         position: 'absolute',

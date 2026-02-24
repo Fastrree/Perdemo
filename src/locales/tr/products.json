@@ -1,0 +1,52 @@
+{
+    "title": "Ürünler",
+    "subtitle": "ürün kayıtlı",
+    "results": "sonuç",
+    "addProduct": "Yeni Ürün Ekle",
+    "search": "Ürün ara...",
+    "filters": {
+        "all": "Tümü",
+        "curtain": "Perde",
+        "tulle": "Tül",
+        "blind": "Stor",
+        "accessory": "Aksesuar"
+    },
+    "columns": {
+        "image": "Görsel",
+        "name": "Ürün Adı",
+        "category": "Kategori",
+        "price": "Fiyat",
+        "stock": "Stok",
+        "status": "Durum",
+        "actions": "İşlemler"
+    },
+    "form": {
+        "name": "Ürün Adı",
+        "category": "Kategori",
+        "price": "Fiyat (₺)",
+        "stock": "Stok Adedi",
+        "description": "Açıklama",
+        "dimensions": "Boyutlar",
+        "width": "En (cm)",
+        "height": "Boy (cm)",
+        "material": "Kumaş Türü",
+        "color": "Renk",
+        "weight": "Ağırlık",
+        "minOrder": "Minimum Sipariş",
+        "nameRequired": "Ürün adı gerekli",
+        "priceRequired": "Fiyat gerekli"
+    },
+    "status": {
+        "inStock": "Stokta",
+        "lowStock": "Düşük Stok",
+        "outOfStock": "Tükendi"
+    },
+    "modal": {
+        "addTitle": "Yeni Ürün Ekle",
+        "editTitle": "Ürünü Düzenle",
+        "deleteTitle": "Ürünü Sil",
+        "deleteConfirm": "Bu ürünü silmek istediğinize emin misiniz?"
+    },
+    "empty": "Henüz ürün eklenmemiş",
+    "perMeter": "/ metre"
+}

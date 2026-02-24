@@ -1,0 +1,50 @@
+{
+    "title": "Dealer Network",
+    "subtitle": "White-label dealer management",
+    "overview": {
+        "title": "Dealer Overview",
+        "totalDealers": "Total Dealers",
+        "activeDealers": "Active Dealers",
+        "totalRevenue": "Total Revenue",
+        "avgPerformance": "Average Performance"
+    },
+    "dealer": {
+        "name": "Dealer Name",
+        "owner": "Contact Person",
+        "city": "City",
+        "phone": "Phone",
+        "email": "Email",
+        "status": "Status",
+        "performance": "Performance",
+        "orders": "Orders",
+        "revenue": "Revenue",
+        "joinDate": "Join Date"
+    },
+    "branding": {
+        "title": "Brand Customization",
+        "logo": "Logo",
+        "primaryColor": "Primary Color",
+        "secondaryColor": "Secondary Color",
+        "companyName": "Company Name",
+        "domain": "Subdomain",
+        "preview": "Preview"
+    },
+    "actions": {
+        "addDealer": "Add New Dealer",
+        "editDealer": "Edit Dealer",
+        "removeDealer": "Remove Dealer",
+        "sendInvite": "Send Invitation",
+        "viewReport": "View Report"
+    },
+    "catalog": {
+        "title": "Product Catalog",
+        "assignProducts": "Assign Products",
+        "pricing": "Pricing",
+        "markup": "Markup (%)",
+        "customPrice": "Custom Price"
+    },
+    "modal": {
+        "deleteTitle": "Remove Dealer",
+        "deleteConfirm": "Are you sure you want to remove this dealer?"
+    }
+}

@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
+import { useTranslation } from 'react-i18next'
 import useIsMobile from '../hooks/useIsMobile'
 
 /**
@@ -10,6 +11,7 @@ import useIsMobile from '../hooks/useIsMobile'
 export default function DesktopOnly({ children }) {
     const isMobile = useIsMobile()
     const navigate = useNavigate()
+    const { t } = useTranslation('common')
     const [unlocked, setUnlocked] = useState(false)
 
     if (!isMobile || unlocked) return children
@@ -22,31 +24,29 @@ export default function DesktopOnly({ children }) {
                     <span className="gate-warning-icon">⚠️</span>
                 </div>
 
-                <h2>Performans Uyarısı</h2>
+                <h2>{t('desktopOnly.title')}</h2>
 
                 <p className="gate-desc">
-                    Bu özellik <strong>yüksek GPU ve işlemci gücü</strong> gerektirir.
-                    Mobil cihazınızda <strong>yavaşlama, donma veya pil tüketimi</strong>{' '}
-                    yaşanabilir.
+                    {t('desktopOnly.description')}
                 </p>
 
                 <div className="gate-risk-list">
                     <div className="gate-risk-item">
                         <span className="gate-risk-icon">🔥</span>
-                        <span>Cihaz ısınabilir</span>
+                        <span>{t('desktopOnly.riskHeat')}</span>
                     </div>
                     <div className="gate-risk-item">
                         <span className="gate-risk-icon">🐌</span>
-                        <span>Uygulama yavaşlayabilir</span>
+                        <span>{t('desktopOnly.riskSlow')}</span>
                     </div>
                     <div className="gate-risk-item">
                         <span className="gate-risk-icon">🔋</span>
-                        <span>Pil hızla tükenebilir</span>
+                        <span>{t('desktopOnly.riskBattery')}</span>
                     </div>
                 </div>
 
                 <p className="gate-disclaimer">
-                    En iyi deneyim için masaüstü cihaz önerilir.
+                    {t('desktopOnly.disclaimer')}
                 </p>
 
                 <div className="gate-actions">
@@ -54,13 +54,13 @@ export default function DesktopOnly({ children }) {
                         className="btn gate-btn-unlock"
                         onClick={() => setUnlocked(true)}
                     >
-                        ⚡ Riski Kabul Et ve Aç
+                        ⚡ {t('desktopOnly.acceptRisk')}
                     </button>
                     <button
                         className="btn btn-secondary gate-btn-back"
                         onClick={() => navigate('/dashboard')}
                     >
-                        📊 Dashboard'a Dön
+                        📊 {t('desktopOnly.backToDashboard')}
                     </button>
                 </div>
             </div>

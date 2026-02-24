@@ -1,0 +1,82 @@
+{
+    "title": "Dashboard",
+    "stats": {
+        "totalRevenue": "Toplam Gelir",
+        "orders": "Siparişler",
+        "products": "Ürünler",
+        "customers": "Müşteriler"
+    },
+    "recentOrders": {
+        "title": "Son Siparişler",
+        "viewAll": "Tümünü Gör",
+        "columns": {
+            "id": "Sipariş No",
+            "customer": "Müşteri",
+            "product": "Ürün",
+            "amount": "Tutar",
+            "status": "Durum",
+            "date": "Tarih"
+        }
+    },
+    "topProducts": {
+        "title": "En Çok Satan Ürünler",
+        "columns": {
+            "name": "Ürün",
+            "sales": "Satış",
+            "revenue": "Gelir",
+            "trend": "Trend"
+        }
+    },
+    "chart": {
+        "title": "Aylık Gelir",
+        "months": [
+            "Oca",
+            "Şub",
+            "Mar",
+            "Nis",
+            "May",
+            "Haz",
+            "Tem",
+            "Ağu",
+            "Eyl",
+            "Eki",
+            "Kas",
+            "Ara"
+        ]
+    },
+    "status": {
+        "pending": "Beklemede",
+        "processing": "Hazırlanıyor",
+        "shipped": "Kargoda",
+        "delivered": "Teslim Edildi"
+    },
+    "quickActions": {
+        "title": "Hızlı İşlemler",
+        "newOrder": "Yeni Sipariş",
+        "newCustomer": "Yeni Müşteri",
+        "newProduct": "Yeni Ürün",
+        "reports": "Raporlar"
+    },
+    "report": {
+        "download": "Rapor İndir",
+        "sheets": {
+            "dashboard": "Dashboard Özet",
+            "rawData": "Ham Veriler"
+        },
+        "titles": {
+            "kpi": "Temel Göstergeler (KPI)",
+            "kpiMetric": "Gösterge",
+            "kpiValue": "Değer",
+            "kpiChange": "Değişim",
+            "monthly": "Aylık Gelir Tablosu",
+            "month": "Ay",
+            "revenue": "Gelir",
+            "topProducts": "En Çok Satan Ürünler",
+            "productName": "Ürün Adı",
+            "productSales": "Satış Adedi",
+            "productRevenue": "Gelir",
+            "productTrend": "Trend",
+            "orders": "Sipariş Listesi"
+        }
+    }
+}

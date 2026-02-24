@@ -1,0 +1,46 @@
+{
+    "title": "Moodboard",
+    "roomAnalysis": {
+        "title": "Room Color Analysis",
+        "description": "Upload a room photo — find the most matching fabrics based on wall color",
+        "upload": "Upload room photo",
+        "newPhoto": "New Photo",
+        "dominantColors": "Dominant Colors",
+        "matchingFabrics": "Matching Fabrics",
+        "matching": "Match"
+    },
+    "ai": {
+        "suggest": "Get AI Style Suggestion",
+        "matchSuggest": "AI Matching Suggestion",
+        "analyzing": "AI analyzing...",
+        "error": "AI is currently unavailable. Please try again later."
+    },
+    "fabricPairing": {
+        "title": "Fabric Pairing",
+        "description": "Hover over fabrics for details — click to select",
+        "pairWith": "pair with",
+        "getPairing": "Get AI Pairing Suggestion",
+        "aiPairing": "Getting AI pairing suggestion...",
+        "tryCombo": "View combination in 3D:",
+        "viewIn3D": "3D Demo"
+    },
+    "colorPalette": {
+        "title": "Color Palette Generator",
+        "description": "Create palettes matching your season and style",
+        "season": "Season",
+        "seasons": {
+            "spring": "Spring",
+            "summer": "Summer",
+            "autumn": "Autumn",
+            "winter": "Winter"
+        },
+        "style": "Style",
+        "styles": {
+            "modern": "Modern",
+            "classic": "Classic",
+            "rustic": "Rustic",
+            "minimal": "Minimalist"
+        },
+        "generate": "Generate Palette"
+    }
+}

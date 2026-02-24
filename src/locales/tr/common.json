@@ -1,0 +1,112 @@
+{
+    "nav": {
+        "sections": {
+            "main": "ANA MENÜ",
+            "tools": "ARAÇLAR",
+            "management": "YÖNETİM"
+        },
+        "dashboard": "Dashboard",
+        "products": "Ürünler",
+        "orders": "Siparişler",
+        "customers": "Müşteriler",
+        "demo": "360° Demo",
+        "quote": "Smart Quote",
+        "measure": "AI Ölçü",
+        "moodboard": "Moodboard",
+        "inventory": "Stok Oracle",
+        "analytics": "Analitik",
+        "whitelabel": "Bayi Ağı"
+    },
+    "search": {
+        "placeholder": "Ürün, sipariş veya müşteri ara...",
+        "goToPage": "Sayfaya git"
+    },
+    "notifications": {
+        "title": "Bildirimler",
+        "markAllRead": "Tümünü okundu işaretle",
+        "mock": {
+            "1": "Yeni sipariş: PD-2026-011 — Elif Kaya",
+            "2": "Stok uyarısı: Fon Perde Lacivert (8 adet)",
+            "3": "Sipariş PD-2026-003 teslim edildi",
+            "4": "Yeni müşteri kaydı: Selin Yılmaz",
+            "5": "Aylık rapor hazır"
+        },
+        "times": {
+            "1": "2 dk önce",
+            "2": "15 dk önce",
+            "3": "1 saat önce",
+            "4": "3 saat önce",
+            "5": "5 saat önce"
+        }
+    },
+    "profile": {
+        "role": "Mağaza Sahibi",
+        "settings": "Ayarlar",
+        "settingsAlert": "Ayarlar henüz aktif değil — backend gerekli",
+        "notifPrefs": "Bildirim Tercihleri",
+        "notifPrefsAlert": "Bildirim ayarları — backend gerekli",
+        "lightTheme": "Açık Tema",
+        "darkTheme": "Koyu Tema",
+        "visitWebsite": "Web Sitemizi Ziyaret Edin",
+        "logout": "Çıkış"
+    },
+    "aria": {
+        "mainNav": "Ana navigasyon",
+        "toggleMenu": "Menüyü aç/kapat",
+        "search": "Genel arama",
+        "notifications": "Bildirimler",
+        "newNotification": "Yeni bildirim var",
+        "toggleTheme": "Temayı {{mode}} moda geçir",
+        "profile": "Profil"
+    },
+    "mobile": {
+        "desktopBanner": "Tam deneyim için masaüstü cihaz kullanın. 3D, AI ve Gelişmiş Yönetim büyük ekranda mevcuttur."
+    },
+    "buttons": {
+        "save": "Kaydet",
+        "cancel": "İptal",
+        "delete": "Sil",
+        "edit": "Düzenle",
+        "add": "Ekle",
+        "close": "Kapat",
+        "confirm": "Onayla",
+        "search": "Ara",
+        "filter": "Filtrele",
+        "export": "Dışa Aktar",
+        "import": "İçe Aktar",
+        "refresh": "Yenile",
+        "back": "Geri",
+        "next": "İleri",
+        "previous": "Önceki",
+        "loading": "Yükleniyor...",
+        "apply": "Uygula"
+    },
+    "status": {
+        "active": "Aktif",
+        "inactive": "Pasif",
+        "pending": "Beklemede",
+        "completed": "Tamamlandı",
+        "cancelled": "İptal Edildi",
+        "inProgress": "Devam Ediyor",
+        "delivered": "Teslim Edildi",
+        "preparing": "Hazırlanıyor"
+    },
+    "currency": "₺",
+    "locale": "tr-TR",
+    "notFound": {
+        "title": "Sayfa Bulunamadı",
+        "description": "Aradığınız sayfa mevcut değil veya taşındı. Ana sayfaya dönerek devam edebilirsiniz.",
+        "home": "Ana Sayfa",
+        "quickAccess": "Hızlı Erişim"
+    },
+    "desktopOnly": {
+        "title": "Performans Uyarısı",
+        "description": "Bu özellik yüksek GPU ve işlemci gücü gerektirir. Mobil cihazınızda yavaşlama, donma veya pil tüketimi yaşanabilir.",
+        "riskHeat": "Cihaz ısınabilir",
+        "riskSlow": "Uygulama yavaşlayabilir",
+        "riskBattery": "Pil hızla tükenebilir",
+        "disclaimer": "En iyi deneyim için masaüstü cihaz önerilir.",
+        "acceptRisk": "Riski Kabul Et ve Aç",
+        "backToDashboard": "Dashboard'a Dön"
+    }
+}

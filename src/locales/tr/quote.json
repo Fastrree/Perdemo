@@ -1,0 +1,69 @@
+{
+    "title": "Smart Quote",
+    "subtitle": "Akıllı Fiyat Teklifi",
+    "form": {
+        "customer": "Müşteri Bilgileri",
+        "customerName": "Müşteri Adı",
+        "phone": "Telefon",
+        "email": "E-posta",
+        "address": "Adres",
+        "room": "Oda",
+        "roomSelect": "Oda Seçin",
+        "rooms": {
+            "living": "Salon",
+            "bedroom": "Yatak Odası",
+            "kitchen": "Mutfak",
+            "office": "Ofis",
+            "other": "Diğer"
+        },
+        "product": "Ürün Seçimi",
+        "fabricType": "Kumaş Türü",
+        "curtainModel": "Perde Modeli",
+        "width": "En (cm)",
+        "height": "Boy (cm)",
+        "quantity": "Adet",
+        "lining": "Astar",
+        "liningOptions": {
+            "none": "Astarsız",
+            "standard": "Standart Astar",
+            "blackout": "Blackout Astar"
+        },
+        "mounting": "Montaj",
+        "mountingOptions": {
+            "none": "Montajsız",
+            "wall": "Duvara Montaj",
+            "ceiling": "Tavana Montaj"
+        },
+        "addItem": "Ürün Ekle",
+        "notes": "Ek Notlar"
+    },
+    "quote": {
+        "title": "Teklif Özeti",
+        "subtotal": "Ara Toplam",
+        "discount": "İndirim",
+        "tax": "KDV (%20)",
+        "total": "Genel Toplam",
+        "addDiscount": "İndirim Ekle",
+        "validUntil": "Geçerlilik Süresi",
+        "days": "gün"
+    },
+    "actions": {
+        "generate": "Teklif Oluştur",
+        "download": "PDF İndir",
+        "send": "E-posta Gönder",
+        "print": "Yazdır",
+        "sign": "İmza"
+    },
+    "signature": {
+        "title": "Müşteri Onayı",
+        "clear": "Temizle",
+        "confirm": "Onayla",
+        "signed": "İmzalandı"
+    },
+    "ai": {
+        "designerNote": "Tasarımcı Notu",
+        "loading": "AI analiz ediyor...",
+        "error": "AI şu an yanıt veremiyor."
+    },
+    "empty": "Teklif oluşturmak için ürün ekleyin"
+}

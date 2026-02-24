@@ -1,0 +1,56 @@
+{
+    "title": "Orders",
+    "activeOrders": "active orders",
+    "total": "Total",
+    "addOrder": "New Order",
+    "search": "Search orders...",
+    "filters": {
+        "all": "All",
+        "pending": "Pending",
+        "processing": "Processing",
+        "shipped": "Shipped",
+        "delivered": "Delivered",
+        "cancelled": "Cancelled"
+    },
+    "columns": {
+        "id": "Order ID",
+        "customer": "Customer",
+        "products": "Products",
+        "total": "Total",
+        "status": "Status",
+        "date": "Date",
+        "actions": "Actions",
+        "paymentStatus": "Payment Status",
+        "deliveryDate": "Delivery Date"
+    },
+    "form": {
+        "customer": "Customer",
+        "selectCustomer": "Select Customer",
+        "product": "Product",
+        "selectProduct": "Select Product",
+        "quantity": "Quantity",
+        "width": "Width (cm)",
+        "height": "Height (cm)",
+        "notes": "Notes",
+        "discount": "Discount (%)",
+        "addItem": "Add Product",
+        "subtotal": "Subtotal",
+        "total": "Grand Total",
+        "customerProductRequired": "Customer and product info are required"
+    },
+    "modal": {
+        "addTitle": "Create New Order",
+        "detailTitle": "Order Details",
+        "deleteTitle": "Delete Order",
+        "deleteConfirm": "Are you sure you want to delete this order?"
+    },
+    "payment": {
+        "paid": "Paid",
+        "partial": "Partial Payment",
+        "unpaid": "Unpaid"
+    },
+    "empty": "No orders yet",
+    "items": "items",
+    "printInvoice": "Print Invoice",
+    "downloadPdf": "Download PDF"
+}

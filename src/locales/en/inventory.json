@@ -1,0 +1,45 @@
+{
+    "title": "Stock Oracle",
+    "subtitle": "AI-powered stock prediction & management",
+    "overview": {
+        "title": "Stock Overview",
+        "totalProducts": "Total Products",
+        "lowStock": "Low Stock",
+        "outOfStock": "Out of Stock",
+        "totalValue": "Total Value"
+    },
+    "prediction": {
+        "title": "AI Stock Prediction",
+        "nextMonth": "Next Month Forecast",
+        "reorderPoint": "Reorder Point",
+        "safetyStock": "Safety Stock",
+        "leadTime": "Lead Time",
+        "days": "days",
+        "confidence": "Confidence"
+    },
+    "alerts": {
+        "title": "Stock Alerts",
+        "critical": "Critical",
+        "warning": "Warning",
+        "info": "Info",
+        "reorder": "Reorder required",
+        "lowStock": "Stock is running low",
+        "seasonal": "Seasonal demand increase expected"
+    },
+    "history": {
+        "title": "Movement History",
+        "in": "In",
+        "out": "Out",
+        "adjustment": "Adjustment",
+        "date": "Date",
+        "type": "Type",
+        "quantity": "Quantity",
+        "note": "Note"
+    },
+    "actions": {
+        "addStock": "Add Stock",
+        "removeStock": "Remove Stock",
+        "exportReport": "Export Report",
+        "refresh": "Refresh"
+    }
+}

@@ -1,0 +1,58 @@
+{
+    "title": "360° Demo",
+    "fabrics": {
+        "velvetRed": "Kadife Bordo",
+        "silkCream": "İpek Krem",
+        "linenNavy": "Keten Lacivert",
+        "cottonGrey": "Pamuk Gri",
+        "tulleWhite": "Tül Beyaz",
+        "jacquardGold": "Jakar Altın",
+        "velvetEmerald": "Kadife Zümrüt"
+    },
+    "curtainStyles": {
+        "rodPocket": "Büzgülü",
+        "grommet": "Halkalı",
+        "tabTop": "Kulaklı"
+    },
+    "controls": {
+        "fabric": "Kumaş",
+        "style": "Model",
+        "opening": "Açıklık",
+        "wind": "Rüzgar",
+        "backdrop": "Arka Plan",
+        "aiRender": "AI Render",
+        "fullscreen": "Tam Ekran",
+        "screenshot": "Ekran Görüntüsü",
+        "windOn": "Açık",
+        "windOff": "Kapalı"
+    },
+    "backdrops": {
+        "city": "Şehir",
+        "garden": "Bahçe",
+        "sunset": "Gün Batımı",
+        "night": "Gece"
+    },
+    "collab": {
+        "title": "Ortak Showroom",
+        "host": "Oda Kur",
+        "join": "Odaya Katıl",
+        "roomCode": "Oda Kodu",
+        "connected": "Bağlandı",
+        "disconnect": "Ayrıl",
+        "guests": "Misafir",
+        "enterCode": "Kodu girin",
+        "shareCode": "Bu kodu müşterinizle paylaşın"
+    },
+    "aiRender": {
+        "title": "AI Render",
+        "generating": "AI görsel oluşturuyor...",
+        "complete": "Render tamamlandı",
+        "download": "İndir",
+        "close": "Kapat"
+    },
+    "atmosphere": {
+        "title": "Atmosfer Reçetesi",
+        "loading": "AI analiz ediyor...",
+        "error": "AI şu an yanıt veremiyor."
+    }
+}

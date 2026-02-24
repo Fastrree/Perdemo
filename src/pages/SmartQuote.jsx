@@ -1,4 +1,5 @@
 import { useState, useRef, useCallback, useEffect, useMemo } from 'react'
+import { useTranslation } from 'react-i18next'
 import { getDesignerNote } from '../utils/aiProxy'
 
 /* ─── Mock Data ─── */
@@ -448,6 +449,7 @@ function SustainabilityScore({ fabric, widthCm, heightCm }) {
 
 /* ─── Main Component ─── */
 export default function SmartQuote() {
+    const { t } = useTranslation('quote')
     const [form, setForm] = useState({
         customerName: '', customerPhone: '', customerAddress: '',
         fabric: 'Kadife Bordo', width: 200, height: 250,

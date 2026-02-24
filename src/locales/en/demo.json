@@ -1,0 +1,58 @@
+{
+    "title": "360° Demo",
+    "fabrics": {
+        "velvetRed": "Velvet Burgundy",
+        "silkCream": "Silk Cream",
+        "linenNavy": "Linen Navy",
+        "cottonGrey": "Cotton Grey",
+        "tulleWhite": "Tulle White",
+        "jacquardGold": "Jacquard Gold",
+        "velvetEmerald": "Velvet Emerald"
+    },
+    "curtainStyles": {
+        "rodPocket": "Rod Pocket",
+        "grommet": "Grommet",
+        "tabTop": "Tab Top"
+    },
+    "controls": {
+        "fabric": "Fabric",
+        "style": "Style",
+        "opening": "Opening",
+        "wind": "Wind",
+        "backdrop": "Backdrop",
+        "aiRender": "AI Render",
+        "fullscreen": "Fullscreen",
+        "screenshot": "Screenshot",
+        "windOn": "On",
+        "windOff": "Off"
+    },
+    "backdrops": {
+        "city": "City",
+        "garden": "Garden",
+        "sunset": "Sunset",
+        "night": "Night"
+    },
+    "collab": {
+        "title": "Collaborative Showroom",
+        "host": "Host Room",
+        "join": "Join Room",
+        "roomCode": "Room Code",
+        "connected": "Connected",
+        "disconnect": "Disconnect",
+        "guests": "Guests",
+        "enterCode": "Enter code",
+        "shareCode": "Share this code with your customer"
+    },
+    "aiRender": {
+        "title": "AI Render",
+        "generating": "AI generating visual...",
+        "complete": "Render complete",
+        "download": "Download",
+        "close": "Close"
+    },
+    "atmosphere": {
+        "title": "Atmosphere Recipe",
+        "loading": "AI analyzing...",
+        "error": "AI is currently unavailable."
+    }
+}

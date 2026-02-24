@@ -1,0 +1,38 @@
+{
+    "title": "AI Measure Assistant",
+    "subtitle": "Smart measurement from photos",
+    "steps": {
+        "upload": "Upload Photo",
+        "measure": "Measure",
+        "result": "Results"
+    },
+    "upload": {
+        "title": "Upload Window Photo",
+        "description": "Take or upload a photo of your window",
+        "dragDrop": "Drag & drop or click to upload",
+        "formats": "JPG, PNG, HEIC supported",
+        "referenceObject": "Reference Object",
+        "referenceDesc": "Select a known object for accurate measurement",
+        "creditCard": "Credit Card",
+        "a4Paper": "A4 Paper",
+        "ruler": "Ruler"
+    },
+    "measurement": {
+        "width": "Width",
+        "height": "Height",
+        "area": "Area",
+        "recommended": "Recommended Curtain Size",
+        "fabricNeeded": "Fabric Needed",
+        "meters": "meters"
+    },
+    "ai": {
+        "calculating": "AI calculating...",
+        "fabricCost": "Fabric Cost",
+        "error": "AI is currently unavailable."
+    },
+    "actions": {
+        "calculate": "Calculate",
+        "reset": "Reset",
+        "addToQuote": "Add to Quote"
+    }
+}

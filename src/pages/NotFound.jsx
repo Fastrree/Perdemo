@@ -1,6 +1,8 @@
 import { Link } from 'react-router-dom'
+import { useTranslation } from 'react-i18next'
 
 export default function NotFound() {
+    const { t } = useTranslation('common')
     return (
         <div style={{
             minHeight: '100vh',
@@ -25,29 +27,28 @@ export default function NotFound() {
                 }}>
                     404
                 </div>
-                
+
                 <h1 style={{
                     fontSize: '1.8rem',
                     fontWeight: 700,
                     color: 'var(--text-primary)',
                     marginBottom: '12px',
                 }}>
-                    Sayfa Bulunamadi
+                    {t('notFound.title')}
                 </h1>
-                
+
                 <p style={{
                     fontSize: '1rem',
                     color: 'var(--text-secondary)',
                     marginBottom: '32px',
                     lineHeight: 1.6,
                 }}>
-                    Aradiginiz sayfa mevcut degil veya tasindi. 
-                    Ana sayfaya donerek devam edebilirsiniz.
+                    {t('notFound.description')}
                 </p>
 
                 <div style={{ display: 'flex', gap: '12px', justifyContent: 'center', flexWrap: 'wrap' }}>
                     <Link to="/" className="btn btn-primary" style={{ padding: '12px 28px' }}>
-                        🏠 Ana Sayfa
+                        🏠 {t('notFound.home')}
                     </Link>
                     <Link to="/dashboard" className="btn btn-secondary" style={{ padding: '12px 28px' }}>
                         📊 Dashboard
@@ -62,14 +63,14 @@ export default function NotFound() {
                     border: '1px solid var(--border-primary)',
                 }}>
                     <div style={{ fontSize: '0.85rem', color: 'var(--text-tertiary)', marginBottom: '12px' }}>
-                        Hizli Erisim
+                        {t('notFound.quickAccess')}
                     </div>
                     <div style={{ display: 'flex', gap: '8px', justifyContent: 'center', flexWrap: 'wrap' }}>
-                        <Link to="/products" style={{ color: 'var(--accent-blue)', fontSize: '0.9rem' }}>Urunler</Link>
+                        <Link to="/products" style={{ color: 'var(--accent-blue)', fontSize: '0.9rem' }}>{t('nav.products')}</Link>
                         <span style={{ color: 'var(--text-tertiary)' }}>•</span>
-                        <Link to="/orders" style={{ color: 'var(--accent-blue)', fontSize: '0.9rem' }}>Siparisler</Link>
+                        <Link to="/orders" style={{ color: 'var(--accent-blue)', fontSize: '0.9rem' }}>{t('nav.orders')}</Link>
                         <span style={{ color: 'var(--text-tertiary)' }}>•</span>
-                        <Link to="/customers" style={{ color: 'var(--accent-blue)', fontSize: '0.9rem' }}>Musteriler</Link>
+                        <Link to="/customers" style={{ color: 'var(--accent-blue)', fontSize: '0.9rem' }}>{t('nav.customers')}</Link>
                         <span style={{ color: 'var(--text-tertiary)' }}>•</span>
                         <Link to="/demo" style={{ color: 'var(--accent-blue)', fontSize: '0.9rem' }}>3D Demo</Link>
                     </div>

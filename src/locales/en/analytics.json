@@ -1,0 +1,47 @@
+{
+    "title": "Analytics",
+    "subtitle": "Sales and performance analysis",
+    "revenue": {
+        "title": "Revenue Analysis",
+        "daily": "Daily",
+        "weekly": "Weekly",
+        "monthly": "Monthly",
+        "yearly": "Yearly",
+        "total": "Total Revenue",
+        "average": "Average",
+        "growth": "Growth"
+    },
+    "sales": {
+        "title": "Sales Distribution",
+        "byCategory": "By Category",
+        "byProduct": "By Product",
+        "byRegion": "By Region",
+        "topSelling": "Top Selling"
+    },
+    "customers": {
+        "title": "Customer Analysis",
+        "newCustomers": "New Customers",
+        "returning": "Returning Customers",
+        "retention": "Customer Retention Rate",
+        "lifetime": "Lifetime Value"
+    },
+    "performance": {
+        "title": "Performance Metrics",
+        "conversionRate": "Conversion Rate",
+        "avgOrderValue": "Average Order Value",
+        "processingTime": "Processing Time",
+        "customerSatisfaction": "Customer Satisfaction"
+    },
+    "period": {
+        "last7Days": "Last 7 Days",
+        "last30Days": "Last 30 Days",
+        "last90Days": "Last 90 Days",
+        "thisYear": "This Year",
+        "custom": "Custom Range"
+    },
+    "export": {
+        "title": "Download Report",
+        "pdf": "Download as PDF",
+        "excel": "Download as Excel"
+    }
+}

@@ -1,0 +1,215 @@
+{
+    "nav": {
+        "features": "Özellikler",
+        "pricing": "Fiyatlar",
+        "testimonials": "Referanslar",
+        "demo": "Demo",
+        "login": "Giriş Yap",
+        "scrollTop": "Sayfanın en üstüne git",
+        "toggleTheme": "Tema değiştir",
+        "menu": "Menü"
+    },
+    "hero": {
+        "eyebrow": "Türkiye'nin #1 Perde Yönetim Platformu",
+        "title1": "Perdeciliği",
+        "title2": "Yeniden Keşfedin",
+        "subtitle": "Stok takibi, 3D demo, sipariş yönetimi, müşteri CRM —",
+        "subtitleBold": "tüm perdecilik operasyonunuz tek platformda.",
+        "cta": "Ücretsiz Başla",
+        "ctaDemo": "Demo İzle",
+        "proofCount": "2,500+",
+        "proofText": "perdeci güveniyor",
+        "scroll": "Keşfet",
+        "todaySales": "Bugünkü Satış",
+        "activeOrders": "Aktif Sipariş"
+    },
+    "logos": {
+        "label": "Türkiye'nin önde gelen markaları güveniyor"
+    },
+    "stats": [
+        {
+            "value": "2,847",
+            "label": "Aktif Perdeci",
+            "suffix": ""
+        },
+        {
+            "value": "156",
+            "label": "Bin Sipariş",
+            "suffix": "K+"
+        },
+        {
+            "value": "99.9",
+            "label": "Uptime",
+            "suffix": "%"
+        },
+        {
+            "value": "4.9",
+            "label": "App Store",
+            "suffix": "★"
+        }
+    ],
+    "features": {
+        "eyebrow": "✦ Özellikler",
+        "title1": "Perdeciniz için",
+        "title2": "ihtiyacınız olan her şey",
+        "desc": "Satıştan üretime, stoktan müşteri ilişkilerine — tek platform.",
+        "explore": "Keşfet",
+        "items": [
+            {
+                "icon": "🎯",
+                "title": "360° Canlı Demo",
+                "desc": "Müşterilerinize perdeleri gerçek zamanlı gösterin. Kumaş, renk, ışık — hepsini anında değiştirin.",
+                "tag": "EN POPÜLER"
+            },
+            {
+                "icon": "📊",
+                "title": "Akıllı Dashboard",
+                "desc": "AI destekli satış tahminleri, stok uyarıları ve müşteri analizleri tek ekranda."
+            },
+            {
+                "icon": "📦",
+                "title": "Sipariş Takibi",
+                "desc": "Üretimden montaja kadar her adımı izleyin. Müşterilerinizi otomatik bilgilendirin."
+            },
+            {
+                "icon": "🧵",
+                "title": "Stok Yönetimi",
+                "desc": "Kumaş rulolarını metre bazında takip edin. Kritik stok uyarıları alın."
+            },
+            {
+                "icon": "👥",
+                "title": "Müşteri CRM",
+                "desc": "Ölçü geçmişi, tercihler, satın alma davranışları — hepsi kayıt altında."
+            },
+            {
+                "icon": "📈",
+                "title": "Gelişmiş Raporlar",
+                "desc": "Kârlılık analizleri, trend raporları, bayi performansları."
+            }
+        ]
+    },
+    "showcase": {
+        "eyebrow": "✦ 360° Demo",
+        "title1": "Perdeyi satmadan",
+        "title2": "önce gösterin",
+        "desc": "Müşteriniz kumaşı, rengi, deseni gerçek zamanlı değiştirsin. Satın alma kararını kolaylaştırın.",
+        "list": [
+            "Gerçek zamanlı kumaş değişimi",
+            "Gün ışığı simülasyonu",
+            "Ölçü bazlı görselleştirme",
+            "Müşteri ile canlı paylaşım"
+        ],
+        "cta": "Demo'yu Dene",
+        "colors": {
+            "brown": "Kahverengi",
+            "burgundy": "Bordo",
+            "navy": "Lacivert",
+            "cream": "Krem"
+        }
+    },
+    "testimonials": {
+        "eyebrow": "✦ Referanslar",
+        "title1": "Perdeciler",
+        "title2": "ne diyor?",
+        "ariaLabel": "Referans",
+        "items": [
+            {
+                "text": "Perdemo ile siparişlerimiz %40 arttı. 3D demo müşterileri ikna ediyor.",
+                "author": "Ahmet Y.",
+                "company": "Perde Dünyası",
+                "city": "İstanbul"
+            },
+            {
+                "text": "Stok takibi artık çocuk oyuncağı. Hangi kumaştan ne kaldı anında görüyorum.",
+                "author": "Elif K.",
+                "company": "Elif Perde",
+                "city": "Ankara"
+            },
+            {
+                "text": "12 bayimizi tek panelden yönetiyoruz. Raporlama muhteşem.",
+                "author": "Mehmet D.",
+                "company": "Demir Tekstil",
+                "city": "İzmir"
+            }
+        ]
+    },
+    "pricing": {
+        "eyebrow": "✦ Fiyatlandırma",
+        "title1": "İşletmenize",
+        "title2": "uygun plan",
+        "desc": "14 gün ücretsiz deneyin. Kredi kartı gerekmez.",
+        "popular": "En Popüler",
+        "period": "/ay",
+        "ctaPopular": "Hemen Başla",
+        "ctaOther": "Deneyin",
+        "plans": [
+            {
+                "name": "Starter",
+                "price": "499",
+                "desc": "Küçük atölyeler için",
+                "features": [
+                    "1 mağaza",
+                    "500 ürün",
+                    "Temel raporlar",
+                    "E-posta destek"
+                ]
+            },
+            {
+                "name": "Pro",
+                "price": "999",
+                "desc": "Büyüyen mağazalar için",
+                "features": [
+                    "3 mağaza",
+                    "Sınırsız ürün",
+                    "360° Demo",
+                    "API erişimi",
+                    "Öncelikli destek"
+                ],
+                "popular": true
+            },
+            {
+                "name": "Enterprise",
+                "price": "2,499",
+                "desc": "Zincirler ve bayiler için",
+                "features": [
+                    "Sınırsız mağaza",
+                    "Özel entegrasyon",
+                    "Dedicated manager",
+                    "7/24 destek",
+                    "SLA garantisi"
+                ]
+            }
+        ]
+    },
+    "cta": {
+        "title": "Perdeciliğinizi dijitalleştirmeye hazır mısınız?",
+        "desc": "14 gün ücretsiz, kredi kartı yok, iptal ücreti yok.",
+        "btn": "Ücretsiz Başla",
+        "demo": "Demo İzle"
+    },
+    "footer": {
+        "tagline": "Perde sektörünün dijital platformu.",
+        "col1Title": "Başlangıç",
+        "col1": {
+            "features": "Özellikler",
+            "pricing": "Fiyatlar",
+            "demo": "3D Demo",
+            "panel": "Panele Git"
+        },
+        "col2Title": "Yönetim",
+        "col2": {
+            "products": "Ürün Kataloğu",
+            "orders": "Sipariş Takibi",
+            "customers": "Müşteri CRM",
+            "inventory": "Stok Tahmini"
+        },
+        "col3Title": "Araçlar",
+        "col3": {
+            "quote": "Akıllı Teklif",
+            "measure": "Ölçü Asistanı",
+            "analytics": "Raporlar",
+            "whitelabel": "Bayi Ağı"
+        },
+        "rights": "© 2026 Perdemo. Tüm hakları saklıdır."
+    }
+}

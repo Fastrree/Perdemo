@@ -1,0 +1,52 @@
+{
+    "title": "Products",
+    "subtitle": "products registered",
+    "results": "results",
+    "addProduct": "Add New Product",
+    "search": "Search products...",
+    "filters": {
+        "all": "All",
+        "curtain": "Curtain",
+        "tulle": "Tulle",
+        "blind": "Blind",
+        "accessory": "Accessory"
+    },
+    "columns": {
+        "image": "Image",
+        "name": "Product Name",
+        "category": "Category",
+        "price": "Price",
+        "stock": "Stock",
+        "status": "Status",
+        "actions": "Actions"
+    },
+    "form": {
+        "name": "Product Name",
+        "category": "Category",
+        "price": "Price (₺)",
+        "stock": "Stock Quantity",
+        "description": "Description",
+        "dimensions": "Dimensions",
+        "width": "Width (cm)",
+        "height": "Height (cm)",
+        "material": "Fabric Type",
+        "color": "Color",
+        "weight": "Weight",
+        "minOrder": "Minimum Order",
+        "nameRequired": "Product name is required",
+        "priceRequired": "Price is required"
+    },
+    "status": {
+        "inStock": "In Stock",
+        "lowStock": "Low Stock",
+        "outOfStock": "Out of Stock"
+    },
+    "modal": {
+        "addTitle": "Add New Product",
+        "editTitle": "Edit Product",
+        "deleteTitle": "Delete Product",
+        "deleteConfirm": "Are you sure you want to delete this product?"
+    },
+    "empty": "No products added yet",
+    "perMeter": "/ meter"
+}

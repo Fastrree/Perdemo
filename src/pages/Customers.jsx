@@ -1,5 +1,6 @@
 import { useState, useCallback, useMemo, memo, startTransition } from 'react'
 import { useNavigate } from 'react-router-dom'
+import { useTranslation } from 'react-i18next'
 
 const initialCustomers = [
     { id: 1, name: 'Elif Kaya', email: 'elif.kaya@email.com', phone: '0532 111 2233', city: 'İstanbul', orders: 12, totalSpent: 34500, lastOrder: '15 Şub 2026', status: 'active' },
@@ -343,6 +344,7 @@ const CustomerDetailSlideOver = memo(function CustomerDetailSlideOver({ customer
    MAIN COMPONENT
    ═══════════════════════════════════════════════════ */
 export default function Customers() {
+    const { t } = useTranslation('customers')
     const [customers, setCustomers] = useState(initialCustomers)
     const [search, setSearch] = useState('')
     const [selectedCustomer, setSelectedCustomer] = useState(null)

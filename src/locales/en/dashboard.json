@@ -1,0 +1,82 @@
+{
+    "title": "Dashboard",
+    "stats": {
+        "totalRevenue": "Total Revenue",
+        "orders": "Orders",
+        "products": "Products",
+        "customers": "Customers"
+    },
+    "recentOrders": {
+        "title": "Recent Orders",
+        "viewAll": "View All",
+        "columns": {
+            "id": "Order ID",
+            "customer": "Customer",
+            "product": "Product",
+            "amount": "Amount",
+            "status": "Status",
+            "date": "Date"
+        }
+    },
+    "topProducts": {
+        "title": "Best Selling Products",
+        "columns": {
+            "name": "Product",
+            "sales": "Sales",
+            "revenue": "Revenue",
+            "trend": "Trend"
+        }
+    },
+    "chart": {
+        "title": "Monthly Revenue",
+        "months": [
+            "Jan",
+            "Feb",
+            "Mar",
+            "Apr",
+            "May",
+            "Jun",
+            "Jul",
+            "Aug",
+            "Sep",
+            "Oct",
+            "Nov",
+            "Dec"
+        ]
+    },
+    "status": {
+        "pending": "Pending",
+        "processing": "Processing",
+        "shipped": "Shipped",
+        "delivered": "Delivered"
+    },
+    "quickActions": {
+        "title": "Quick Actions",
+        "newOrder": "New Order",
+        "newCustomer": "New Customer",
+        "newProduct": "New Product",
+        "reports": "Reports"
+    },
+    "report": {
+        "download": "Download Report",
+        "sheets": {
+            "dashboard": "Dashboard Summary",
+            "rawData": "Raw Data"
+        },
+        "titles": {
+            "kpi": "Key Performance Indicators (KPI)",
+            "kpiMetric": "Metric",
+            "kpiValue": "Value",
+            "kpiChange": "Change",
+            "monthly": "Monthly Revenue Table",
+            "month": "Month",
+            "revenue": "Revenue",
+            "topProducts": "Best Selling Products",
+            "productName": "Product Name",
+            "productSales": "Units Sold",
+            "productRevenue": "Revenue",
+            "productTrend": "Trend",
+            "orders": "Order List"
+        }
+    }
+}

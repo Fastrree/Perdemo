@@ -1,0 +1,56 @@
+{
+    "title": "Siparişler",
+    "activeOrders": "aktif sipariş",
+    "total": "Toplam",
+    "addOrder": "Yeni Sipariş",
+    "search": "Sipariş ara...",
+    "filters": {
+        "all": "Tümü",
+        "pending": "Beklemede",
+        "processing": "Hazırlanıyor",
+        "shipped": "Kargoda",
+        "delivered": "Teslim Edildi",
+        "cancelled": "İptal"
+    },
+    "columns": {
+        "id": "Sipariş No",
+        "customer": "Müşteri",
+        "products": "Ürünler",
+        "total": "Toplam",
+        "status": "Durum",
+        "date": "Tarih",
+        "actions": "İşlemler",
+        "paymentStatus": "Ödeme Durumu",
+        "deliveryDate": "Teslim Tarihi"
+    },
+    "form": {
+        "customer": "Müşteri",
+        "selectCustomer": "Müşteri Seçin",
+        "product": "Ürün",
+        "selectProduct": "Ürün Seçin",
+        "quantity": "Adet",
+        "width": "En (cm)",
+        "height": "Boy (cm)",
+        "notes": "Notlar",
+        "discount": "İndirim (%)",
+        "addItem": "Ürün Ekle",
+        "subtotal": "Ara Toplam",
+        "total": "Genel Toplam",
+        "customerProductRequired": "Müşteri ve ürün bilgisi gerekli"
+    },
+    "modal": {
+        "addTitle": "Yeni Sipariş Oluştur",
+        "detailTitle": "Sipariş Detayı",
+        "deleteTitle": "Siparişi Sil",
+        "deleteConfirm": "Bu siparişi silmek istediğinize emin misiniz?"
+    },
+    "payment": {
+        "paid": "Ödendi",
+        "partial": "Kısmi Ödeme",
+        "unpaid": "Ödenmedi"
+    },
+    "empty": "Henüz sipariş yok",
+    "items": "ürün",
+    "printInvoice": "Fatura Yazdır",
+    "downloadPdf": "PDF İndir"
+}

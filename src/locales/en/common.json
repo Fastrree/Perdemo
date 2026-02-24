@@ -1,0 +1,112 @@
+{
+    "nav": {
+        "sections": {
+            "main": "MAIN MENU",
+            "tools": "TOOLS",
+            "management": "MANAGEMENT"
+        },
+        "dashboard": "Dashboard",
+        "products": "Products",
+        "orders": "Orders",
+        "customers": "Customers",
+        "demo": "360° Demo",
+        "quote": "Smart Quote",
+        "measure": "AI Measure",
+        "moodboard": "Moodboard",
+        "inventory": "Stock Oracle",
+        "analytics": "Analytics",
+        "whitelabel": "Dealer Network"
+    },
+    "search": {
+        "placeholder": "Search products, orders or customers...",
+        "goToPage": "Go to page"
+    },
+    "notifications": {
+        "title": "Notifications",
+        "markAllRead": "Mark all as read",
+        "mock": {
+            "1": "New order: PD-2026-011 — Elif Kaya",
+            "2": "Stock alert: Curtain Navy Blue (8 units)",
+            "3": "Order PD-2026-003 delivered",
+            "4": "New customer: Selin Yılmaz",
+            "5": "Monthly report ready"
+        },
+        "times": {
+            "1": "2 min ago",
+            "2": "15 min ago",
+            "3": "1 hour ago",
+            "4": "3 hours ago",
+            "5": "5 hours ago"
+        }
+    },
+    "profile": {
+        "role": "Store Owner",
+        "settings": "Settings",
+        "settingsAlert": "Settings not yet available — backend required",
+        "notifPrefs": "Notification Preferences",
+        "notifPrefsAlert": "Notification settings — backend required",
+        "lightTheme": "Light Theme",
+        "darkTheme": "Dark Theme",
+        "visitWebsite": "Visit Our Website",
+        "logout": "Logout"
+    },
+    "aria": {
+        "mainNav": "Main navigation",
+        "toggleMenu": "Toggle menu",
+        "search": "Global search",
+        "notifications": "Notifications",
+        "newNotification": "New notifications available",
+        "toggleTheme": "Switch to {{mode}} mode",
+        "profile": "Profile"
+    },
+    "mobile": {
+        "desktopBanner": "Use a desktop device for the full experience. 3D, AI and Advanced Management features are available on larger screens."
+    },
+    "buttons": {
+        "save": "Save",
+        "cancel": "Cancel",
+        "delete": "Delete",
+        "edit": "Edit",
+        "add": "Add",
+        "close": "Close",
+        "confirm": "Confirm",
+        "search": "Search",
+        "filter": "Filter",
+        "export": "Export",
+        "import": "Import",
+        "refresh": "Refresh",
+        "back": "Back",
+        "next": "Next",
+        "previous": "Previous",
+        "loading": "Loading...",
+        "apply": "Apply"
+    },
+    "status": {
+        "active": "Active",
+        "inactive": "Inactive",
+        "pending": "Pending",
+        "completed": "Completed",
+        "cancelled": "Cancelled",
+        "inProgress": "In Progress",
+        "delivered": "Delivered",
+        "preparing": "Preparing"
+    },
+    "currency": "₺",
+    "locale": "en-US",
+    "notFound": {
+        "title": "Page Not Found",
+        "description": "The page you're looking for doesn't exist or has been moved. You can return to the home page to continue.",
+        "home": "Home",
+        "quickAccess": "Quick Access"
+    },
+    "desktopOnly": {
+        "title": "Performance Warning",
+        "description": "This feature requires high GPU and processor power. You may experience slowdowns, freezing, or battery drain on your mobile device.",
+        "riskHeat": "Device may overheat",
+        "riskSlow": "App may slow down",
+        "riskBattery": "Battery may drain quickly",
+        "disclaimer": "A desktop device is recommended for the best experience.",
+        "acceptRisk": "Accept Risk & Open",
+        "backToDashboard": "Back to Dashboard"
+    }
+}

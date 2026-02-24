@@ -1,46 +1,23 @@
 import { useState, useEffect, useRef, memo } from 'react'
 import { Link } from 'react-router-dom'
+import { useTranslation } from 'react-i18next'
 import { useTheme } from '../App'
+import LanguageSwitcher from '../components/LanguageSwitcher'
 
 /* ═══════════════════════════════════════════════════════════════
-   DATA
+   DATA (static, non-translatable)
    ═══════════════════════════════════════════════════════════════ */
-const features = [
-    { icon: '🎯', title: '360° Canlı Demo', desc: 'Müşterilerinize perdeleri gerçek zamanlı gösterin. Kumaş, renk, ışık — hepsini anında değiştirin.', tag: 'EN POPÜLER', color: '#bc8cff', link: '/demo' },
-    { icon: '📊', title: 'Akıllı Dashboard', desc: 'AI destekli satış tahminleri, stok uyarıları ve müşteri analizleri tek ekranda.', color: '#58a6ff', link: '/dashboard' },
-    { icon: '📦', title: 'Sipariş Takibi', desc: 'Üretimden montaja kadar her adımı izleyin. Müşterilerinizi otomatik bilgilendirin.', color: '#2ecc71', link: '/orders' },
-    { icon: '🧵', title: 'Stok Yönetimi', desc: 'Kumaş rulolarını metre bazında takip edin. Kritik stok uyarıları alın.', color: '#f0b429', link: '/inventory-oracle' },
-    { icon: '👥', title: 'Müşteri CRM', desc: 'Ölçü geçmişi, tercihler, satın alma davranışları — hepsi kayıt altında.', color: '#f778ba', link: '/customers' },
-    { icon: '📈', title: 'Gelişmiş Raporlar', desc: 'Kârlılık analizleri, trend raporları, bayi performansları.', color: '#76e4f7', link: '/analytics' },
-]
+const featureLinks = ['/demo', '/dashboard', '/orders', '/inventory-oracle', '/customers', '/analytics']
+const featureColors = ['#bc8cff', '#58a6ff', '#2ecc71', '#f0b429', '#f778ba', '#76e4f7']
 
 const curtainColors = [
-    { color: '#8B4513', name: 'Kahverengi' },
-    { color: '#DC143C', name: 'Bordo' },
-    { color: '#1E3A5F', name: 'Lacivert' },
-    { color: '#F5F5DC', name: 'Krem' },
-]
-
-const stats = [
-    { value: '2,847', label: 'Aktif Perdeci', suffix: '' },
-    { value: '156', label: 'Bin Sipariş', suffix: 'K+' },
-    { value: '99.9', label: 'Uptime', suffix: '%' },
-    { value: '4.9', label: 'App Store', suffix: '★' },
+    { color: '#8B4513', nameKey: 'showcase.colors.brown' },
+    { color: '#DC143C', nameKey: 'showcase.colors.burgundy' },
+    { color: '#1E3A5F', nameKey: 'showcase.colors.navy' },
+    { color: '#F5F5DC', nameKey: 'showcase.colors.cream' },
 ]
 
 const logos = ['Koçtaş', 'Bauhaus', 'Tekzen', 'Evidea', 'Kelebek', 'İstikbal']
-
-const testimonials = [
-    { text: 'Perdemo ile siparişlerimiz %40 arttı. 3D demo müşterileri ikna ediyor.', author: 'Ahmet Y.', company: 'Perde Dünyası', city: 'İstanbul' },
-    { text: 'Stok takibi artık çocuk oyuncağı. Hangi kumaştan ne kaldı anında görüyorum.', author: 'Elif K.', company: 'Elif Perde', city: 'Ankara' },
-    { text: '12 bayimizi tek panelden yönetiyoruz. Raporlama muhteşem.', author: 'Mehmet D.', company: 'Demir Tekstil', city: 'İzmir' },
-]
-
-const plans = [
-    { name: 'Starter', price: '499', desc: 'Küçük atölyeler için', features: ['1 mağaza', '500 ürün', 'Temel raporlar', 'E-posta destek'] },
-    { name: 'Pro', price: '999', desc: 'Büyüyen mağazalar için', features: ['3 mağaza', 'Sınırsız ürün', '360° Demo', 'API erişimi', 'Öncelikli destek'], popular: true },
-    { name: 'Enterprise', price: '2,499', desc: 'Zincirler ve bayiler için', features: ['Sınırsız mağaza', 'Özel entegrasyon', 'Dedicated manager', '7/24 destek', 'SLA garantisi'] },
-]
 
 /* ═══════════════════════════════════════════════════════════════
    COMPONENTS
@@ -70,7 +47,7 @@ const Counter = memo(function Counter({ value, suffix = '' }) {
         return () => observer.disconnect()
     }, [value])
 
-    const formatted = count >= 1000 ? count.toLocaleString('tr-TR', { maximumFractionDigits: 0 }) 
+    const formatted = count >= 1000 ? count.toLocaleString('tr-TR', { maximumFractionDigits: 0 })
         : count % 1 === 0 ? count.toFixed(0) : count.toFixed(1)
     return <span ref={ref}>{formatted}{suffix}</span>
 })
@@ -91,11 +68,18 @@ const Marquee = memo(function Marquee({ items }) {
    MAIN COMPONENT
    ═══════════════════════════════════════════════════════════════ */
 export default function Landing() {
+    const { t } = useTranslation('landing')
     const { theme, toggleTheme } = useTheme()
     const [menuOpen, setMenuOpen] = useState(false)
     const [scrolled, setScrolled] = useState(false)
     const [activeTesti, setActiveTesti] = useState(0)
     const [curtainColor, setCurtainColor] = useState('#DC143C')
+
+    const stats = t('stats', { returnObjects: true })
+    const featureItems = t('features.items', { returnObjects: true })
+    const showcaseList = t('showcase.list', { returnObjects: true })
+    const testimonialsItems = t('testimonials.items', { returnObjects: true })
+    const pricingPlans = t('pricing.plans', { returnObjects: true })
 
     useEffect(() => {
         const onScroll = () => setScrolled(window.scrollY > 20)
@@ -104,41 +88,40 @@ export default function Landing() {
     }, [])
 
     useEffect(() => {
-        const id = setInterval(() => setActiveTesti(p => (p + 1) % testimonials.length), 5000)
+        const id = setInterval(() => setActiveTesti(p => (p + 1) % testimonialsItems.length), 5000)
         return () => clearInterval(id)
-    }, [])
-
-
+    }, [testimonialsItems.length])
 
     return (
         <div className="lp">
             {/* ═══════ NAVBAR ═══════ */}
             <header className={`lp-nav ${scrolled ? 'lp-nav--scrolled' : ''}`}>
                 <div className="lp-nav__inner">
-                    <button 
-                        className="lp-nav__brand" 
+                    <button
+                        className="lp-nav__brand"
                         onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
-                        aria-label="Sayfanın en üstüne git"
+                        aria-label={t('nav.scrollTop')}
                     >
                         <div className="lp-nav__logo">P</div>
                         <span className="lp-nav__wordmark">Perdemo</span>
                     </button>
 
                     <nav className={`lp-nav__menu ${menuOpen ? 'lp-nav__menu--open' : ''}`}>
-                        <a href="#features" onClick={() => setMenuOpen(false)}>Özellikler</a>
-                        <a href="#pricing" onClick={() => setMenuOpen(false)}>Fiyatlar</a>
-                        <a href="#testimonials" onClick={() => setMenuOpen(false)}>Referanslar</a>
-                        <Link to="/demo" onClick={() => setMenuOpen(false)}>Demo</Link>
+                        <a href="#features" onClick={() => setMenuOpen(false)}>{t('nav.features')}</a>
+                        <a href="#pricing" onClick={() => setMenuOpen(false)}>{t('nav.pricing')}</a>
+                        <a href="#testimonials" onClick={() => setMenuOpen(false)}>{t('nav.testimonials')}</a>
+                        <Link to="/demo" onClick={() => setMenuOpen(false)}>{t('nav.demo')}</Link>
                     </nav>
 
                     <div className="lp-nav__actions">
-                        <button className="lp-nav__theme" onClick={toggleTheme} aria-label="Tema değiştir">
+                        <LanguageSwitcher />
+                        <button className="lp-nav__theme" onClick={toggleTheme} aria-label={t('nav.toggleTheme')} data-tooltip={t('nav.toggleTheme')}>
                             {theme === 'dark' ? '☀️' : '🌙'}
                         </button>
                         <Link to="/dashboard" className="lp-nav__cta">
-                            Giriş Yap <span>→</span>
+                            {t('nav.login')} <span>→</span>
                         </Link>
-                        <button className={`lp-nav__burger ${menuOpen ? 'active' : ''}`} onClick={() => setMenuOpen(!menuOpen)} aria-label="Menü">
+                        <button className={`lp-nav__burger ${menuOpen ? 'active' : ''}`} onClick={() => setMenuOpen(!menuOpen)} aria-label={t('nav.menu')}>
                             <span /><span /><span />
                         </button>
                     </div>
@@ -157,28 +140,28 @@ export default function Landing() {
                 <div className="lp-hero__content">
                     <div className="lp-hero__eyebrow">
                         <span className="lp-hero__pulse" />
-                        <span>Türkiye'nin #1 Perde Yönetim Platformu</span>
+                        <span>{t('hero.eyebrow')}</span>
                     </div>
 
                     <h1 className="lp-hero__title">
-                        Perdeciliği<br />
-                        <span className="lp-hero__gradient-text">Yeniden Keşfedin</span>
+                        {t('hero.title1')}<br />
+                        <span className="lp-hero__gradient-text">{t('hero.title2')}</span>
                     </h1>
 
                     <p className="lp-hero__subtitle">
-                        Stok takibi, 3D demo, sipariş yönetimi, müşteri CRM —<br />
-                        <strong>tüm perdecilik operasyonunuz tek platformda.</strong>
+                        {t('hero.subtitle')}<br />
+                        <strong>{t('hero.subtitleBold')}</strong>
                     </p>
 
                     <div className="lp-hero__ctas">
                         <Link to="/dashboard" className="lp-btn lp-btn--primary lp-btn--xl">
                             <span className="lp-btn__shine" />
-                            <span className="lp-btn__text">Ücretsiz Başla</span>
+                            <span className="lp-btn__text">{t('hero.cta')}</span>
                             <span className="lp-btn__arrow">→</span>
                         </Link>
                         <Link to="/demo" className="lp-btn lp-btn--ghost lp-btn--xl">
                             <span className="lp-btn__icon">▶</span>
-                            <span className="lp-btn__text">Demo İzle</span>
+                            <span className="lp-btn__text">{t('hero.ctaDemo')}</span>
                         </Link>
                     </div>
 
@@ -189,7 +172,7 @@ export default function Landing() {
                             ))}
                         </div>
                         <div className="lp-hero__proof-text">
-                            <strong>2,500+</strong> perdeci güveniyor
+                            <strong>{t('hero.proofCount')}</strong> {t('hero.proofText')}
                             <span className="lp-hero__stars">★★★★★</span>
                         </div>
                     </div>
@@ -204,12 +187,12 @@ export default function Landing() {
                             <div className="lp-hero__screen-content">
                                 <div className="lp-hero__ui-row">
                                     <div className="lp-hero__ui-card lp-hero__ui-card--blue">
-                                        <div className="lp-hero__ui-label">Bugünkü Satış</div>
+                                        <div className="lp-hero__ui-label">{t('hero.todaySales')}</div>
                                         <div className="lp-hero__ui-value">₺24,850</div>
                                         <div className="lp-hero__ui-trend">↑ 12%</div>
                                     </div>
                                     <div className="lp-hero__ui-card lp-hero__ui-card--purple">
-                                        <div className="lp-hero__ui-label">Aktif Sipariş</div>
+                                        <div className="lp-hero__ui-label">{t('hero.activeOrders')}</div>
                                         <div className="lp-hero__ui-value">47</div>
                                         <div className="lp-hero__ui-trend">↑ 8%</div>
                                     </div>
@@ -232,21 +215,21 @@ export default function Landing() {
                 </div>
 
                 <a href="#features" className="lp-hero__scroll">
-                    <span>Keşfet</span>
+                    <span>{t('hero.scroll')}</span>
                     <div className="lp-hero__scroll-icon">↓</div>
                 </a>
             </section>
 
             {/* ═══════ LOGOS ═══════ */}
             <section className="lp-logos">
-                <p className="lp-logos__label">Türkiye'nin önde gelen markaları güveniyor</p>
+                <p className="lp-logos__label">{t('logos.label')}</p>
                 <Marquee items={logos} />
             </section>
 
             {/* ═══════ STATS ═══════ */}
             <section className="lp-stats">
                 <div className="lp-stats__inner">
-                    {stats.map((s, i) => (
+                    {Array.isArray(stats) && stats.map((s, i) => (
                         <div key={i} className="lp-stat">
                             <div className="lp-stat__value">
                                 <Counter value={s.value} suffix={s.suffix} />
@@ -260,24 +243,24 @@ export default function Landing() {
             {/* ═══════ FEATURES ═══════ */}
             <section className="lp-features" id="features">
                 <div className="lp-section__header">
-                    <span className="lp-section__eyebrow">✦ Özellikler</span>
+                    <span className="lp-section__eyebrow">{t('features.eyebrow')}</span>
                     <h2 className="lp-section__title">
-                        Perdeciniz için<br /><span className="lp-gradient-text">ihtiyacınız olan her şey</span>
+                        {t('features.title1')}<br /><span className="lp-gradient-text">{t('features.title2')}</span>
                     </h2>
                     <p className="lp-section__desc">
-                        Satıştan üretime, stoktan müşteri ilişkilerine — tek platform.
+                        {t('features.desc')}
                     </p>
                 </div>
 
                 <div className="lp-features__grid">
-                    {features.map((f, i) => (
-                        <Link key={i} to={f.link} className={`lp-feature ${i === 0 ? 'lp-feature--hero' : ''}`} style={{ '--accent': f.color, '--delay': `${i * 0.1}s`, textDecoration: 'none', color: 'inherit' }}>
+                    {Array.isArray(featureItems) && featureItems.map((f, i) => (
+                        <Link key={i} to={featureLinks[i]} className={`lp-feature ${i === 0 ? 'lp-feature--hero' : ''}`} style={{ '--accent': featureColors[i], '--delay': `${i * 0.1}s`, textDecoration: 'none', color: 'inherit' }}>
                             {f.tag && <span className="lp-feature__tag">{f.tag}</span>}
                             <div className="lp-feature__icon">{f.icon}</div>
                             <h3 className="lp-feature__title">{f.title}</h3>
                             <p className="lp-feature__desc">{f.desc}</p>
                             <div className="lp-feature__link">
-                                Keşfet <span>→</span>
+                                {t('features.explore')} <span>→</span>
                             </div>
                         </Link>
                     ))}
@@ -288,22 +271,20 @@ export default function Landing() {
             <section className="lp-showcase">
                 <div className="lp-showcase__inner">
                     <div className="lp-showcase__content">
-                        <span className="lp-section__eyebrow">✦ 360° Demo</span>
+                        <span className="lp-section__eyebrow">{t('showcase.eyebrow')}</span>
                         <h2 className="lp-section__title">
-                            Perdeyi satmadan<br /><span className="lp-gradient-text">önce gösterin</span>
+                            {t('showcase.title1')}<br /><span className="lp-gradient-text">{t('showcase.title2')}</span>
                         </h2>
                         <p className="lp-section__desc">
-                            Müşteriniz kumaşı, rengi, deseni gerçek zamanlı değiştirsin. 
-                            Satın alma kararını kolaylaştırın.
+                            {t('showcase.desc')}
                         </p>
                         <ul className="lp-showcase__list">
-                            <li><span>✓</span> Gerçek zamanlı kumaş değişimi</li>
-                            <li><span>✓</span> Gün ışığı simülasyonu</li>
-                            <li><span>✓</span> Ölçü bazlı görselleştirme</li>
-                            <li><span>✓</span> Müşteri ile canlı paylaşım</li>
+                            {Array.isArray(showcaseList) && showcaseList.map((item, i) => (
+                                <li key={i}><span>✓</span> {item}</li>
+                            ))}
                         </ul>
                         <Link to="/demo" className="lp-btn lp-btn--primary">
-                            Demo'yu Dene <span>→</span>
+                            {t('showcase.cta')} <span>→</span>
                         </Link>
                     </div>
                     <div className="lp-showcase__visual">
@@ -319,7 +300,7 @@ export default function Landing() {
                                         className={`lp-showcase__swatch ${curtainColor === c.color ? 'lp-showcase__swatch--active' : ''}`}
                                         style={{ background: c.color }}
                                         onClick={() => setCurtainColor(c.color)}
-                                        aria-label={`${c.name} rengi seç`}
+                                        aria-label={t(c.nameKey)}
                                     />
                                 ))}
                             </div>
@@ -331,21 +312,21 @@ export default function Landing() {
             {/* ═══════ TESTIMONIALS ═══════ */}
             <section className="lp-testimonials" id="testimonials">
                 <div className="lp-section__header">
-                    <span className="lp-section__eyebrow">✦ Referanslar</span>
+                    <span className="lp-section__eyebrow">{t('testimonials.eyebrow')}</span>
                     <h2 className="lp-section__title">
-                        Perdeciler<br /><span className="lp-gradient-text">ne diyor?</span>
+                        {t('testimonials.title1')}<br /><span className="lp-gradient-text">{t('testimonials.title2')}</span>
                     </h2>
                 </div>
 
                 <div className="lp-testimonials__carousel">
-                    {testimonials.map((t, i) => (
+                    {Array.isArray(testimonialsItems) && testimonialsItems.map((ti, i) => (
                         <blockquote key={i} className={`lp-testimonial ${i === activeTesti ? 'lp-testimonial--active' : ''}`}>
-                            <p className="lp-testimonial__text">"{t.text}"</p>
+                            <p className="lp-testimonial__text">"{ti.text}"</p>
                             <footer className="lp-testimonial__author">
-                                <div className="lp-testimonial__avatar">{t.author[0]}</div>
+                                <div className="lp-testimonial__avatar">{ti.author[0]}</div>
                                 <div>
-                                    <strong>{t.author}</strong>
-                                    <span>{t.company}, {t.city}</span>
+                                    <strong>{ti.author}</strong>
+                                    <span>{ti.company}, {ti.city}</span>
                                 </div>
                             </footer>
                         </blockquote>
@@ -353,8 +334,8 @@ export default function Landing() {
                 </div>
 
                 <div className="lp-testimonials__dots">
-                    {testimonials.map((_, i) => (
-                        <button key={i} className={`lp-dot ${i === activeTesti ? 'lp-dot--active' : ''}`} onClick={() => setActiveTesti(i)} aria-label={`Referans ${i + 1}`} />
+                    {Array.isArray(testimonialsItems) && testimonialsItems.map((_, i) => (
+                        <button key={i} className={`lp-dot ${i === activeTesti ? 'lp-dot--active' : ''}`} onClick={() => setActiveTesti(i)} aria-label={`${t('testimonials.ariaLabel')} ${i + 1}`} />
                     ))}
                 </div>
             </section>
@@ -362,19 +343,19 @@ export default function Landing() {
             {/* ═══════ PRICING ═══════ */}
             <section className="lp-pricing" id="pricing">
                 <div className="lp-section__header">
-                    <span className="lp-section__eyebrow">✦ Fiyatlandırma</span>
+                    <span className="lp-section__eyebrow">{t('pricing.eyebrow')}</span>
                     <h2 className="lp-section__title">
-                        İşletmenize<br /><span className="lp-gradient-text">uygun plan</span>
+                        {t('pricing.title1')}<br /><span className="lp-gradient-text">{t('pricing.title2')}</span>
                     </h2>
                     <p className="lp-section__desc">
-                        14 gün ücretsiz deneyin. Kredi kartı gerekmez.
+                        {t('pricing.desc')}
                     </p>
                 </div>
 
                 <div className="lp-pricing__grid">
-                    {plans.map((p, i) => (
+                    {Array.isArray(pricingPlans) && pricingPlans.map((p, i) => (
                         <article key={i} className={`lp-plan ${p.popular ? 'lp-plan--popular' : ''}`} style={{ '--delay': `${i * 0.15}s` }}>
-                            {p.popular && <div className="lp-plan__badge">En Popüler</div>}
+                            {p.popular && <div className="lp-plan__badge">{t('pricing.popular')}</div>}
                             <div className="lp-plan__header">
                                 <h3 className="lp-plan__name">{p.name}</h3>
                                 <p className="lp-plan__desc">{p.desc}</p>
@@ -382,7 +363,7 @@ export default function Landing() {
                             <div className="lp-plan__price">
                                 <span className="lp-plan__currency">₺</span>
                                 <span className="lp-plan__amount">{p.price}</span>
-                                <span className="lp-plan__period">/ay</span>
+                                <span className="lp-plan__period">{t('pricing.period')}</span>
                             </div>
                             <ul className="lp-plan__features">
                                 {p.features.map((f, fi) => (
@@ -390,7 +371,7 @@ export default function Landing() {
                                 ))}
                             </ul>
                             <Link to="/dashboard" className={`lp-btn ${p.popular ? 'lp-btn--primary' : 'lp-btn--outline'} lp-btn--full`}>
-                                {p.popular ? 'Hemen Başla' : 'Deneyin'}
+                                {p.popular ? t('pricing.ctaPopular') : t('pricing.ctaOther')}
                             </Link>
                         </article>
                     ))}
@@ -404,14 +385,14 @@ export default function Landing() {
                     <div className="lp-cta__orb lp-cta__orb--2" />
                 </div>
                 <div className="lp-cta__inner">
-                    <h2 className="lp-cta__title">Perdeciliğinizi<br />dijitalleştirmeye hazır mısınız?</h2>
-                    <p className="lp-cta__desc">14 gün ücretsiz, kredi kartı yok, iptal ücreti yok.</p>
+                    <h2 className="lp-cta__title">{t('cta.title')}</h2>
+                    <p className="lp-cta__desc">{t('cta.desc')}</p>
                     <div className="lp-cta__actions">
                         <Link to="/dashboard" className="lp-btn lp-btn--white lp-btn--xl">
-                            Ücretsiz Başla <span>→</span>
+                            {t('cta.btn')} <span>→</span>
                         </Link>
                         <Link to="/demo" className="lp-btn lp-btn--ghost-light lp-btn--xl">
-                            Demo İzle
+                            {t('cta.demo')}
                         </Link>
                     </div>
                 </div>
@@ -425,34 +406,34 @@ export default function Landing() {
                             <div className="lp-nav__logo">P</div>
                             <span>Perdemo</span>
                         </div>
-                        <p>Perde sektörünün dijital platformu.</p>
+                        <p>{t('footer.tagline')}</p>
                     </div>
                     <div className="lp-footer__links">
                         <div className="lp-footer__col">
-                            <h4>Başlangıç</h4>
-                            <a href="#features">Özellikler</a>
-                            <a href="#pricing">Fiyatlar</a>
-                            <Link to="/demo">3D Demo</Link>
-                            <Link to="/dashboard">Panele Git</Link>
+                            <h4>{t('footer.col1Title')}</h4>
+                            <a href="#features">{t('footer.col1.features')}</a>
+                            <a href="#pricing">{t('footer.col1.pricing')}</a>
+                            <Link to="/demo">{t('footer.col1.demo')}</Link>
+                            <Link to="/dashboard">{t('footer.col1.panel')}</Link>
                         </div>
                         <div className="lp-footer__col">
-                            <h4>Yönetim</h4>
-                            <Link to="/products">Ürün Kataloğu</Link>
-                            <Link to="/orders">Sipariş Takibi</Link>
-                            <Link to="/customers">Müşteri CRM</Link>
-                            <Link to="/inventory-oracle">Stok Tahmini</Link>
+                            <h4>{t('footer.col2Title')}</h4>
+                            <Link to="/products">{t('footer.col2.products')}</Link>
+                            <Link to="/orders">{t('footer.col2.orders')}</Link>
+                            <Link to="/customers">{t('footer.col2.customers')}</Link>
+                            <Link to="/inventory-oracle">{t('footer.col2.inventory')}</Link>
                         </div>
                         <div className="lp-footer__col">
-                            <h4>Araçlar</h4>
-                            <Link to="/quote">Akıllı Teklif</Link>
-                            <Link to="/measure">Ölçü Asistanı</Link>
-                            <Link to="/analytics">Raporlar</Link>
-                            <Link to="/white-label">Bayi Ağı</Link>
+                            <h4>{t('footer.col3Title')}</h4>
+                            <Link to="/quote">{t('footer.col3.quote')}</Link>
+                            <Link to="/measure">{t('footer.col3.measure')}</Link>
+                            <Link to="/analytics">{t('footer.col3.analytics')}</Link>
+                            <Link to="/white-label">{t('footer.col3.whitelabel')}</Link>
                         </div>
                     </div>
                 </div>
                 <div className="lp-footer__bottom">
-                    <p>© 2026 Perdemo. Tüm hakları saklıdır.</p>
+                    <p>{t('footer.rights')}</p>
                 </div>
             </footer>
         </div>
