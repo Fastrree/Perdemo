@@ -1,23 +1,14 @@
 /**
  * AI Proxy Utility
- * API anahtarını frontend'den gizler.
  * 
- * GÜVENLIK: VITE_AI_API_KEY sadece Vite dev proxy üzerinden kullanılır.
- * Production'da kendi backend proxy'niz gerekir.
+ * ROUTING:
+ * - Dev  (npm run dev):  Vite proxy /api/ai → localhost:8045/v1
+ * - Prod (Vercel):       Serverless fn /api/ai/chat/completions → AI_BACKEND_URL
  * 
- * NOT: Vite VITE_ prefix'li env değişkenlerini client bundle'a expose eder.
- * Bu yüzden burada BASE64 encode + dev proxy pattern kullanıyoruz.
- * Production'da backend proxy şart.
+ * API key ASLA frontend'e gömülmez. Her iki modda da sunucu tarafında kalır.
  */
 
-/**
- * AI API Base URL:
- * - Dev mode (npm run dev): Vite proxy /api/ai → 127.0.0.1:8045/v1
- * - Production build: Doğrudan VITE_AI_API_BASE kullanılır
- */
-const IS_DEV = import.meta.env.DEV
-const AI_API_BASE = IS_DEV ? '/api/ai' : (import.meta.env.VITE_AI_API_BASE || 'http://127.0.0.1:8045/v1')
-const AI_API_KEY = import.meta.env.VITE_AI_API_KEY || ''
+const AI_API_BASE = '/api/ai'
 
 // Bizim ürün kataloğumuz — AI sadece bunlardan önerecek
 const OUR_CATALOG = `
@@ -40,23 +31,17 @@ KRİTİK KURAL: Sadece yukarıdaki 8 ürünümüzden öneri yap. Katalogumuzda o
 
 /**
  * AI API'ye istek atar.
- * Dev: Vite proxy üzerinden (key proxy tarafında enjekte edilir)
- * Production: Doğrudan sunucuya (key header olarak gönderilir)
+ * Dev: Vite proxy → localhost:8045/v1
+ * Prod: Vercel serverless fn → AI_BACKEND_URL
+ * Her iki modda da auth sunucu tarafında eklenir.
  */
 export async function queryAI(prompt, options = {}) {
     const { maxTokens = 1500, temperature = 0.7 } = options
 
-    // Header'ları oluştur
-    const headers = { 'Content-Type': 'application/json' }
-    // Production'da Authorization header'ını ekle (dev'de Vite proxy hallediyor)
-    if (!IS_DEV && AI_API_KEY) {
-        headers['Authorization'] = `Bearer ${AI_API_KEY}`
-    }
-
     try {
         const response = await fetch(AI_API_BASE + '/chat/completions', {
             method: 'POST',
-            headers,
+            headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
                 model: options.model || 'gemini-3-flash',
                 messages: [
