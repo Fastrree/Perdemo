@@ -1,18 +1,8 @@
 import { useState, useCallback, useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
+import { useOrders } from '../hooks/useOrders'
 
-const initialOrders = [
-    { id: 'PD-2026-001', customer: 'Elif Kaya', product: 'Kadife Perde - Bordo', qty: 2, width: '240cm', height: '260cm', amount: 3450, status: 'shipped', date: '15 Şub 2026', payment: 'paid' },
-    { id: 'PD-2026-002', customer: 'Mehmet Demir', product: 'Tül Perde - Beyaz', qty: 4, width: '180cm', height: '240cm', amount: 1200, status: 'processing', date: '14 Şub 2026', payment: 'paid' },
-    { id: 'PD-2026-003', customer: 'Ayşe Yıldız', product: 'Stor Perde - Gri', qty: 3, width: '120cm', height: '200cm', amount: 2800, status: 'delivered', date: '13 Şub 2026', payment: 'paid' },
-    { id: 'PD-2026-004', customer: 'Can Öztürk', product: 'Fon Perde - Lacivert', qty: 2, width: '300cm', height: '280cm', amount: 4100, status: 'pending', date: '13 Şub 2026', payment: 'pending' },
-    { id: 'PD-2026-005', customer: 'Zeynep Ak', product: 'Blackout Perde', qty: 1, width: '160cm', height: '220cm', amount: 2650, status: 'processing', date: '12 Şub 2026', payment: 'paid' },
-    { id: 'PD-2026-006', customer: 'Burak Şen', product: 'Zebra Perde - Krem', qty: 5, width: '150cm', height: '200cm', amount: 5500, status: 'pending', date: '12 Şub 2026', payment: 'pending' },
-    { id: 'PD-2026-007', customer: 'Deniz Arslan', product: 'Tül Perde Dantel', qty: 3, width: '200cm', height: '240cm', amount: 2550, status: 'shipped', date: '11 Şub 2026', payment: 'paid' },
-    { id: 'PD-2026-008', customer: 'Fatma Çelik', product: 'Jakar Fon Perde', qty: 1, width: '280cm', height: '260cm', amount: 2200, status: 'delivered', date: '10 Şub 2026', payment: 'paid' },
-    { id: 'PD-2026-009', customer: 'Gökhan Aydın', product: 'Kadife Fon Perde', qty: 2, width: '240cm', height: '260cm', amount: 2600, status: 'cancelled', date: '10 Şub 2026', payment: 'refunded' },
-    { id: 'PD-2026-010', customer: 'Hülya Koç', product: 'Blackout Stor', qty: 4, width: '140cm', height: '200cm', amount: 5600, status: 'processing', date: '09 Şub 2026', payment: 'paid' },
-]
+
 
 const statusMap = {
     pending: { label: 'Beklemede', cls: 'badge-warning', icon: '⏳' },
@@ -75,12 +65,30 @@ const filterLabelToKey = {
 
 export default function Orders() {
     const { t } = useTranslation('orders')
-    const [orders, setOrders] = useState(initialOrders)
+    const { orders: rawOrders, loading, error, createOrder, updateOrder, deleteOrder } = useOrders()
+
+    // Normalize DB fields to match UI expectations
+    const orders = useMemo(() => rawOrders.map(o => ({
+        ...o,
+        id: o.order_number || o.id,
+        customer: o.customers?.full_name || o.customer_name || 'Bilinmiyor',
+        product: `${o.item_count || 0} ürün`,
+        qty: o.item_count || 0,
+        width: '-',
+        height: '-',
+        amount: o.total_amount || 0,
+        status: o.status || 'pending',
+        date: o.created_at ? new Date(o.created_at).toLocaleDateString('tr-TR', { day: 'numeric', month: 'short', year: 'numeric' }) : '-',
+        payment: o.payment_status || 'pending',
+        _id: o.id, // Keep original UUID for API calls
+    })), [rawOrders])
+
     const [search, setSearch] = useState('')
     const [statusFilter, setStatusFilter] = useState('all')
     const [expandedOrder, setExpandedOrder] = useState(null)
     const [modalOpen, setModalOpen] = useState(false)
     const [form, setForm] = useState({ customer: '', product: '', qty: '1', width: '', height: '', amount: '' })
+    const [saving, setSaving] = useState(false)
 
     const filtered = orders.filter(o => {
         const matchSearch = o.id.toLowerCase().includes(search.toLowerCase()) ||
@@ -114,34 +122,52 @@ export default function Orders() {
 
     const totalAmount = filtered.reduce((sum, o) => sum + o.amount, 0)
 
-    const advanceStatus = useCallback((orderId) => {
-        setOrders(prev => prev.map(o => {
-            if (o.id !== orderId) return o
-            const currentIdx = statusFlow.indexOf(o.status)
-            if (currentIdx < 0 || currentIdx >= statusFlow.length - 1) return o
-            return { ...o, status: statusFlow[currentIdx + 1] }
-        }))
-    }, [])
+    const advanceStatus = useCallback(async (order) => {
+        const currentIdx = statusFlow.indexOf(order.status)
+        if (currentIdx < 0 || currentIdx >= statusFlow.length - 1) return
+        const newStatus = statusFlow[currentIdx + 1]
+        await updateOrder(order._id, { status: newStatus })
+    }, [updateOrder])
 
-    const cancelOrder = useCallback((orderId) => {
-        setOrders(prev => prev.map(o =>
-            o.id === orderId ? { ...o, status: 'cancelled', payment: o.payment === 'paid' ? 'refunded' : o.payment } : o
-        ))
-    }, [])
+    const cancelOrder = useCallback(async (order) => {
+        await deleteOrder(order._id)
+    }, [deleteOrder])
 
-    const handleNewOrder = useCallback(() => {
+    const handleNewOrder = useCallback(async () => {
         if (!form.customer.trim() || !form.product.trim()) return alert(t('form.customerProductRequired'))
-        const newId = `PD-2026-${String(orders.length + 1).padStart(3, '0')}`
-        setOrders(prev => [...prev, {
-            id: newId, customer: form.customer, product: form.product,
-            qty: parseInt(form.qty) || 1, width: form.width || '-', height: form.height || '-',
-            amount: parseFloat(form.amount) || 0, status: 'pending',
-            date: new Date().toLocaleDateString('tr-TR', { day: 'numeric', month: 'short', year: 'numeric' }),
-            payment: 'pending',
-        }])
+        setSaving(true)
+        const { error: err } = await createOrder({
+            customer_name: form.customer.trim(),
+            items: [{
+                product_name: form.product.trim(),
+                quantity: parseInt(form.qty) || 1,
+                unit_price: parseFloat(form.amount) || 0,
+                width: form.width || null,
+                height: form.height || null,
+            }],
+            total_amount: parseFloat(form.amount) || 0,
+            notes: `${form.width || '-'} × ${form.height || '-'}`,
+        })
+        setSaving(false)
+        if (err) return alert(err)
         setModalOpen(false)
         setForm({ customer: '', product: '', qty: '1', width: '', height: '', amount: '' })
-    }, [form, orders.length])
+    }, [form, createOrder, t])
+
+    if (loading) return (
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: '400px', flexDirection: 'column', gap: '16px' }}>
+            <div style={{ width: '48px', height: '48px', border: '3px solid var(--border-primary)', borderTopColor: 'var(--accent-blue)', borderRadius: '50%', animation: 'spin 0.8s linear infinite' }} />
+            <span style={{ fontSize: '0.88rem', color: 'var(--text-tertiary)' }}>Siparişler yükleniyor...</span>
+        </div>
+    )
+
+    if (error) return (
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: '400px', flexDirection: 'column', gap: '16px' }}>
+            <span style={{ fontSize: '2.5rem' }}>⚠️</span>
+            <span style={{ fontSize: '0.95rem', color: '#f87171', fontWeight: 600 }}>{error}</span>
+            <button className="btn btn-secondary" onClick={() => window.location.reload()}>Tekrar Dene</button>
+        </div>
+    )
 
     return (
         <div>
@@ -590,7 +616,7 @@ export default function Orders() {
                                                                             boxShadow: '0 4px 20px rgba(88, 166, 255, 0.3)',
                                                                             fontWeight: 700,
                                                                         }}
-                                                                        onClick={(e) => { e.stopPropagation(); advanceStatus(order.id) }}>
+                                                                        onClick={(e) => { e.stopPropagation(); advanceStatus(order) }}>
                                                                         ⏭️ {statusMap[statusFlow[statusFlow.indexOf(order.status) + 1]]?.label || 'İleri'}
                                                                     </button>
                                                                 )}
@@ -612,7 +638,7 @@ export default function Orders() {
                                                                             e.currentTarget.style.borderColor = 'rgba(248, 113, 113, 0.3)'
                                                                             e.currentTarget.style.boxShadow = 'none'
                                                                         }}
-                                                                        onClick={(e) => { e.stopPropagation(); cancelOrder(order.id) }}>
+                                                                        onClick={(e) => { e.stopPropagation(); cancelOrder(order) }}>
                                                                         ❌ İptal Et
                                                                     </button>
                                                                 )}

@@ -1,25 +1,17 @@
-import { useState, useCallback } from 'react'
+import { useState, useCallback, useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
-
-const initialProducts = [
-    { id: 1, name: 'Kadife Fon Perde', fabric: 'Kadife', color: 'Bordo', price: 1300, stock: 24, status: 'active', category: 'Fon Perde' },
-    { id: 2, name: 'Tül Perde Premium', fabric: 'Tül', color: 'Beyaz', price: 600, stock: 48, status: 'active', category: 'Tül Perde' },
-    { id: 3, name: 'Blackout Stor Perde', fabric: 'Polyester', color: 'Gri', price: 1400, stock: 15, status: 'active', category: 'Stor Perde' },
-    { id: 4, name: 'Zebra Perde Modern', fabric: 'Polyester', color: 'Krem', price: 1100, stock: 32, status: 'active', category: 'Zebra Perde' },
-    { id: 5, name: 'Fon Perde Lacivert', fabric: 'Keten', color: 'Lacivert', price: 1600, stock: 8, status: 'low', category: 'Fon Perde' },
-    { id: 6, name: 'Tül Perde Dantel', fabric: 'Dantel', color: 'Ekru', price: 850, stock: 0, status: 'out', category: 'Tül Perde' },
-    { id: 7, name: 'Perde Bant Aksesuar', fabric: '-', color: '-', price: 120, stock: 150, status: 'active', category: 'Aksesuar' },
-    { id: 8, name: 'Blackout Fon Siyah', fabric: 'Blackout', color: 'Siyah', price: 1450, stock: 19, status: 'active', category: 'Fon Perde' },
-    { id: 9, name: 'Jakar Fon Perde', fabric: 'Jakar', color: 'Altın', price: 2200, stock: 6, status: 'low', category: 'Fon Perde' },
-]
+import { useProducts } from '../hooks/useProducts'
 
 const stockBadge = (status) => {
     const map = {
+        in_stock: { label: 'Stokta', cls: 'badge-success' },
         active: { label: 'Stokta', cls: 'badge-success' },
+        low_stock: { label: 'Az Stok', cls: 'badge-warning' },
         low: { label: 'Az Stok', cls: 'badge-warning' },
+        out_of_stock: { label: 'Tükendi', cls: 'badge-danger' },
         out: { label: 'Tükendi', cls: 'badge-danger' },
     }
-    return map[status] || map.active
+    return map[status] || map.in_stock
 }
 
 const categoryColors = {
@@ -45,7 +37,19 @@ const labelStyle = {
 
 export default function Products() {
     const { t } = useTranslation('products')
-    const [products, setProducts] = useState(initialProducts)
+    const { products: rawProducts, loading, error, createProduct, updateProduct, deleteProduct: apiDeleteProduct } = useProducts()
+
+    // Normalize DB fields to match UI expectations
+    const products = useMemo(() => rawProducts.map(p => ({
+        ...p,
+        fabric: p.fabric_type || p.fabric || '-',
+        color: p.color || '-',
+        price: p.price_per_meter ?? p.price ?? 0,
+        stock: p.stock_meters ?? p.stock ?? 0,
+        status: p.stock_status || p.status || 'in_stock',
+        category: p.category || 'Fon Perde',
+    })), [rawProducts])
+
     const [search, setSearch] = useState('')
     const [category, setCategory] = useState('all')
     const [view, setView] = useState('grid')
@@ -54,6 +58,7 @@ export default function Products() {
     const [selectedProduct, setSelectedProduct] = useState(null)
     const [form, setForm] = useState(emptyForm)
     const [deleteConfirm, setDeleteConfirm] = useState(null)
+    const [saving, setSaving] = useState(false)
 
     const filtered = products.filter(p => {
         const matchSearch = p.name.toLowerCase().includes(search.toLowerCase())
@@ -82,32 +87,36 @@ export default function Products() {
         setModalOpen(true)
     }, [])
 
-    const handleSave = useCallback(() => {
+    const handleSave = useCallback(async () => {
         if (!form.name.trim()) return alert(t('form.nameRequired'))
         if (!form.price) return alert(t('form.priceRequired'))
-        const stockNum = parseInt(form.stock) || 0
-        const status = stockNum === 0 ? 'out' : stockNum < 10 ? 'low' : 'active'
-        if (editingProduct) {
-            setProducts(prev => prev.map(p => p.id === editingProduct.id
-                ? { ...p, name: form.name, fabric: form.fabric, color: form.color, price: parseFloat(form.price), stock: stockNum, status, category: form.category }
-                : p
-            ))
-        } else {
-            const newId = Math.max(...products.map(p => p.id)) + 1
-            setProducts(prev => [...prev, {
-                id: newId, name: form.name, fabric: form.fabric, color: form.color,
-                price: parseFloat(form.price), stock: stockNum, status, category: form.category,
-            }])
+        setSaving(true)
+        const payload = {
+            name: form.name.trim(),
+            fabric_type: form.fabric.trim(),
+            color: form.color.trim(),
+            price_per_meter: parseFloat(form.price) || 0,
+            stock_meters: parseInt(form.stock) || 0,
+            category: form.category,
         }
+        if (editingProduct) {
+            const { error: err } = await updateProduct(editingProduct.id, payload)
+            if (err) { setSaving(false); return alert(err) }
+        } else {
+            const { error: err } = await createProduct(payload)
+            if (err) { setSaving(false); return alert(err) }
+        }
+        setSaving(false)
         setModalOpen(false)
         setForm(emptyForm)
-    }, [form, editingProduct, products])
+    }, [form, editingProduct, createProduct, updateProduct, t])
 
-    const handleDelete = useCallback((id) => {
-        setProducts(prev => prev.filter(p => p.id !== id))
+    const handleDelete = useCallback(async (id) => {
+        const { error: err } = await apiDeleteProduct(id)
+        if (err) return alert(err)
         setDeleteConfirm(null)
         setSelectedProduct(null)
-    }, [])
+    }, [apiDeleteProduct])
 
     const colorBg = (color) => {
         const map = {
@@ -125,6 +134,21 @@ export default function Products() {
 
     /* Stock percentage for progress bar */
     const stockPercent = (stock) => Math.min((stock / 50) * 100, 100)
+
+    if (loading) return (
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: '400px', flexDirection: 'column', gap: '16px' }}>
+            <div style={{ width: '48px', height: '48px', border: '3px solid var(--border-primary)', borderTopColor: 'var(--accent-blue)', borderRadius: '50%', animation: 'spin 0.8s linear infinite' }} />
+            <span style={{ fontSize: '0.88rem', color: 'var(--text-tertiary)' }}>Ürünler yükleniyor...</span>
+        </div>
+    )
+
+    if (error) return (
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: '400px', flexDirection: 'column', gap: '16px' }}>
+            <span style={{ fontSize: '2.5rem' }}>⚠️</span>
+            <span style={{ fontSize: '0.95rem', color: '#f87171', fontWeight: 600 }}>{error}</span>
+            <button className="btn btn-secondary" onClick={() => window.location.reload()}>Tekrar Dene</button>
+        </div>
+    )
 
     return (
         <div>

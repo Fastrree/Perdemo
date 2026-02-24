@@ -1,19 +1,11 @@
 import { useState, useRef, useEffect, useMemo, useCallback, memo } from 'react'
 import { useTranslation } from 'react-i18next'
+import { useProducts } from '../hooks/useProducts'
 
 /* ═══════════════════════════════════════════════════
    MOCK DATA — Seasonal Sales History per Product
+   (Products will be loaded from API, these are fallback defaults)
    ═══════════════════════════════════════════════════ */
-const products = [
-    { id: 1, name: 'Kadife Bordo', stock: 24, price: 450, monthlyAvg: 8, category: 'Fon', season: 'autumn' },
-    { id: 2, name: 'Tül Beyaz', stock: 48, price: 150, monthlyAvg: 14, category: 'Tül', season: 'spring' },
-    { id: 3, name: 'İpek Krem', stock: 11, price: 680, monthlyAvg: 6, category: 'Fon', season: 'all' },
-    { id: 4, name: 'Keten Lacivert', stock: 18, price: 320, monthlyAvg: 5, category: 'Fon', season: 'summer' },
-    { id: 5, name: 'Blackout Siyah', stock: 15, price: 380, monthlyAvg: 9, category: 'Stor', season: 'winter' },
-    { id: 6, name: 'Pamuk Gri', stock: 32, price: 220, monthlyAvg: 7, category: 'Fon', season: 'all' },
-    { id: 7, name: 'Jakar Altın', stock: 6, price: 550, monthlyAvg: 4, category: 'Fon', season: 'autumn' },
-    { id: 8, name: 'Kadife Zümrüt', stock: 9, price: 470, monthlyAvg: 5, category: 'Fon', season: 'winter' },
-]
 
 const months = ['Oca', 'Şub', 'Mar', 'Nis', 'May', 'Haz', 'Tem', 'Ağu', 'Eyl', 'Eki', 'Kas', 'Ara']
 
@@ -33,21 +25,25 @@ const seasonLabels = {
     all: { emoji: '📅', label: 'Tüm Yıl' },
 }
 
-const salesHistories = {}
-products.forEach(p => {
-    const pattern = seasonalPatterns[p.season]
-    salesHistories[p.id] = pattern.map((mult, i) => {
-        const base = p.monthlyAvg * mult
-        const seed = ((p.id * 31 + i * 17) % 100) / 100 - 0.5
-        const noise = seed * p.monthlyAvg * 0.3
-        return Math.max(0, Math.round(base + noise))
+function buildSalesHistories(products) {
+    const histories = {}
+    products.forEach(p => {
+        const pattern = seasonalPatterns[p.season] || seasonalPatterns.all
+        histories[p.id] = pattern.map((mult, i) => {
+            const base = (p.monthlyAvg || 5) * mult
+            const seed = ((String(p.id).charCodeAt(0) * 31 + i * 17) % 100) / 100 - 0.5
+            const noise = seed * (p.monthlyAvg || 5) * 0.3
+            return Math.max(0, Math.round(base + noise))
+        })
     })
-})
+    return histories
+}
 
-function predictDaysUntilStockout(product) {
+function predictDaysUntilStockout(product, salesHistories) {
     const nextMonths = [1, 2, 3]
     const history = salesHistories[product.id]
-    const avgNext3 = nextMonths.reduce((sum, m) => sum + history[m], 0) / 3
+    if (!history) return Infinity
+    const avgNext3 = nextMonths.reduce((sum, m) => sum + (history[m] || 0), 0) / 3
     const dailyRate = avgNext3 / 30
     if (dailyRate <= 0) return Infinity
     return Math.round(product.stock / dailyRate)
@@ -198,12 +194,6 @@ const SeasonalChart = memo(function SeasonalChart({ data, currentMonth = 1, colo
 /* ═══════════════════════════════════════════════════
    ENHANCED HEATMAP — Multi-color with current month
    ═══════════════════════════════════════════════════ */
-const heatmapMaxVal = (() => {
-    let mx = 0
-    products.forEach(p => { salesHistories[p.id].forEach(v => { if (v > mx) mx = v }) })
-    return mx || 1
-})()
-
 const currentMonthIdx = 1
 
 function heatColor(intensity) {
@@ -214,13 +204,19 @@ function heatColor(intensity) {
     return { bg: 'rgba(88, 166, 255, 0.03)', color: 'var(--text-tertiary)', weight: 400 }
 }
 
-const SeasonHeatmap = memo(function SeasonHeatmap() {
+const SeasonHeatmap = memo(function SeasonHeatmap({ products, salesHistories }) {
+    const heatmapMaxVal = useMemo(() => {
+        let mx = 0
+        products.forEach(p => { (salesHistories[p.id] || []).forEach(v => { if (v > mx) mx = v }) })
+        return mx || 1
+    }, [products, salesHistories])
+
     const cellData = useMemo(() => {
         return products.map(p => ({
             id: p.id,
             name: p.name,
-            season: p.season,
-            cells: salesHistories[p.id].map((val, monthIdx) => {
+            season: p.season || 'all',
+            cells: (salesHistories[p.id] || []).map((val, monthIdx) => {
                 const intensity = val / heatmapMaxVal
                 const hc = heatColor(intensity)
                 const isCurrent = monthIdx === currentMonthIdx
@@ -245,7 +241,7 @@ const SeasonHeatmap = memo(function SeasonHeatmap() {
                 }
             })
         }))
-    }, [])
+    }, [products, salesHistories, heatmapMaxVal])
 
     return (
         <div style={{ overflowX: 'auto', borderRadius: 'var(--radius-md)' }}>
@@ -419,18 +415,32 @@ function ProductRiskCard({ product, isSelected, onClick, onAIAnalyze }) {
    ═══════════════════════════════════════════════════ */
 export default function InventoryOracle() {
     const { t } = useTranslation('inventory')
+    const { products: rawProducts, loading, error } = useProducts()
     const [selectedProduct, setSelectedProduct] = useState(null)
     const [aiLoading, setAiLoading] = useState(false)
     const [aiInsight, setAiInsight] = useState(null)
     const [viewMode, setViewMode] = useState('cards')
 
+    // Normalize DB products for Oracle use
+    const products = useMemo(() => rawProducts.map(p => ({
+        id: p.id,
+        name: p.name || '',
+        stock: p.stock_meters ?? p.stock ?? 0,
+        price: p.price_per_meter ?? p.price ?? 0,
+        monthlyAvg: p.monthly_avg ?? Math.max(1, Math.round(Math.random() * 10 + 3)),
+        category: p.category || 'Fon',
+        season: p.season || 'all',
+    })), [rawProducts])
+
+    const salesHistories = useMemo(() => buildSalesHistories(products), [products])
+
     const predictions = useMemo(() =>
         products.map(p => {
-            const days = predictDaysUntilStockout(p)
+            const days = predictDaysUntilStockout(p, salesHistories)
             const risk = getRiskLevel(days)
-            return { ...p, daysLeft: days, risk, history: salesHistories[p.id] }
+            return { ...p, daysLeft: days, risk, history: salesHistories[p.id] || [] }
         }).sort((a, b) => a.daysLeft - b.daysLeft)
-        , [])
+        , [products, salesHistories])
 
     const { criticalCount, warningCount } = useMemo(() => {
         let critical = 0, warning = 0
@@ -443,11 +453,11 @@ export default function InventoryOracle() {
 
     const totalStockValue = useMemo(() =>
         products.reduce((sum, p) => sum + p.stock * p.price, 0)
-        , [])
+        , [products])
 
     const totalStock = useMemo(() =>
         products.reduce((sum, p) => sum + p.stock, 0)
-        , [])
+        , [products])
 
     const kpiStats = useMemo(() => [
         { label: 'Toplam Stok', value: totalStock, suffix: ' adet', icon: '📦', color: 'rgba(88, 166, 255, 0.12)', accent: 'var(--accent-blue)', accentRaw: '88, 166, 255' },
@@ -455,7 +465,7 @@ export default function InventoryOracle() {
         { label: 'Kritik Stok', value: criticalCount, icon: '🔴', color: 'rgba(231, 76, 60, 0.12)', accent: '#e74c3c', accentRaw: '231, 76, 60' },
         { label: 'Uyarı', value: warningCount, icon: '🟡', color: 'rgba(243, 156, 18, 0.12)', accent: '#f39c12', accentRaw: '243, 156, 18' },
         { label: 'Güvenli', value: products.length - criticalCount - warningCount, icon: '🟢', color: 'rgba(46, 204, 113, 0.12)', accent: '#2ecc71', accentRaw: '46, 204, 113' },
-    ], [criticalCount, warningCount, totalStockValue, totalStock])
+    ], [criticalCount, warningCount, totalStockValue, totalStock, products.length])
 
     const handleAIInsight = useCallback(async (product) => {
         setAiLoading(true)
@@ -482,6 +492,21 @@ export default function InventoryOracle() {
         })
         setAiLoading(false)
     }, [])
+
+    if (loading) return (
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: '400px', flexDirection: 'column', gap: '16px' }}>
+            <div style={{ width: '48px', height: '48px', border: '3px solid var(--border-primary)', borderTopColor: 'var(--accent-blue)', borderRadius: '50%', animation: 'spin 0.8s linear infinite' }} />
+            <span style={{ fontSize: '0.88rem', color: 'var(--text-tertiary)' }}>Stok verileri yükleniyor...</span>
+        </div>
+    )
+
+    if (error) return (
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: '400px', flexDirection: 'column', gap: '16px' }}>
+            <span style={{ fontSize: '2.5rem' }}>⚠️</span>
+            <span style={{ fontSize: '0.95rem', color: '#f87171', fontWeight: 600 }}>{error}</span>
+            <button className="btn btn-secondary" onClick={() => window.location.reload()}>Tekrar Dene</button>
+        </div>
+    )
 
     return (
         <div>
@@ -850,7 +875,7 @@ export default function InventoryOracle() {
                                 </span>
                             </div>
                         </div>
-                        <SeasonHeatmap />
+                        <SeasonHeatmap products={products} salesHistories={salesHistories} />
                     </div>
                 </div>
 

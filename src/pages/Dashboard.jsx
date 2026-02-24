@@ -1,24 +1,18 @@
-import { useEffect, useRef, useCallback, memo } from 'react'
+import { useEffect, useRef, useCallback, useMemo, memo } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { generateDashboardReport } from '../utils/excelReport'
+import { useDashboard } from '../hooks/useDashboard'
 
-// Mock data
-const statDefs = [
-    { labelKey: 'stats.totalRevenue', value: '₺247.580', change: '+12.5%', positive: true, icon: '💰', color: 'rgba(88, 166, 255, 0.12)', accent: 'var(--accent-blue)' },
-    { labelKey: 'stats.orders', value: '156', change: '+8.2%', positive: true, icon: '📦', color: 'rgba(139, 92, 246, 0.12)', accent: '#bc8cff' },
-    { labelKey: 'stats.products', value: '89', change: '+4', positive: true, icon: '🪟', color: 'rgba(240, 180, 41, 0.12)', accent: '#f0b429' },
-    { labelKey: 'stats.customers', value: '342', change: '+23', positive: true, icon: '👥', color: 'rgba(63, 185, 80, 0.12)', accent: '#3fb950' },
+// KPI card definitions (values filled from API)
+const statDefTemplates = [
+    { labelKey: 'stats.totalRevenue', icon: '💰', color: 'rgba(88, 166, 255, 0.12)', accent: 'var(--accent-blue)', field: 'totalRevenue', format: v => `₺${(v || 0).toLocaleString('tr-TR')}` },
+    { labelKey: 'stats.orders', icon: '📦', color: 'rgba(139, 92, 246, 0.12)', accent: '#bc8cff', field: 'totalOrders', format: v => String(v || 0) },
+    { labelKey: 'stats.products', icon: '🪟', color: 'rgba(240, 180, 41, 0.12)', accent: '#f0b429', field: 'totalProducts', format: v => String(v || 0) },
+    { labelKey: 'stats.customers', icon: '👥', color: 'rgba(63, 185, 80, 0.12)', accent: '#3fb950', field: 'totalCustomers', format: v => String(v || 0) },
 ]
 
-const recentOrders = [
-    { id: 'PD-2024-001', customer: 'Elif Kaya', product: 'Kadife Perde - Bordo', amount: '₺3.450', status: 'shipped', date: '15 Şub 2026' },
-    { id: 'PD-2024-002', customer: 'Mehmet Demir', product: 'Tül Perde - Beyaz', amount: '₺1.200', status: 'processing', date: '14 Şub 2026' },
-    { id: 'PD-2024-003', customer: 'Ayşe Yıldız', product: 'Stor Perde - Gri', amount: '₺2.800', status: 'delivered', date: '13 Şub 2026' },
-    { id: 'PD-2024-004', customer: 'Can Öztürk', product: 'Fon Perde - Lacivert', amount: '₺4.100', status: 'pending', date: '13 Şub 2026' },
-    { id: 'PD-2024-005', customer: 'Zeynep Ak', product: 'Blackout Perde - Siyah', amount: '₺2.650', status: 'processing', date: '12 Şub 2026' },
-]
-
+// Top products — mock (no aggregate endpoint yet)
 const topProducts = [
     { name: 'Kadife Fon Perde', sales: 42, revenue: '₺54.600', trend: '+18%' },
     { name: 'Tül Perde Premium', sales: 38, revenue: '₺22.800', trend: '+12%' },
@@ -267,9 +261,30 @@ const avatarGradients = [
 export default function Dashboard() {
     const navigate = useNavigate()
     const { t } = useTranslation('dashboard')
+    const { stats: apiStats, loading, error } = useDashboard()
 
-    // Build translated data
-    const stats = statDefs.map(s => ({ ...s, label: t(s.labelKey) }))
+    // Build translated KPI data from API stats
+    const stats = useMemo(() => statDefTemplates.map(s => ({
+        ...s,
+        label: t(s.labelKey),
+        value: s.format(apiStats?.[s.field]),
+        change: '',
+        positive: true,
+    })), [apiStats, t])
+
+    // Recent orders from API
+    const recentOrders = useMemo(() => {
+        if (!apiStats?.recentOrders) return []
+        return apiStats.recentOrders.map(o => ({
+            id: o.order_number || `#${o.id?.slice(0, 8)}`,
+            customer: o.customers?.full_name || o.customer_name || 'Bilinmiyor',
+            product: `${o.item_count || 0} ürün`,
+            amount: `₺${(o.total_amount || 0).toLocaleString('tr-TR')}`,
+            status: o.status || 'pending',
+            date: o.created_at ? new Date(o.created_at).toLocaleDateString('tr-TR', { day: 'numeric', month: 'short', year: 'numeric' }) : '-',
+        }))
+    }, [apiStats])
+
     const statusMap = Object.fromEntries(
         Object.entries(statusKeys).map(([k, v]) => [k, { ...v, label: t(v.labelKey) }])
     )
@@ -314,6 +329,21 @@ export default function Dashboard() {
     }, [stats, months, statusMap, t])
 
     const maxSales = Math.max(...topProducts.map(p => p.sales))
+
+    if (loading) return (
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: '400px', flexDirection: 'column', gap: '16px' }}>
+            <div style={{ width: '48px', height: '48px', border: '3px solid var(--border-primary)', borderTopColor: 'var(--accent-blue)', borderRadius: '50%', animation: 'spin 0.8s linear infinite' }} />
+            <span style={{ fontSize: '0.88rem', color: 'var(--text-tertiary)' }}>Dashboard yükleniyor...</span>
+        </div>
+    )
+
+    if (error) return (
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: '400px', flexDirection: 'column', gap: '16px' }}>
+            <span style={{ fontSize: '2.5rem' }}>⚠️</span>
+            <span style={{ fontSize: '0.95rem', color: '#f87171', fontWeight: 600 }}>{error}</span>
+            <button className="btn btn-secondary" onClick={() => window.location.reload()}>Tekrar Dene</button>
+        </div>
+    )
 
     return (
         <div style={{ position: 'relative' }}>

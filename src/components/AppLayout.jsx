@@ -2,6 +2,7 @@ import { useState, useRef, useEffect, useCallback } from 'react'
 import { Outlet, NavLink, useLocation, useNavigate } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { useTheme } from '../App'
+import { useAuth } from '../contexts/AuthContext'
 import useIsMobile from '../hooks/useIsMobile'
 import LanguageSwitcher from './LanguageSwitcher'
 
@@ -30,6 +31,7 @@ const mockNotificationDefs = [
 export default function AppLayout() {
     const { t } = useTranslation('common')
     const { theme, toggleTheme } = useTheme()
+    const { profile, signOut } = useAuth()
     const location = useLocation()
     const navigate = useNavigate()
     const [notifOpen, setNotifOpen] = useState(false)
@@ -138,9 +140,9 @@ export default function AppLayout() {
 
                 <div className="sidebar-footer">
                     <div className="sidebar-user">
-                        <div className="avatar avatar-sm">AY</div>
+                        <div className="avatar avatar-sm">{profile?.full_name?.[0] || 'K'}</div>
                         <div className="sidebar-user-info">
-                            <div className="sidebar-user-name">Ahmet Yılmaz</div>
+                            <div className="sidebar-user-name">{profile?.full_name || 'Kullanıcı'}</div>
                             <div className="sidebar-user-role">{t('profile.role')}</div>
                         </div>
                     </div>
@@ -254,12 +256,12 @@ export default function AppLayout() {
                         {/* Profile Avatar */}
                         <div ref={profileRef} style={{ position: 'relative' }}>
                             <div className="avatar avatar-sm" style={{ cursor: 'pointer' }} data-tooltip={t('aria.profile')}
-                                onClick={() => { setProfileOpen(!profileOpen); setNotifOpen(false) }}>AY</div>
+                                onClick={() => { setProfileOpen(!profileOpen); setNotifOpen(false) }}>{profile?.full_name?.[0] || 'K'}</div>
 
                             {profileOpen && (
                                 <div className="dropdown-panel profile-dropdown">
                                     <div style={{ padding: '14px 16px', borderBottom: '1px solid var(--border-primary)' }}>
-                                        <div style={{ fontWeight: 700, fontSize: '0.9rem' }}>Ahmet Yılmaz</div>
+                                        <div style={{ fontWeight: 700, fontSize: '0.9rem' }}>{profile?.full_name || 'Kullanıcı'}</div>
                                         <div style={{ fontSize: '0.75rem', color: 'var(--text-tertiary)' }}>{t('profile.role')}</div>
                                     </div>
                                     {[
@@ -267,7 +269,7 @@ export default function AppLayout() {
                                         { icon: '🔔', label: t('profile.notifPrefs'), action: () => alert(t('profile.notifPrefsAlert')) },
                                         { icon: '🌗', label: theme === 'dark' ? t('profile.lightTheme') : t('profile.darkTheme'), action: () => { toggleTheme(); setProfileOpen(false) } },
                                         { icon: '🌐', label: t('profile.visitWebsite'), action: () => { navigate('/'); setProfileOpen(false) } },
-                                        { icon: '🚪', label: t('profile.logout'), action: () => { navigate('/'); setProfileOpen(false) } },
+                                        { icon: '🚪', label: t('profile.logout'), action: async () => { await signOut(); navigate('/login'); setProfileOpen(false) } },
                                     ].map((item) => (
                                         <button key={item.label} onClick={item.action} style={{
                                             display: 'flex', alignItems: 'center', gap: '10px', width: '100%',

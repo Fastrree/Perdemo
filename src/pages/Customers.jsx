@@ -1,18 +1,9 @@
 import { useState, useCallback, useMemo, memo, startTransition } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
+import { useCustomers } from '../hooks/useCustomers'
 
-const initialCustomers = [
-    { id: 1, name: 'Elif Kaya', email: 'elif.kaya@email.com', phone: '0532 111 2233', city: 'İstanbul', orders: 12, totalSpent: 34500, lastOrder: '15 Şub 2026', status: 'active' },
-    { id: 2, name: 'Mehmet Demir', email: 'mehmet.d@email.com', phone: '0533 222 3344', city: 'Ankara', orders: 8, totalSpent: 18200, lastOrder: '14 Şub 2026', status: 'active' },
-    { id: 3, name: 'Ayşe Yıldız', email: 'ayse.y@email.com', phone: '0535 333 4455', city: 'İzmir', orders: 15, totalSpent: 42800, lastOrder: '13 Şub 2026', status: 'vip' },
-    { id: 4, name: 'Can Öztürk', email: 'can.oz@email.com', phone: '0536 444 5566', city: 'Bursa', orders: 3, totalSpent: 8100, lastOrder: '13 Şub 2026', status: 'active' },
-    { id: 5, name: 'Zeynep Ak', email: 'zeynep.ak@email.com', phone: '0537 555 6677', city: 'Antalya', orders: 6, totalSpent: 15900, lastOrder: '12 Şub 2026', status: 'active' },
-    { id: 6, name: 'Burak Şen', email: 'burak.s@email.com', phone: '0538 666 7788', city: 'İstanbul', orders: 22, totalSpent: 68400, lastOrder: '12 Şub 2026', status: 'vip' },
-    { id: 7, name: 'Deniz Arslan', email: 'deniz.a@email.com', phone: '0539 777 8899', city: 'Konya', orders: 5, totalSpent: 12500, lastOrder: '11 Şub 2026', status: 'active' },
-    { id: 8, name: 'Fatma Çelik', email: 'fatma.c@email.com', phone: '0530 888 9900', city: 'Adana', orders: 1, totalSpent: 2200, lastOrder: '10 Şub 2026', status: 'new' },
-    { id: 9, name: 'Gökhan Aydın', email: 'gokhan.a@email.com', phone: '0531 999 0011', city: 'İstanbul', orders: 0, totalSpent: 0, lastOrder: '-', status: 'inactive' },
-]
+
 
 /* ═══════════════════════════════════════════════════
    DIGITAL TWIN — Per-Customer Window Archive
@@ -345,13 +336,29 @@ const CustomerDetailSlideOver = memo(function CustomerDetailSlideOver({ customer
    ═══════════════════════════════════════════════════ */
 export default function Customers() {
     const { t } = useTranslation('customers')
-    const [customers, setCustomers] = useState(initialCustomers)
+    const { customers: rawCustomers, loading, error, createCustomer, updateCustomer, deleteCustomer: apiDeleteCustomer } = useCustomers()
+
+    // Normalize DB fields to match UI expectations
+    const customers = useMemo(() => rawCustomers.map(c => ({
+        ...c,
+        name: c.full_name || c.name || '',
+        email: c.email || '',
+        phone: c.phone || '',
+        city: c.city || '',
+        orders: c.total_orders ?? c.orders ?? 0,
+        totalSpent: c.total_spent ?? c.totalSpent ?? 0,
+        lastOrder: c.last_order_date
+            ? new Date(c.last_order_date).toLocaleDateString('tr-TR', { day: 'numeric', month: 'short', year: 'numeric' })
+            : (c.lastOrder || '-'),
+        status: c.status || 'active',
+    })), [rawCustomers])
+
     const [search, setSearch] = useState('')
     const [selectedCustomer, setSelectedCustomer] = useState(null)
     const [modalOpen, setModalOpen] = useState(false)
     const [editingCustomer, setEditingCustomer] = useState(null)
     const [form, setForm] = useState(emptyForm)
-    // detailTab state moved to CustomerDetailSlideOver
+    const [saving, setSaving] = useState(false)
 
     const searchLower = search.toLowerCase()
     const filtered = useMemo(() =>
@@ -365,7 +372,6 @@ export default function Customers() {
     const totalRevenue = useMemo(() => customers.reduce((sum, c) => sum + c.totalSpent, 0), [customers])
     const updateForm = useCallback((field, value) => setForm(f => ({ ...f, [field]: value })), [])
 
-    /* Wrap selection in startTransition to prevent UI blocking */
     const selectCustomer = useCallback((c) => {
         startTransition(() => setSelectedCustomer(c))
     }, [])
@@ -380,31 +386,50 @@ export default function Customers() {
         setEditingCustomer(customer)
         setForm({ name: customer.name, email: customer.email, phone: customer.phone, city: customer.city })
         setModalOpen(true)
-        setSelectedCustomer(null) // Close slideover if opening modal from it
-    }, [])
-
-    const handleSave = useCallback(() => {
-        if (!form.name.trim()) return alert('İsim gerekli')
-        if (editingCustomer) {
-            setCustomers(prev => prev.map(c => c.id === editingCustomer.id
-                ? { ...c, name: form.name, email: form.email, phone: form.phone, city: form.city }
-                : c
-            ))
-        } else {
-            const newId = Math.max(...customers.map(c => c.id)) + 1
-            setCustomers(prev => [...prev, {
-                id: newId, name: form.name, email: form.email, phone: form.phone, city: form.city,
-                orders: 0, totalSpent: 0, lastOrder: '-', status: 'new',
-            }])
-        }
-        setModalOpen(false)
-        setForm(emptyForm)
-    }, [form, editingCustomer, customers])
-
-    const handleDelete = useCallback((id) => {
-        setCustomers(prev => prev.filter(c => c.id !== id))
         setSelectedCustomer(null)
     }, [])
+
+    const handleSave = useCallback(async () => {
+        if (!form.name.trim()) return alert('İsim gerekli')
+        setSaving(true)
+        const payload = {
+            full_name: form.name.trim(),
+            email: form.email.trim(),
+            phone: form.phone.trim(),
+            city: form.city.trim(),
+        }
+        if (editingCustomer) {
+            const { error: err } = await updateCustomer(editingCustomer.id, payload)
+            if (err) { setSaving(false); return alert(err) }
+        } else {
+            const { error: err } = await createCustomer(payload)
+            if (err) { setSaving(false); return alert(err) }
+        }
+        setSaving(false)
+        setModalOpen(false)
+        setForm(emptyForm)
+    }, [form, editingCustomer, createCustomer, updateCustomer])
+
+    const handleDelete = useCallback(async (id) => {
+        const { error: err } = await apiDeleteCustomer(id)
+        if (err) return alert(err)
+        setSelectedCustomer(null)
+    }, [apiDeleteCustomer])
+
+    if (loading) return (
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: '400px', flexDirection: 'column', gap: '16px' }}>
+            <div style={{ width: '48px', height: '48px', border: '3px solid var(--border-primary)', borderTopColor: 'var(--accent-blue)', borderRadius: '50%', animation: 'spin 0.8s linear infinite' }} />
+            <span style={{ fontSize: '0.88rem', color: 'var(--text-tertiary)' }}>Müşteriler yükleniyor...</span>
+        </div>
+    )
+
+    if (error) return (
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: '400px', flexDirection: 'column', gap: '16px' }}>
+            <span style={{ fontSize: '2.5rem' }}>⚠️</span>
+            <span style={{ fontSize: '0.95rem', color: '#f87171', fontWeight: 600 }}>{error}</span>
+            <button className="btn btn-secondary" onClick={() => window.location.reload()}>Tekrar Dene</button>
+        </div>
+    )
 
     return (
         <div>
