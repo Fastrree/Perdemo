@@ -60,7 +60,7 @@ const CanvasChart = memo(function CanvasChart({ data, labels, height = 220, colo
         const pad = { top: 24, right: 20, bottom: 36, left: 50 }
         const cw = w - pad.left - pad.right
         const ch = h - pad.top - pad.bottom
-        const max = Math.max(...data) * 1.15
+        const max = (data.length ? Math.max(...data) : 1) * 1.15
         const stepX = cw / (data.length - 1)
 
         // Grid lines

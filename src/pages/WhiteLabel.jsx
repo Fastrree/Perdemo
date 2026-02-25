@@ -49,7 +49,7 @@ const TurkeyMap = memo(function TurkeyMap({ dealers: dealerList, onSelect, selec
     const [infoDealer, setInfoDealer] = useState(null)
 
     const markerData = useMemo(() => {
-        const maxRevenue = Math.max(...dealerList.map(d => d.monthlyRevenue))
+        const maxRevenue = dealerList.length ? Math.max(...dealerList.map(d => d.monthlyRevenue)) : 1
         return dealerList.map(d => {
             const scale = 0.8 + (d.monthlyRevenue / maxRevenue) * 0.7
             const cfg = statusConfig[d.status]
@@ -531,7 +531,7 @@ export default function WhiteLabel() {
         dealers.filter(d => regionFilter === 'Tumu' || d.region === regionFilter)
         , [regionFilter, dealers])
 
-    const maxRevenue = useMemo(() => Math.max(...filtered.map(d => d.monthlyRevenue)), [filtered])
+    const maxRevenue = useMemo(() => filtered.length ? Math.max(...filtered.map(d => d.monthlyRevenue)) : 1, [filtered])
 
     const kpiData = useMemo(() => {
         let revenue = 0, orders = 0, demos = 0, satSum = 0

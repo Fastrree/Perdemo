@@ -53,7 +53,7 @@ const MiniChart = memo(function MiniChart() {
             ctx.clearRect(0, 0, w, h)
 
             const data = chartData
-            const max = Math.max(...data) * 1.15
+            const max = (data.length ? Math.max(...data) : 1) * 1.15
             const isMobileChart = w < 400
             const fontSize = isMobileChart ? '9px Inter' : '11px Inter'
             const padding = { top: 20, right: 15, bottom: 40, left: isMobileChart ? 40 : 50 }
@@ -210,8 +210,8 @@ const sparklineData = [
    Inline Sparkline SVG component
    ═══════════════════════════════════════════════════ */
 function Sparkline({ data, color, width = 80, height = 28 }) {
-    const max = Math.max(...data)
-    const min = Math.min(...data)
+    const max = data.length ? Math.max(...data) : 1
+    const min = data.length ? Math.min(...data) : 0
     const range = max - min || 1
     const points = data.map((v, i) => {
         const x = (i / (data.length - 1)) * width

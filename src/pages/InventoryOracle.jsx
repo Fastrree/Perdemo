@@ -120,7 +120,7 @@ const SeasonalChart = memo(function SeasonalChart({ data, currentMonth = 1, colo
         const pad = { top: 20, right: 16, bottom: 32, left: 40 }
         const cw = w - pad.left - pad.right
         const ch = h - pad.top - pad.bottom
-        const max = Math.max(...data) * 1.2 || 1
+        const max = (data.length ? Math.max(...data) : 0) * 1.2 || 1
 
         ctx.clearRect(0, 0, w, h)
 
