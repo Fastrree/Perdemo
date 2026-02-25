@@ -22,6 +22,7 @@ const NotFound = lazy(() => import('./pages/NotFound'))
 const Login = lazy(() => import('./pages/Login'))
 const Register = lazy(() => import('./pages/Register'))
 const ForgotPassword = lazy(() => import('./pages/ForgotPassword'))
+const Settings = lazy(() => import('./pages/Settings'))
 
 export const ThemeContext = createContext()
 
@@ -87,6 +88,7 @@ function AppRoutes() {
           <Route path="/analytics" element={<DesktopOnly><Analytics /></DesktopOnly>} />
           <Route path="/inventory-oracle" element={<DesktopOnly><InventoryOracle /></DesktopOnly>} />
           <Route path="/white-label" element={<DesktopOnly><WhiteLabel /></DesktopOnly>} />
+          <Route path="/settings" element={<Settings />} />
         </Route>
         <Route path="*" element={<NotFound />} />
       </Routes>

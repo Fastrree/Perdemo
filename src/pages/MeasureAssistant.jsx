@@ -1,6 +1,7 @@
 import { useState, useRef, useCallback, useMemo, useEffect } from 'react'
 import { useTranslation } from 'react-i18next'
 import { calculateFabricCost } from '../utils/aiProxy'
+import { useCurrency } from '../hooks/useCurrency'
 
 /* ─── Fabric catalog ─── */
 const fabricCatalog = [
@@ -195,6 +196,7 @@ function PhotoMeasure() {
 
 /* ─── Cost Simulator ─── */
 function CostSimulator() {
+    const { symbol, formatMoney } = useCurrency()
     const [windowW, setWindowW] = useState(200)
     const [windowH, setWindowH] = useState(250)
     const [fabricIdx, setFabricIdx] = useState(0)
@@ -233,7 +235,7 @@ function CostSimulator() {
                     <select className="input" value={fabricIdx}
                         onChange={e => setFabricIdx(parseInt(e.target.value))}>
                         {fabricCatalog.map((f, i) => (
-                            <option key={i} value={i}>{f.name} ({f.width}cm en, ₺{f.price}/m)</option>
+                            <option key={i} value={i}>{f.name} ({f.width}cm en, {symbol}{f.price}/m)</option>
                         ))}
                     </select>
                 </div>
@@ -264,7 +266,7 @@ function CostSimulator() {
                 </div>
                 <div style={s.resultBox}>
                     <div style={{ fontSize: '0.7rem', color: 'var(--text-tertiary)' }}>Toplam</div>
-                    <div style={s.bigNum}>₺{cost.totalCost.toLocaleString('tr-TR')}</div>
+                    <div style={s.bigNum}>{formatMoney(cost.totalCost)}</div>
                     <div style={{ fontSize: '0.7rem', color: 'var(--text-tertiary)' }}>KDV hariç</div>
                 </div>
             </div>

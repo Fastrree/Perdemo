@@ -1,24 +1,19 @@
 import { useEffect, useRef, useCallback, useMemo, memo } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
+import { useCurrency } from '../hooks/useCurrency'
 import { generateDashboardReport } from '../utils/excelReport'
 import { useDashboard } from '../hooks/useDashboard'
 
 // KPI card definitions (values filled from API)
 const statDefTemplates = [
-    { labelKey: 'stats.totalRevenue', icon: '💰', color: 'rgba(88, 166, 255, 0.12)', accent: 'var(--accent-blue)', field: 'totalRevenue', format: v => `₺${(v || 0).toLocaleString('tr-TR')}` },
+    { labelKey: 'stats.totalRevenue', icon: '💰', color: 'rgba(88, 166, 255, 0.12)', accent: 'var(--accent-blue)', field: 'totalRevenue', format: null },
     { labelKey: 'stats.orders', icon: '📦', color: 'rgba(139, 92, 246, 0.12)', accent: '#bc8cff', field: 'totalOrders', format: v => String(v || 0) },
     { labelKey: 'stats.products', icon: '🪟', color: 'rgba(240, 180, 41, 0.12)', accent: '#f0b429', field: 'totalProducts', format: v => String(v || 0) },
     { labelKey: 'stats.customers', icon: '👥', color: 'rgba(63, 185, 80, 0.12)', accent: '#3fb950', field: 'totalCustomers', format: v => String(v || 0) },
 ]
 
-// Top products — mock (no aggregate endpoint yet)
-const topProducts = [
-    { name: 'Kadife Fon Perde', sales: 42, revenue: '₺54.600', trend: '+18%' },
-    { name: 'Tül Perde Premium', sales: 38, revenue: '₺22.800', trend: '+12%' },
-    { name: 'Blackout Stor', sales: 31, revenue: '₺43.400', trend: '+8%' },
-    { name: 'Zebra Perde', sales: 27, revenue: '₺37.800', trend: '+15%' },
-]
+// Top products — derived from API stats (see useDashboard → /api/dashboard/stats)
 
 const statusKeys = {
     pending: { labelKey: 'status.pending', class: 'badge-warning' },
@@ -36,6 +31,7 @@ const currentMonthIdx = 1
    ═══════════════════════════════════════════════════ */
 const MiniChart = memo(function MiniChart() {
     const { t } = useTranslation('dashboard')
+    const { symbol: sym } = useCurrency()
     const months = t('chart.months', { returnObjects: true })
     const canvasRef = useRef(null)
     const containerRef = useRef(null)
@@ -83,7 +79,7 @@ const MiniChart = memo(function MiniChart() {
                 ctx.font = fontSize
                 ctx.textAlign = 'right'
                 const val = Math.round(max - (max / 4) * i)
-                ctx.fillText(`₺${val}k`, padding.left - 8, y + 4)
+                ctx.fillText(`${sym}${val}k`, padding.left - 8, y + 4)
             }
 
             // Month labels
@@ -152,7 +148,7 @@ const MiniChart = memo(function MiniChart() {
                     ctx.fillStyle = '#58a6ff'
                     ctx.font = 'bold 11px Inter'
                     ctx.textAlign = 'center'
-                    ctx.fillText(`₺${val}k`, x, y - 14)
+                    ctx.fillText(`${sym}${val}k`, x, y - 14)
                 } else {
                     ctx.beginPath()
                     ctx.arc(x, y, 2, 0, Math.PI * 2)
@@ -261,16 +257,27 @@ const avatarGradients = [
 export default function Dashboard() {
     const navigate = useNavigate()
     const { t } = useTranslation('dashboard')
+    const { formatMoney, symbol } = useCurrency()
     const { stats: apiStats, loading, error } = useDashboard()
 
     // Build translated KPI data from API stats
     const stats = useMemo(() => statDefTemplates.map(s => ({
         ...s,
         label: t(s.labelKey),
-        value: s.format(apiStats?.[s.field]),
+        value: s.format ? s.format(apiStats?.[s.field]) : formatMoney(apiStats?.[s.field] || 0),
         change: '',
         positive: true,
     })), [apiStats, t])
+
+    // Top products from API
+    const topProducts = useMemo(() => {
+        if (!apiStats?.topProducts?.length) return []
+        return apiStats.topProducts.map(p => ({
+            name: p.name,
+            sales: Math.round(p.sales),
+            revenue: formatMoney(p.revenue || 0),
+        }))
+    }, [apiStats, formatMoney])
 
     // Recent orders from API
     const recentOrders = useMemo(() => {
@@ -279,7 +286,7 @@ export default function Dashboard() {
             id: o.order_number || `#${o.id?.slice(0, 8)}`,
             customer: o.customers?.full_name || o.customer_name || 'Bilinmiyor',
             product: `${o.item_count || 0} ürün`,
-            amount: `₺${(o.total_amount || 0).toLocaleString('tr-TR')}`,
+            amount: formatMoney(o.total_amount || 0),
             status: o.status || 'pending',
             date: o.created_at ? new Date(o.created_at).toLocaleDateString('tr-TR', { day: 'numeric', month: 'short', year: 'numeric' }) : '-',
         }))
@@ -328,7 +335,7 @@ export default function Dashboard() {
         })
     }, [stats, months, statusMap, t])
 
-    const maxSales = Math.max(...topProducts.map(p => p.sales))
+    const maxSales = topProducts.length ? Math.max(...topProducts.map(p => p.sales)) : 1
 
     if (loading) return (
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: '400px', flexDirection: 'column', gap: '16px' }}>
@@ -549,8 +556,8 @@ export default function Dashboard() {
                         position: 'relative',
                     }}>
                         {[
-                            { label: 'Ort. Aylık', value: '₺61.2k', icon: '📊' },
-                            { label: 'En Yüksek', value: '₺92k', icon: '🔝' },
+                            { label: 'Ort. Aylık', value: `${symbol}61.2k`, icon: '📊' },
+                            { label: 'En Yüksek', value: `${symbol}92k`, icon: '🔝' },
                             { label: 'Büyüme', value: '%18.4', icon: '🚀' },
                         ].map((pill, i) => (
                             <div key={i} style={{
@@ -604,197 +611,196 @@ export default function Dashboard() {
                     </div>
 
                     {/* ── Top 3 Podium ── */}
-                    <div style={{
-                        display: 'flex', alignItems: 'flex-end', justifyContent: 'center',
-                        gap: '8px', marginBottom: '20px', padding: '0 8px',
-                    }}>
-                        {/* 2nd place */}
+                    {topProducts.length >= 3 ? (
                         <div style={{
-                            flex: '1', textAlign: 'center',
-                            padding: '14px 8px 12px',
-                            background: 'linear-gradient(180deg, rgba(192,192,192,0.08) 0%, rgba(192,192,192,0.02) 100%)',
-                            border: '1px solid rgba(192,192,192,0.2)',
-                            borderRadius: 'var(--radius-lg) var(--radius-lg) var(--radius-sm) var(--radius-sm)',
-                            minHeight: '130px',
-                            display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'flex-end',
+                            display: 'flex', alignItems: 'flex-end', justifyContent: 'center',
+                            gap: '8px', marginBottom: '20px', padding: '0 8px',
                         }}>
+                            {/* 2nd place */}
                             <div style={{
-                                width: '32px', height: '32px', borderRadius: 'var(--radius-full)',
-                                background: 'linear-gradient(135deg, #C0C0C0, #A0A0A0)',
-                                display: 'flex', alignItems: 'center', justifyContent: 'center',
-                                fontSize: '0.8rem', fontWeight: 800, color: '#fff',
-                                boxShadow: '0 2px 10px rgba(192,192,192,0.3)',
-                                marginBottom: '8px',
-                            }}>🥈</div>
-                            <div style={{ fontSize: '0.72rem', fontWeight: 600, color: 'var(--text-primary)', marginBottom: '2px' }}>
-                                {topProducts[1].name}
+                                flex: '1', textAlign: 'center',
+                                padding: '14px 8px 12px',
+                                background: 'linear-gradient(180deg, rgba(192,192,192,0.08) 0%, rgba(192,192,192,0.02) 100%)',
+                                border: '1px solid rgba(192,192,192,0.2)',
+                                borderRadius: 'var(--radius-lg) var(--radius-lg) var(--radius-sm) var(--radius-sm)',
+                                minHeight: '130px',
+                                display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'flex-end',
+                            }}>
+                                <div style={{
+                                    width: '32px', height: '32px', borderRadius: 'var(--radius-full)',
+                                    background: 'linear-gradient(135deg, #C0C0C0, #A0A0A0)',
+                                    display: 'flex', alignItems: 'center', justifyContent: 'center',
+                                    fontSize: '0.8rem', fontWeight: 800, color: '#fff',
+                                    boxShadow: '0 2px 10px rgba(192,192,192,0.3)',
+                                    marginBottom: '8px',
+                                }}>🥈</div>
+                                <div style={{ fontSize: '0.72rem', fontWeight: 600, color: 'var(--text-primary)', marginBottom: '2px' }}>
+                                    {topProducts[1]?.name}
+                                </div>
+                                <div style={{ fontSize: '0.65rem', color: 'var(--text-tertiary)' }}>
+                                    {topProducts[1]?.sales} {t('topProducts.columns.sales')}
+                                </div>
+                                <div style={{ fontSize: '0.8rem', fontWeight: 700, color: 'var(--text-primary)', marginTop: '4px' }}>
+                                    {topProducts[1]?.revenue}
+                                </div>
                             </div>
-                            <div style={{ fontSize: '0.65rem', color: 'var(--text-tertiary)' }}>
-                                {topProducts[1].sales} {t('topProducts.columns.sales')}
-                            </div>
-                            <div style={{ fontSize: '0.8rem', fontWeight: 700, color: 'var(--text-primary)', marginTop: '4px' }}>
-                                {topProducts[1].revenue}
-                            </div>
-                        </div>
 
-                        {/* 1st place — tallest */}
-                        <div style={{
-                            flex: '1.2', textAlign: 'center',
-                            padding: '18px 8px 14px',
-                            background: 'linear-gradient(180deg, rgba(255,215,0,0.1) 0%, rgba(255,215,0,0.02) 100%)',
-                            border: '1px solid rgba(255,215,0,0.25)',
-                            borderRadius: 'var(--radius-lg) var(--radius-lg) var(--radius-sm) var(--radius-sm)',
-                            minHeight: '160px',
-                            display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'flex-end',
-                            position: 'relative',
-                        }}>
-                            {/* Crown glow */}
+                            {/* 1st place — tallest */}
                             <div style={{
-                                position: 'absolute', top: -10, left: '50%', transform: 'translateX(-50%)',
-                                width: '60px', height: '60px', borderRadius: '50%',
-                                background: 'radial-gradient(circle, rgba(255,215,0,0.15) 0%, transparent 70%)',
-                                pointerEvents: 'none',
-                            }} />
-                            <div style={{
-                                width: '38px', height: '38px', borderRadius: 'var(--radius-full)',
-                                background: 'linear-gradient(135deg, #FFD700, #FFA500)',
-                                display: 'flex', alignItems: 'center', justifyContent: 'center',
-                                fontSize: '1rem', fontWeight: 800, color: '#fff',
-                                boxShadow: '0 4px 16px rgba(255,215,0,0.35)',
-                                marginBottom: '10px',
-                            }}>🥇</div>
-                            <div style={{ fontSize: '0.78rem', fontWeight: 700, color: 'var(--text-primary)', marginBottom: '2px' }}>
-                                {topProducts[0].name}
+                                flex: '1.2', textAlign: 'center',
+                                padding: '18px 8px 14px',
+                                background: 'linear-gradient(180deg, rgba(255,215,0,0.1) 0%, rgba(255,215,0,0.02) 100%)',
+                                border: '1px solid rgba(255,215,0,0.25)',
+                                borderRadius: 'var(--radius-lg) var(--radius-lg) var(--radius-sm) var(--radius-sm)',
+                                minHeight: '160px',
+                                display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'flex-end',
+                                position: 'relative',
+                            }}>
+                                {/* Crown glow */}
+                                <div style={{
+                                    position: 'absolute', top: -10, left: '50%', transform: 'translateX(-50%)',
+                                    width: '60px', height: '60px', borderRadius: '50%',
+                                    background: 'radial-gradient(circle, rgba(255,215,0,0.15) 0%, transparent 70%)',
+                                    pointerEvents: 'none',
+                                }} />
+                                <div style={{
+                                    width: '38px', height: '38px', borderRadius: 'var(--radius-full)',
+                                    background: 'linear-gradient(135deg, #FFD700, #FFA500)',
+                                    display: 'flex', alignItems: 'center', justifyContent: 'center',
+                                    fontSize: '1rem', fontWeight: 800, color: '#fff',
+                                    boxShadow: '0 4px 16px rgba(255,215,0,0.35)',
+                                    marginBottom: '10px',
+                                }}>🥇</div>
+                                <div style={{ fontSize: '0.78rem', fontWeight: 700, color: 'var(--text-primary)', marginBottom: '2px' }}>
+                                    {topProducts[0]?.name}
+                                </div>
+                                <div style={{ fontSize: '0.65rem', color: 'var(--text-tertiary)' }}>
+                                    {topProducts[0]?.sales} {t('topProducts.columns.sales')}
+                                </div>
+                                <div style={{ fontSize: '0.9rem', fontWeight: 800, color: '#FFD700', marginTop: '6px' }}>
+                                    {topProducts[0]?.revenue}
+                                </div>
                             </div>
-                            <div style={{ fontSize: '0.65rem', color: 'var(--text-tertiary)' }}>
-                                {topProducts[0].sales} {t('topProducts.columns.sales')}
-                            </div>
-                            <div style={{ fontSize: '0.9rem', fontWeight: 800, color: '#FFD700', marginTop: '6px' }}>
-                                {topProducts[0].revenue}
-                            </div>
-                        </div>
 
-                        {/* 3rd place */}
-                        <div style={{
-                            flex: '1', textAlign: 'center',
-                            padding: '14px 8px 12px',
-                            background: 'linear-gradient(180deg, rgba(205,127,50,0.08) 0%, rgba(205,127,50,0.02) 100%)',
-                            border: '1px solid rgba(205,127,50,0.2)',
-                            borderRadius: 'var(--radius-lg) var(--radius-lg) var(--radius-sm) var(--radius-sm)',
-                            minHeight: '110px',
-                            display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'flex-end',
-                        }}>
+                            {/* 3rd place */}
                             <div style={{
-                                width: '32px', height: '32px', borderRadius: 'var(--radius-full)',
-                                background: 'linear-gradient(135deg, #CD7F32, #A0522D)',
-                                display: 'flex', alignItems: 'center', justifyContent: 'center',
-                                fontSize: '0.8rem', fontWeight: 800, color: '#fff',
-                                boxShadow: '0 2px 10px rgba(205,127,50,0.3)',
-                                marginBottom: '8px',
-                            }}>🥉</div>
-                            <div style={{ fontSize: '0.72rem', fontWeight: 600, color: 'var(--text-primary)', marginBottom: '2px' }}>
-                                {topProducts[2].name}
-                            </div>
-                            <div style={{ fontSize: '0.65rem', color: 'var(--text-tertiary)' }}>
-                                {topProducts[2].sales} {t('topProducts.columns.sales')}
-                            </div>
-                            <div style={{ fontSize: '0.8rem', fontWeight: 700, color: 'var(--text-primary)', marginTop: '4px' }}>
-                                {topProducts[2].revenue}
+                                flex: '1', textAlign: 'center',
+                                padding: '14px 8px 12px',
+                                background: 'linear-gradient(180deg, rgba(205,127,50,0.08) 0%, rgba(205,127,50,0.02) 100%)',
+                                border: '1px solid rgba(205,127,50,0.2)',
+                                borderRadius: 'var(--radius-lg) var(--radius-lg) var(--radius-sm) var(--radius-sm)',
+                                minHeight: '110px',
+                                display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'flex-end',
+                            }}>
+                                <div style={{
+                                    width: '32px', height: '32px', borderRadius: 'var(--radius-full)',
+                                    background: 'linear-gradient(135deg, #CD7F32, #A0522D)',
+                                    display: 'flex', alignItems: 'center', justifyContent: 'center',
+                                    fontSize: '0.8rem', fontWeight: 800, color: '#fff',
+                                    boxShadow: '0 2px 10px rgba(205,127,50,0.3)',
+                                    marginBottom: '8px',
+                                }}>🥉</div>
+                                <div style={{ fontSize: '0.72rem', fontWeight: 600, color: 'var(--text-primary)', marginBottom: '2px' }}>
+                                    {topProducts[2]?.name}
+                                </div>
+                                <div style={{ fontSize: '0.65rem', color: 'var(--text-tertiary)' }}>
+                                    {topProducts[2]?.sales} {t('topProducts.columns.sales')}
+                                </div>
+                                <div style={{ fontSize: '0.8rem', fontWeight: 700, color: 'var(--text-primary)', marginTop: '4px' }}>
+                                    {topProducts[2]?.revenue}
+                                </div>
                             </div>
                         </div>
-                    </div>
+                    ) : (
+                        <div style={{ textAlign: 'center', padding: '32px 16px', color: 'var(--text-tertiary)', fontSize: '0.88rem' }}>
+                            📦 Henüz yeterli sipariş verisi yok
+                        </div>
+                    )}
 
                     {/* ── Full product list with progress bars ── */}
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-                        {topProducts.map((product, i) => (
-                            <div
-                                key={i}
-                                className="animate-fade-in-up"
-                                style={{
-                                    animationDelay: `${i * 0.06}s`,
-                                    display: 'flex', alignItems: 'center',
-                                    justifyContent: 'space-between',
-                                    padding: '12px 14px',
-                                    background: 'var(--bg-tertiary)',
-                                    borderRadius: 'var(--radius-md)',
-                                    transition: 'all var(--transition-fast)',
-                                    border: '1px solid var(--border-secondary)',
-                                    position: 'relative', overflow: 'hidden',
-                                }}
-                            >
-                                {/* Left accent line */}
-                                <div style={{
-                                    position: 'absolute', left: 0, top: 0, bottom: 0, width: '3px',
-                                    background: rankGradients[i] || 'var(--gradient-brand)',
-                                    borderRadius: '3px 0 0 3px',
-                                }} />
-
-                                <div style={{ display: 'flex', alignItems: 'center', gap: '12px', flex: 1, minWidth: 0 }}>
-                                    {/* Rank badge with medal gradient */}
-                                    <span style={{
-                                        width: '28px', height: '28px', borderRadius: 'var(--radius-md)',
-                                        background: rankGradients[i] || 'var(--gradient-brand)',
-                                        display: 'flex', alignItems: 'center',
-                                        justifyContent: 'center', fontSize: '0.75rem',
-                                        fontWeight: 800, color: '#fff', flexShrink: 0,
-                                        boxShadow: i < 3
-                                            ? `0 2px 8px ${i === 0 ? 'rgba(255,215,0,0.3)' : i === 1 ? 'rgba(192,192,192,0.3)' : 'rgba(205,127,50,0.3)'}`
-                                            : 'none',
-                                    }}>
-                                        {i + 1}
-                                    </span>
-                                    <div style={{ flex: 1, minWidth: 0 }}>
-                                        <div style={{ fontWeight: 600, fontSize: '0.85rem', marginBottom: '4px' }}>{product.name}</div>
-                                        {/* Sales progress bar */}
+                    {
+                        topProducts.length > 0 && (
+                            <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                                {topProducts.map((product, i) => (
+                                    <div
+                                        key={i}
+                                        className="animate-fade-in-up"
+                                        style={{
+                                            animationDelay: `${i * 0.06}s`,
+                                            display: 'flex', alignItems: 'center',
+                                            justifyContent: 'space-between',
+                                            padding: '12px 14px',
+                                            background: 'var(--bg-tertiary)',
+                                            borderRadius: 'var(--radius-md)',
+                                            transition: 'all var(--transition-fast)',
+                                            border: '1px solid var(--border-secondary)',
+                                            position: 'relative', overflow: 'hidden',
+                                        }}
+                                    >
+                                        {/* Left accent line */}
                                         <div style={{
-                                            display: 'flex', alignItems: 'center', gap: '8px',
-                                        }}>
-                                            <div style={{
-                                                flex: 1, height: '4px',
-                                                background: 'var(--bg-primary)',
-                                                borderRadius: '2px', overflow: 'hidden',
-                                            }}>
-                                                <div style={{
-                                                    height: '100%',
-                                                    width: `${(product.sales / maxSales) * 100}%`,
-                                                    background: rankGradients[i] || 'var(--gradient-brand)',
-                                                    borderRadius: '2px',
-                                                    transition: 'width 0.6s ease',
-                                                }} />
-                                            </div>
+                                            position: 'absolute', left: 0, top: 0, bottom: 0, width: '3px',
+                                            background: rankGradients[i] || 'var(--gradient-brand)',
+                                            borderRadius: '3px 0 0 3px',
+                                        }} />
+
+                                        <div style={{ display: 'flex', alignItems: 'center', gap: '12px', flex: 1, minWidth: 0 }}>
+                                            {/* Rank badge with medal gradient */}
                                             <span style={{
-                                                fontSize: '0.65rem', color: 'var(--text-tertiary)',
-                                                fontWeight: 500, flexShrink: 0,
-                                            }}>{product.sales} {t('topProducts.columns.sales')}</span>
+                                                width: '28px', height: '28px', borderRadius: 'var(--radius-md)',
+                                                background: rankGradients[i] || 'var(--gradient-brand)',
+                                                display: 'flex', alignItems: 'center',
+                                                justifyContent: 'center', fontSize: '0.75rem',
+                                                fontWeight: 800, color: '#fff', flexShrink: 0,
+                                                boxShadow: i < 3
+                                                    ? `0 2px 8px ${i === 0 ? 'rgba(255,215,0,0.3)' : i === 1 ? 'rgba(192,192,192,0.3)' : 'rgba(205,127,50,0.3)'}`
+                                                    : 'none',
+                                            }}>
+                                                {i + 1}
+                                            </span>
+                                            <div style={{ flex: 1, minWidth: 0 }}>
+                                                <div style={{ fontWeight: 600, fontSize: '0.85rem', marginBottom: '4px' }}>{product.name}</div>
+                                                {/* Sales progress bar */}
+                                                <div style={{
+                                                    display: 'flex', alignItems: 'center', gap: '8px',
+                                                }}>
+                                                    <div style={{
+                                                        flex: 1, height: '4px',
+                                                        background: 'var(--bg-primary)',
+                                                        borderRadius: '2px', overflow: 'hidden',
+                                                    }}>
+                                                        <div style={{
+                                                            height: '100%',
+                                                            width: `${(product.sales / maxSales) * 100}%`,
+                                                            background: rankGradients[i] || 'var(--gradient-brand)',
+                                                            borderRadius: '2px',
+                                                            transition: 'width 0.6s ease',
+                                                        }} />
+                                                    </div>
+                                                    <span style={{
+                                                        fontSize: '0.65rem', color: 'var(--text-tertiary)',
+                                                        fontWeight: 500, flexShrink: 0,
+                                                    }}>{product.sales} {t('topProducts.columns.sales')}</span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div style={{ textAlign: 'right', display: 'flex', alignItems: 'center', gap: '10px', flexShrink: 0, marginLeft: '12px' }}>
+                                            <div style={{ fontWeight: 700, fontSize: '0.85rem', fontFamily: 'var(--font-display)' }}>{product.revenue}</div>
                                         </div>
                                     </div>
-                                </div>
-                                <div style={{ textAlign: 'right', display: 'flex', alignItems: 'center', gap: '10px', flexShrink: 0, marginLeft: '12px' }}>
-                                    <div style={{ fontWeight: 700, fontSize: '0.85rem', fontFamily: 'var(--font-display)' }}>{product.revenue}</div>
-                                    <span style={{
-                                        fontSize: '0.68rem', fontWeight: 700,
-                                        color: '#4ade80',
-                                        padding: '2px 8px',
-                                        borderRadius: 'var(--radius-full)',
-                                        background: 'rgba(74, 222, 128, 0.1)',
-                                        border: '1px solid rgba(74, 222, 128, 0.2)',
-                                        display: 'inline-flex', alignItems: 'center', gap: '2px',
-                                    }}>
-                                        ↑{product.trend}
-                                    </span>
-                                </div>
+                                ))}
                             </div>
-                        ))}
-                    </div>
-                </div>
-            </div>
+                        )
+                    }
+                </div >
+            </div >
 
             {/* ═══ Recent Orders — Enhanced with shimmer border, glow hover, gradient avatars ═══ */}
-            <div className="card animate-fade-in-up" style={{
+            < div className="card animate-fade-in-up" style={{
                 position: 'relative', overflow: 'hidden', zIndex: 1,
             }}>
                 {/* ── Shimmer border top ── */}
-                <div style={{
+                < div style={{
                     position: 'absolute', top: 0, left: 0, right: 0, height: '2px',
                     background: 'linear-gradient(90deg, transparent 0%, var(--accent-blue) 20%, var(--accent-purple) 50%, var(--accent-rose) 80%, transparent 100%)',
                     backgroundSize: '200% 100%',
@@ -894,7 +900,7 @@ export default function Dashboard() {
                         </tbody>
                     </table>
                 </div>
-            </div>
-        </div>
+            </div >
+        </div >
     )
 }

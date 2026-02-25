@@ -265,8 +265,8 @@ export default function AppLayout() {
                                         <div style={{ fontSize: '0.75rem', color: 'var(--text-tertiary)' }}>{t('profile.role')}</div>
                                     </div>
                                     {[
-                                        { icon: '⚙️', label: t('profile.settings'), action: () => alert(t('profile.settingsAlert')) },
-                                        { icon: '🔔', label: t('profile.notifPrefs'), action: () => alert(t('profile.notifPrefsAlert')) },
+                                        { icon: '⚙️', label: t('profile.settings'), action: () => { navigate('/settings'); setProfileOpen(false) } },
+                                        { icon: '🔔', label: t('profile.notifPrefs'), action: () => { navigate('/settings?tab=notifications'); setProfileOpen(false) } },
                                         { icon: '🌗', label: theme === 'dark' ? t('profile.lightTheme') : t('profile.darkTheme'), action: () => { toggleTheme(); setProfileOpen(false) } },
                                         { icon: '🌐', label: t('profile.visitWebsite'), action: () => { navigate('/'); setProfileOpen(false) } },
                                         { icon: '🚪', label: t('profile.logout'), action: async () => { await signOut(); navigate('/login'); setProfileOpen(false) } },

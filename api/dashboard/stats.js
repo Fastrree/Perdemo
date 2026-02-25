@@ -20,6 +20,7 @@ export default async function handler(req, res) {
             pendingRes,
             lowStockRes,
             recentOrdersRes,
+            topProductsRes,
         ] = await Promise.all([
             // Total active products
             supabase
@@ -69,12 +70,35 @@ export default async function handler(req, res) {
                 `)
                 .order('created_at', { ascending: false })
                 .limit(5),
+
+            // Top selling products (aggregate from order_items via non-cancelled orders)
+            supabase
+                .from('order_items')
+                .select(`
+                    product_name,
+                    quantity,
+                    total_price,
+                    order:orders!inner(status)
+                `)
+                .neq('order.status', 'cancelled'),
         ])
 
         // Calculate total revenue
         const totalRevenue = (revenueRes.data || []).reduce(
             (sum, order) => sum + Number(order.total_amount || 0), 0
         )
+
+        // Aggregate top products from order_items
+        const productAgg = {}
+        for (const item of (topProductsRes.data || [])) {
+            const name = item.product_name
+            if (!productAgg[name]) productAgg[name] = { name, sales: 0, revenue: 0 }
+            productAgg[name].sales += Number(item.quantity || 0)
+            productAgg[name].revenue += Number(item.total_price || 0)
+        }
+        const topProducts = Object.values(productAgg)
+            .sort((a, b) => b.sales - a.sales)
+            .slice(0, 5)
 
         const stats = {
             totalProducts: productsRes.count || 0,
@@ -83,6 +107,7 @@ export default async function handler(req, res) {
             totalRevenue,
             pendingOrders: pendingRes.count || 0,
             lowStockProducts: lowStockRes.data || [],
+            topProducts,
             recentOrders: (recentOrdersRes.data || []).map(order => ({
                 ...order,
                 customer_name: order.customer?.full_name || null,

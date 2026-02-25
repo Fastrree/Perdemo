@@ -1,0 +1,62 @@
+{
+    "title": "Settings",
+    "tabs": {
+        "general": "General",
+        "notifications": "Notifications"
+    },
+    "general": {
+        "profileSection": "Profile Information",
+        "fullName": "Full Name",
+        "email": "Email",
+        "companySection": "Company Information",
+        "companyName": "Company Name",
+        "role": "Role",
+        "roles": {
+            "admin": "Admin",
+            "seller": "Seller",
+            "viewer": "Viewer"
+        },
+        "preferencesSection": "Preferences",
+        "theme": "Theme",
+        "themeOptions": {
+            "dark": "Dark",
+            "light": "Light"
+        },
+        "language": "Language",
+        "languageOptions": {
+            "tr": "Türkçe",
+            "en": "English"
+        },
+        "currency": "Currency",
+        "currencyOptions": {
+            "TRY": "₺ Turkish Lira",
+            "USD": "$ US Dollar",
+            "EUR": "€ Euro"
+        },
+        "saved": "Preferences saved"
+    },
+    "notifications": {
+        "description": "Choose which notifications you'd like to receive.",
+        "emailToggle": "Email Notifications",
+        "emailToggleDesc": "Also receive all notifications via email",
+        "categories": {
+            "orders": "Order Notifications",
+            "ordersNew": "New order",
+            "ordersNewDesc": "Get notified when a new order is created",
+            "ordersStatus": "Status change",
+            "ordersStatusDesc": "Get notified when an order status is updated",
+            "stock": "Stock Alerts",
+            "stockLow": "Low stock",
+            "stockLowDesc": "When a product stock falls below the threshold",
+            "stockOut": "Out of stock",
+            "stockOutDesc": "When a product stock is completely depleted",
+            "customers": "Customer Notifications",
+            "customersNew": "New customer",
+            "customersNewDesc": "When a new customer record is created",
+            "reports": "Report Notifications",
+            "reportsMonthly": "Monthly report",
+            "reportsMonthlyDesc": "When the monthly performance report is ready"
+        },
+        "saved": "Notification preferences saved"
+    }
+}

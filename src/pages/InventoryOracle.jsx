@@ -1,6 +1,7 @@
 import { useState, useRef, useEffect, useMemo, useCallback, memo } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useProducts } from '../hooks/useProducts'
+import { useCurrency } from '../hooks/useCurrency'
 
 /* ═══════════════════════════════════════════════════
    MOCK DATA — Seasonal Sales History per Product
@@ -415,6 +416,7 @@ function ProductRiskCard({ product, isSelected, onClick, onAIAnalyze }) {
    ═══════════════════════════════════════════════════ */
 export default function InventoryOracle() {
     const { t } = useTranslation('inventory')
+    const { symbol, formatMoney } = useCurrency()
     const { products: rawProducts, loading, error } = useProducts()
     const [selectedProduct, setSelectedProduct] = useState(null)
     const [aiLoading, setAiLoading] = useState(false)
@@ -461,7 +463,7 @@ export default function InventoryOracle() {
 
     const kpiStats = useMemo(() => [
         { label: 'Toplam Stok', value: totalStock, suffix: ' adet', icon: '📦', color: 'rgba(88, 166, 255, 0.12)', accent: 'var(--accent-blue)', accentRaw: '88, 166, 255' },
-        { label: 'Stok Değeri', value: `₺${(totalStockValue / 1000).toFixed(0)}K`, icon: '💎', color: 'rgba(139, 92, 246, 0.12)', accent: '#bc8cff', accentRaw: '188, 140, 255' },
+        { label: 'Stok Değeri', value: `${symbol}${(totalStockValue / 1000).toFixed(0)}K`, icon: '💎', color: 'rgba(139, 92, 246, 0.12)', accent: '#bc8cff', accentRaw: '188, 140, 255' },
         { label: 'Kritik Stok', value: criticalCount, icon: '🔴', color: 'rgba(231, 76, 60, 0.12)', accent: '#e74c3c', accentRaw: '231, 76, 60' },
         { label: 'Uyarı', value: warningCount, icon: '🟡', color: 'rgba(243, 156, 18, 0.12)', accent: '#f39c12', accentRaw: '243, 156, 18' },
         { label: 'Güvenli', value: products.length - criticalCount - warningCount, icon: '🟢', color: 'rgba(46, 204, 113, 0.12)', accent: '#2ecc71', accentRaw: '46, 204, 113' },
@@ -1040,7 +1042,7 @@ export default function InventoryOracle() {
                                             WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent',
                                             position: 'relative', fontFamily: 'var(--font-display)',
                                         }}>
-                                            ₺{aiInsight.estimatedCost.toLocaleString('tr-TR')}
+                                            {formatMoney(aiInsight.estimatedCost)}
                                         </div>
                                         <div style={{
                                             fontSize: '0.6rem', color: 'var(--text-tertiary)',

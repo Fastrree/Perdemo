@@ -2,29 +2,14 @@ import { useState, useMemo, useCallback, memo, startTransition } from 'react'
 import { GoogleMap, LoadScript, Marker, InfoWindow } from '@react-google-maps/api'
 import { useTranslation } from 'react-i18next'
 import useCanHover from '../hooks/useCanHover'
+import { useCurrency } from '../hooks/useCurrency'
+import { useDealers } from '../hooks/useDealers'
 
 const GOOGLE_MAPS_API_KEY = import.meta.env.VITE_GOOGLE_MAPS_API_KEY || ''
 
-/* ═══════════════════════════════════════════════════
-   MOCK DATA — Dealers & Performance
-   ═══════════════════════════════════════════════════ */
-const dealers = [
-    { id: 1, name: 'Perdemo Istanbul Kadikoy', city: 'Istanbul', region: 'Marmara', contact: 'Ali Yilmaz', phone: '0532 100 2000', email: 'kadikoy@perdemo.com', monthlyRevenue: 68400, orders: 42, demos: 128, topProduct: 'Kadife Bordo', satisfaction: 4.7, markup: 0, status: 'active', lat: 40.99, lng: 29.02 },
-    { id: 2, name: 'Perdemo Istanbul Beylikduzu', city: 'Istanbul', region: 'Marmara', contact: 'Seda Kara', phone: '0533 200 3000', email: 'beylikduzu@perdemo.com', monthlyRevenue: 52100, orders: 35, demos: 95, topProduct: 'Tul Beyaz', satisfaction: 4.5, markup: 5, status: 'active', lat: 41.0, lng: 28.64 },
-    { id: 3, name: 'Perdemo Istanbul Atasehir', city: 'Istanbul', region: 'Marmara', contact: 'Emre Demir', phone: '0534 300 4000', email: 'atasehir@perdemo.com', monthlyRevenue: 45800, orders: 28, demos: 82, topProduct: 'Blackout Siyah', satisfaction: 4.3, markup: 0, status: 'active', lat: 40.98, lng: 29.12 },
-    { id: 4, name: 'Perdemo Ankara Cankaya', city: 'Ankara', region: 'Ic Anadolu', contact: 'Burak Oz', phone: '0535 400 5000', email: 'cankaya@perdemo.com', monthlyRevenue: 38200, orders: 24, demos: 67, topProduct: 'Kadife Bordo', satisfaction: 4.6, markup: 8, status: 'active', lat: 39.92, lng: 32.86 },
-    { id: 5, name: 'Perdemo Ankara Kecioren', city: 'Ankara', region: 'Ic Anadolu', contact: 'Yeliz Ak', phone: '0536 500 6000', email: 'kecioren@perdemo.com', monthlyRevenue: 22500, orders: 15, demos: 43, topProduct: 'Pamuk Gri', satisfaction: 4.1, markup: 10, status: 'active', lat: 39.98, lng: 32.84 },
-    { id: 6, name: 'Perdemo Izmir Bornova', city: 'Izmir', region: 'Ege', contact: 'Can Arslan', phone: '0537 600 7000', email: 'bornova@perdemo.com', monthlyRevenue: 41600, orders: 27, demos: 74, topProduct: 'Keten Lacivert', satisfaction: 4.4, markup: 5, status: 'active', lat: 38.47, lng: 27.22 },
-    { id: 7, name: 'Perdemo Izmir Karsiyaka', city: 'Izmir', region: 'Ege', contact: 'Deniz Sen', phone: '0538 700 8000', email: 'karsiyaka@perdemo.com', monthlyRevenue: 29400, orders: 19, demos: 55, topProduct: 'Ipek Krem', satisfaction: 4.2, markup: 8, status: 'active', lat: 38.46, lng: 27.11 },
-    { id: 8, name: 'Perdemo Bursa Nilufer', city: 'Bursa', region: 'Marmara', contact: 'Fatma Celik', phone: '0539 800 9000', email: 'nilufer@perdemo.com', monthlyRevenue: 25800, orders: 17, demos: 48, topProduct: 'Jakar Altin', satisfaction: 4.0, markup: 12, status: 'active', lat: 40.22, lng: 28.97 },
-    { id: 9, name: 'Perdemo Antalya Muratpasa', city: 'Antalya', region: 'Akdeniz', contact: 'Zeynep Kaya', phone: '0530 900 1000', email: 'muratpasa@perdemo.com', monthlyRevenue: 34200, orders: 22, demos: 61, topProduct: 'Tul Beyaz', satisfaction: 4.5, markup: 5, status: 'active', lat: 36.89, lng: 30.71 },
-    { id: 10, name: 'Perdemo Adana Seyhan', city: 'Adana', region: 'Akdeniz', contact: 'Murat Yildiz', phone: '0531 010 2000', email: 'seyhan@perdemo.com', monthlyRevenue: 18900, orders: 12, demos: 35, topProduct: 'Blackout Siyah', satisfaction: 3.9, markup: 15, status: 'warning', lat: 37.0, lng: 35.32 },
-    { id: 11, name: 'Perdemo Konya Selcuklu', city: 'Konya', region: 'Ic Anadolu', contact: 'Hasan Tas', phone: '0532 020 3000', email: 'selcuklu@perdemo.com', monthlyRevenue: 15200, orders: 10, demos: 28, topProduct: 'Kadife Bordo', satisfaction: 4.0, markup: 10, status: 'active', lat: 37.87, lng: 32.48 },
-    { id: 12, name: 'Perdemo Trabzon Ortahisar', city: 'Trabzon', region: 'Karadeniz', contact: 'Ayse Polat', phone: '0533 030 4000', email: 'ortahisar@perdemo.com', monthlyRevenue: 12800, orders: 8, demos: 22, topProduct: 'Kadife Zumrut', satisfaction: 4.1, markup: 12, status: 'new', lat: 41.0, lng: 39.72 },
-]
+// Top products — derived from API dealers data
 
 const regions = ['Tumu', 'Marmara', 'Ic Anadolu', 'Ege', 'Akdeniz', 'Karadeniz']
-const cityCount = new Set(dealers.map(d => d.city)).size
 
 const statusConfig = {
     active: { label: 'Aktif', cls: 'badge-success', icon: '🟢', color: '#2ecc71', bg: 'rgba(46,204,113,0.1)' },
@@ -60,6 +45,7 @@ const darkMapStyle = [
 ]
 
 const TurkeyMap = memo(function TurkeyMap({ dealers: dealerList, onSelect, selectedId }) {
+    const { symbol, code } = useCurrency()
     const [infoDealer, setInfoDealer] = useState(null)
 
     const markerData = useMemo(() => {
@@ -140,7 +126,7 @@ const TurkeyMap = memo(function TurkeyMap({ dealers: dealerList, onSelect, selec
                                     📍 {infoDealer.city}
                                 </div>
                                 <div style={{ fontSize: '0.8rem', color: '#666', marginBottom: '4px' }}>
-                                    💰 {(infoDealer.monthlyRevenue / 1000).toFixed(1)}k TL/ay
+                                    💰 {symbol}{(infoDealer.monthlyRevenue / 1000).toFixed(1)}k/ay
                                 </div>
                                 <div style={{ fontSize: '0.8rem', color: '#666' }}>
                                     ⭐ {infoDealer.satisfaction.toFixed(1)} puan
@@ -211,6 +197,7 @@ function RevenueBar({ value, maxValue }) {
    DEALER CARD — Card view for dealers
    ═══════════════════════════════════════════════════ */
 function DealerCard({ dealer, isSelected, onClick }) {
+    const { symbol } = useCurrency()
     const d = dealer
     const cfg = statusConfig[d.status]
     const canHover = useCanHover()
@@ -291,7 +278,7 @@ function DealerCard({ dealer, isSelected, onClick }) {
                         background: 'rgba(88,166,255,0.04)',
                     }}>
                         <span style={{ color: 'var(--text-tertiary)', display: 'block', marginBottom: '2px' }}>Ciro</span>
-                        <div style={{ fontWeight: 700, color: 'var(--accent-blue)', fontFamily: 'var(--font-display)' }}>₺{(d.monthlyRevenue / 1000).toFixed(0)}k</div>
+                        <div style={{ fontWeight: 700, color: 'var(--accent-blue)', fontFamily: 'var(--font-display)' }}>{symbol}{(d.monthlyRevenue / 1000).toFixed(0)}k</div>
                     </div>
                     <div style={{
                         padding: '6px 8px', borderRadius: 'var(--radius-sm)',
@@ -326,6 +313,7 @@ function DealerCard({ dealer, isSelected, onClick }) {
    DEALER DETAIL SLIDE-OVER
    ═══════════════════════════════════════════════════ */
 const DealerDetailSlideOver = memo(function DealerDetailSlideOver({ dealer, onClose, onPushCatalog }) {
+    const { symbol } = useCurrency()
     if (!dealer) return null
     const cfg = statusConfig[dealer.status]
 
@@ -403,7 +391,7 @@ const DealerDetailSlideOver = memo(function DealerDetailSlideOver({ dealer, onCl
                     gap: '10px', marginBottom: '24px',
                 }}>
                     {[
-                        { value: `₺${dealer.monthlyRevenue.toLocaleString('tr-TR')}`, label: 'Aylik Ciro', color: 'var(--accent-blue)', bg: 'rgba(88,166,255,0.08)', borderCol: 'rgba(88,166,255,0.15)' },
+                        { value: `${symbol}${dealer.monthlyRevenue.toLocaleString('tr-TR')}`, label: 'Aylik Ciro', color: 'var(--accent-blue)', bg: 'rgba(88,166,255,0.08)', borderCol: 'rgba(88,166,255,0.15)' },
                         { value: dealer.orders, label: 'Siparis', color: '#bc8cff', bg: 'rgba(139,92,246,0.08)', borderCol: 'rgba(139,92,246,0.15)' },
                         { value: dealer.demos, label: 'Demo', color: '#f0b429', bg: 'rgba(240,180,41,0.08)', borderCol: 'rgba(240,180,41,0.15)' },
                         { value: `${dealer.satisfaction}⭐`, label: 'Memnuniyet', color: '#2ecc71', bg: 'rgba(46,204,113,0.08)', borderCol: 'rgba(46,204,113,0.15)' },
@@ -499,12 +487,38 @@ const DealerDetailSlideOver = memo(function DealerDetailSlideOver({ dealer, onCl
    ═══════════════════════════════════════════════════ */
 export default function WhiteLabel() {
     const { t } = useTranslation('whitelabel')
+    const { symbol, formatMoney } = useCurrency()
+    const { dealers: rawDealers, loading, error } = useDealers()
     const [selectedDealer, setSelectedDealer] = useState(null)
     const [regionFilter, setRegionFilter] = useState('Tumu')
     const [viewMode, setViewMode] = useState('cards')
     const [pushModalOpen, setPushModalOpen] = useState(false)
     const [pushTargets, setPushTargets] = useState([])
     const [pushSent, setPushSent] = useState(false)
+
+    // Map snake_case API fields to camelCase for component compatibility
+    const dealers = useMemo(() =>
+        (rawDealers || []).map(d => ({
+            id: d.id,
+            name: d.name,
+            city: d.city,
+            region: d.region,
+            contact: d.contact_name,
+            phone: d.phone,
+            email: d.email,
+            monthlyRevenue: Number(d.monthly_revenue || 0),
+            orders: d.total_orders || 0,
+            demos: d.total_demos || 0,
+            topProduct: d.top_product,
+            satisfaction: Number(d.satisfaction || 0),
+            markup: d.markup_percent || 0,
+            status: d.status || 'active',
+            lat: Number(d.lat),
+            lng: Number(d.lng),
+        }))
+        , [rawDealers])
+
+    const cityCount = useMemo(() => new Set(dealers.map(d => d.city)).size, [dealers])
 
     const selectDealer = useCallback((d) => {
         startTransition(() => setSelectedDealer(d))
@@ -515,26 +529,26 @@ export default function WhiteLabel() {
 
     const filtered = useMemo(() =>
         dealers.filter(d => regionFilter === 'Tumu' || d.region === regionFilter)
-        , [regionFilter])
+        , [regionFilter, dealers])
 
     const maxRevenue = useMemo(() => Math.max(...filtered.map(d => d.monthlyRevenue)), [filtered])
 
     const kpiData = useMemo(() => {
         let revenue = 0, orders = 0, demos = 0, satSum = 0
         filtered.forEach(d => { revenue += d.monthlyRevenue; orders += d.orders; demos += d.demos; satSum += d.satisfaction })
-        const avgSat = (satSum / filtered.length).toFixed(1)
+        const avgSat = filtered.length > 0 ? (satSum / filtered.length).toFixed(1) : '0.0'
         const activeCount = filtered.filter(d => d.status === 'active').length
         const warningCount = filtered.filter(d => d.status === 'warning').length
         return {
             stats: [
-                { label: 'Toplam Ciro', value: `₺${(revenue / 1000).toFixed(0)}k`, icon: '💰', color: 'rgba(88, 166, 255, 0.12)', accent: 'var(--accent-blue)' },
+                { label: 'Toplam Ciro', value: `${symbol}${(revenue / 1000).toFixed(0)}k`, icon: '💰', color: 'rgba(88, 166, 255, 0.12)', accent: 'var(--accent-blue)' },
                 { label: 'Toplam Siparis', value: orders, icon: '📦', color: 'rgba(139, 92, 246, 0.12)', accent: '#bc8cff' },
                 { label: 'Demo Sayisi', value: demos, icon: '🎯', color: 'rgba(240, 180, 41, 0.12)', accent: '#f0b429' },
                 { label: 'Ort. Memnuniyet', value: `${avgSat}⭐`, icon: '😊', color: 'rgba(46, 204, 113, 0.12)', accent: '#2ecc71' },
                 { label: 'Aktif Bayi', value: `${activeCount}/${filtered.length}`, icon: '🏢', color: 'rgba(247, 120, 186, 0.12)', accent: '#f778ba', warning: warningCount > 0 ? `${warningCount} uyari` : null },
             ]
         }
-    }, [filtered])
+    }, [filtered, symbol])
 
     const top5 = useMemo(() => [...filtered].sort((a, b) => b.monthlyRevenue - a.monthlyRevenue).slice(0, 5), [filtered])
 
@@ -544,7 +558,7 @@ export default function WhiteLabel() {
         const sorted = Object.entries(fabricCounts).sort((a, b) => b[1] - a[1]).slice(0, 5)
         const maxDemo = sorted[0]?.[1] || 1
         return sorted.map(([name, count]) => ({ name, count, pct: (count / maxDemo) * 100 }))
-    }, [])
+    }, [dealers])
 
     const handlePushCatalog = useCallback((id) => {
         setPushTargets([id])
@@ -578,6 +592,21 @@ export default function WhiteLabel() {
         Akdeniz: '#2ecc71',
         Karadeniz: '#f0b429',
     }
+
+    if (loading) return (
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: '400px', flexDirection: 'column', gap: '16px' }}>
+            <div style={{ width: '48px', height: '48px', border: '3px solid var(--border-primary)', borderTopColor: 'var(--accent-blue)', borderRadius: '50%', animation: 'spin 0.8s linear infinite' }} />
+            <span style={{ fontSize: '0.88rem', color: 'var(--text-tertiary)' }}>Bayi ağı yükleniyor...</span>
+        </div>
+    )
+
+    if (error) return (
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: '400px', flexDirection: 'column', gap: '16px' }}>
+            <span style={{ fontSize: '2.5rem' }}>⚠️</span>
+            <span style={{ fontSize: '0.95rem', color: '#f87171', fontWeight: 600 }}>{error}</span>
+            <button className="btn btn-secondary" onClick={() => window.location.reload()}>Tekrar Dene</button>
+        </div>
+    )
 
     return (
         <div>
@@ -951,7 +980,7 @@ export default function WhiteLabel() {
                                                 color: 'var(--accent-blue)',
                                                 textShadow: '0 0 20px rgba(88,166,255,0.2)',
                                             }}>
-                                                ₺{(d.monthlyRevenue / 1000).toFixed(0)}k
+                                                {symbol}{(d.monthlyRevenue / 1000).toFixed(0)}k
                                             </div>
                                             <div style={{ fontSize: '0.6rem', color: 'var(--text-tertiary)' }}>{d.orders} siparis</div>
                                         </div>

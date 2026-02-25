@@ -1,0 +1,62 @@
+{
+    "title": "Ayarlar",
+    "tabs": {
+        "general": "Genel",
+        "notifications": "Bildirimler"
+    },
+    "general": {
+        "profileSection": "Profil Bilgileri",
+        "fullName": "Ad Soyad",
+        "email": "E-posta",
+        "companySection": "Firma Bilgileri",
+        "companyName": "Firma Adı",
+        "role": "Rol",
+        "roles": {
+            "admin": "Yönetici",
+            "seller": "Satıcı",
+            "viewer": "İzleyici"
+        },
+        "preferencesSection": "Tercihler",
+        "theme": "Tema",
+        "themeOptions": {
+            "dark": "Koyu",
+            "light": "Açık"
+        },
+        "language": "Dil",
+        "languageOptions": {
+            "tr": "Türkçe",
+            "en": "English"
+        },
+        "currency": "Para Birimi",
+        "currencyOptions": {
+            "TRY": "₺ Türk Lirası",
+            "USD": "$ ABD Doları",
+            "EUR": "€ Euro"
+        },
+        "saved": "Tercihler kaydedildi"
+    },
+    "notifications": {
+        "description": "Hangi bildirimleri almak istediğinizi seçin.",
+        "emailToggle": "E-posta Bildirimleri",
+        "emailToggleDesc": "Tüm bildirimleri e-posta olarak da al",
+        "categories": {
+            "orders": "Sipariş Bildirimleri",
+            "ordersNew": "Yeni sipariş",
+            "ordersNewDesc": "Yeni bir sipariş oluşturulduğunda bildirim al",
+            "ordersStatus": "Durum değişikliği",
+            "ordersStatusDesc": "Sipariş durumu güncellendiğinde bildirim al",
+            "stock": "Stok Uyarıları",
+            "stockLow": "Düşük stok",
+            "stockLowDesc": "Bir ürünün stoğu belirlenen eşiğin altına düştüğünde",
+            "stockOut": "Stok tükenmesi",
+            "stockOutDesc": "Bir ürünün stoğu tamamen tükendiğinde",
+            "customers": "Müşteri Bildirimleri",
+            "customersNew": "Yeni müşteri",
+            "customersNewDesc": "Yeni bir müşteri kaydı oluşturulduğunda",
+            "reports": "Rapor Bildirimleri",
+            "reportsMonthly": "Aylık rapor",
+            "reportsMonthlyDesc": "Aylık performans raporu hazır olduğunda"
+        },
+        "saved": "Bildirim tercihleri kaydedildi"
+    }
+}

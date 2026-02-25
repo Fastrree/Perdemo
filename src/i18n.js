@@ -17,6 +17,7 @@ import analyticsTR from './locales/tr/analytics.json'
 import whitelabelTR from './locales/tr/whitelabel.json'
 import landingTR from './locales/tr/landing.json'
 import authTR from './locales/tr/auth.json'
+import settingsTR from './locales/tr/settings.json'
 
 // EN translations
 import commonEN from './locales/en/common.json'
@@ -33,6 +34,7 @@ import analyticsEN from './locales/en/analytics.json'
 import whitelabelEN from './locales/en/whitelabel.json'
 import landingEN from './locales/en/landing.json'
 import authEN from './locales/en/auth.json'
+import settingsEN from './locales/en/settings.json'
 
 i18n
     .use(LanguageDetector)
@@ -54,6 +56,7 @@ i18n
                 whitelabel: whitelabelTR,
                 landing: landingTR,
                 auth: authTR,
+                settings: settingsTR,
             },
             en: {
                 common: commonEN,
@@ -70,11 +73,12 @@ i18n
                 whitelabel: whitelabelEN,
                 landing: landingEN,
                 auth: authEN,
+                settings: settingsEN,
             },
         },
         fallbackLng: 'tr',
         defaultNS: 'common',
-        ns: ['common', 'dashboard', 'products', 'orders', 'customers', 'demo', 'quote', 'measure', 'moodboard', 'inventory', 'analytics', 'whitelabel', 'landing', 'auth'],
+        ns: ['common', 'dashboard', 'products', 'orders', 'customers', 'demo', 'quote', 'measure', 'moodboard', 'inventory', 'analytics', 'whitelabel', 'landing', 'auth', 'settings'],
         detection: {
             order: ['localStorage', 'navigator', 'htmlTag'],
             caches: ['localStorage'],

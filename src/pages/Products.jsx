@@ -1,6 +1,7 @@
 import { useState, useCallback, useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useProducts } from '../hooks/useProducts'
+import { useCurrency } from '../hooks/useCurrency'
 
 const stockBadge = (status) => {
     const map = {
@@ -38,6 +39,7 @@ const labelStyle = {
 export default function Products() {
     const { t } = useTranslation('products')
     const { products: rawProducts, loading, error, createProduct, updateProduct, deleteProduct: apiDeleteProduct } = useProducts()
+    const { formatMoney, symbol } = useCurrency()
 
     // Normalize DB fields to match UI expectations
     const products = useMemo(() => rawProducts.map(p => ({
@@ -481,7 +483,7 @@ export default function Products() {
                                         background: `linear-gradient(135deg, ${accentColor}, #bc8cff)`,
                                         WebkitBackgroundClip: 'text',
                                         WebkitTextFillColor: 'transparent',
-                                    }}>₺{product.price.toLocaleString('tr-TR')}</span>
+                                    }}>{formatMoney(product.price)}</span>
                                     <span style={{ fontSize: '0.78rem', color: 'var(--text-tertiary)' }}>Stok: {product.stock}</span>
                                 </div>
 
@@ -590,7 +592,7 @@ export default function Products() {
                                             fontWeight: 700,
                                             fontFamily: 'var(--font-display)',
                                             fontSize: '0.95rem',
-                                        }}>₺{product.price.toLocaleString('tr-TR')}</td>
+                                        }}>{formatMoney(product.price)}</td>
                                         <td style={{ padding: '14px 16px', textAlign: 'center' }}>
                                             <span style={{ fontWeight: 600, fontSize: '0.88rem' }}>{product.stock}</span>
                                         </td>
@@ -827,7 +829,7 @@ export default function Products() {
                                 WebkitTextFillColor: 'transparent',
                                 position: 'relative',
                             }}>
-                                ₺{selectedProduct.price.toLocaleString('tr-TR')}
+                                {formatMoney(selectedProduct.price)}
                             </div>
                         </div>
 
@@ -914,7 +916,7 @@ export default function Products() {
                             </div>
                             <div className="grid-2-col">
                                 <div>
-                                    <label style={labelStyle}>Fiyat (₺) *</label>
+                                    <label style={labelStyle}>Fiyat ({symbol}) *</label>
                                     <input className="input" type="number" value={form.price} onChange={e => updateForm('price', e.target.value)} placeholder="1300"
                                         style={{ transition: 'all 0.25s ease' }} />
                                 </div>

@@ -2,6 +2,7 @@ import { useState, useCallback, useMemo, memo, startTransition } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { useCustomers } from '../hooks/useCustomers'
+import { useCurrency } from '../hooks/useCurrency'
 
 
 
@@ -109,6 +110,7 @@ const emptyForm = { name: '', email: '', phone: '', city: '' }
    SLIDE-OVER COMPONENT
    ═══════════════════════════════════════════════════ */
 const CustomerDetailSlideOver = memo(function CustomerDetailSlideOver({ customer, onClose, onEdit, onDelete }) {
+    const { formatMoney, formatCompact } = useCurrency()
     const navigate = useNavigate()
     const [detailTab, setDetailTab] = useState('info') // 'info' | 'twin'
     // internal state resets automatically when key={customer.id} changes in parent
@@ -176,7 +178,7 @@ const CustomerDetailSlideOver = memo(function CustomerDetailSlideOver({ customer
                                 </div>
                                 <div className="stat-cell" style={{ padding: '16px' }}>
                                     <div className="stat-cell__value stat-cell__value--xl" style={{ background: 'var(--gradient-brand)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>
-                                        ₺{customer.totalSpent.toLocaleString('tr-TR')}
+                                        {formatMoney(customer.totalSpent)}
                                     </div>
                                     <div className="stat-cell__label stat-cell__label--lg">Toplam Ciro</div>
                                 </div>
@@ -238,7 +240,7 @@ const CustomerDetailSlideOver = memo(function CustomerDetailSlideOver({ customer
                                         <div style={{ fontSize: '0.6rem', color: 'var(--text-tertiary)' }}>Pencere</div>
                                     </div>
                                     <div style={{ padding: '10px', background: 'var(--bg-tertiary)', borderRadius: 'var(--radius-md)', textAlign: 'center' }}>
-                                        <div style={{ fontSize: '1.2rem', fontWeight: 800, background: 'var(--gradient-brand)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>₺{(totalProjectCost / 1000).toFixed(0)}k</div>
+                                        <div style={{ fontSize: '1.2rem', fontWeight: 800, background: 'var(--gradient-brand)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>{formatCompact(totalProjectCost, 0)}</div>
                                         <div style={{ fontSize: '0.6rem', color: 'var(--text-tertiary)' }}>Toplam</div>
                                     </div>
                                 </div>
@@ -317,7 +319,7 @@ const CustomerDetailSlideOver = memo(function CustomerDetailSlideOver({ customer
                                                 <div style={{ fontSize: '0.65rem', color: 'var(--text-tertiary)', marginBottom: '2px' }}>{proj.date}</div>
                                                 <div style={{ fontSize: '0.82rem', fontWeight: 600, marginBottom: '2px' }}>{proj.room}</div>
                                                 <div style={{ fontSize: '0.72rem', color: 'var(--text-secondary)' }}>{proj.fabric}</div>
-                                                <div style={{ fontSize: '0.72rem', fontWeight: 700, color: 'var(--accent-blue)' }}>₺{proj.cost.toLocaleString('tr-TR')}</div>
+                                                <div style={{ fontSize: '0.72rem', fontWeight: 700, color: 'var(--accent-blue)' }}>{formatMoney(proj.cost)}</div>
                                             </div>
                                         ))}
                                     </div>
@@ -337,6 +339,7 @@ const CustomerDetailSlideOver = memo(function CustomerDetailSlideOver({ customer
 export default function Customers() {
     const { t } = useTranslation('customers')
     const { customers: rawCustomers, loading, error, createCustomer, updateCustomer, deleteCustomer: apiDeleteCustomer } = useCustomers()
+    const { formatMoney, formatCompact } = useCurrency()
 
     // Normalize DB fields to match UI expectations
     const customers = useMemo(() => rawCustomers.map(c => ({
@@ -436,7 +439,7 @@ export default function Customers() {
             <div className="page-header">
                 <div>
                     <h1 className="page-title">Müşteriler</h1>
-                    <p className="page-subtitle">{customers.length} müşteri — Toplam Ciro: ₺{totalRevenue.toLocaleString('tr-TR')}</p>
+                    <p className="page-subtitle">{customers.length} müşteri — Toplam Ciro: {formatMoney(totalRevenue)}</p>
                 </div>
                 <button className="btn btn-primary" onClick={openAddModal}>+ Yeni Müşteri</button>
             </div>
@@ -486,7 +489,7 @@ export default function Customers() {
                                     <div style={{ fontSize: '0.65rem', color: 'var(--text-tertiary)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Sipariş</div>
                                 </div>
                                 <div style={{ textAlign: 'center' }}>
-                                    <div style={{ fontSize: '1.1rem', fontWeight: 700, fontFamily: 'var(--font-display)' }}>₺{(customer.totalSpent / 1000).toFixed(1)}k</div>
+                                    <div style={{ fontSize: '1.1rem', fontWeight: 700, fontFamily: 'var(--font-display)' }}>{formatCompact(customer.totalSpent, 1)}</div>
                                     <div style={{ fontSize: '0.65rem', color: 'var(--text-tertiary)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Toplam</div>
                                 </div>
                                 <div style={{ textAlign: 'center' }}>

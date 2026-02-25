@@ -1,6 +1,7 @@
 import { useState, useRef, useCallback, useEffect, useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
 import { getDesignerNote } from '../utils/aiProxy'
+import { useCurrency } from '../hooks/useCurrency'
 
 /* ─── Mock Data ─── */
 const fabricPrices = {
@@ -370,6 +371,7 @@ function SignaturePad({ signatureRef }) {
 
 /* ─── Sustainability Score ─── */
 function SustainabilityScore({ fabric, widthCm, heightCm }) {
+    const { formatMoney } = useCurrency()
     const score = useMemo(() => {
         const ins = fabricInsulation[fabric] || { rValue: 0.2, solarBlock: 0.5, weight: 'medium' }
         const areM2 = (widthCm * heightCm) / 10000
@@ -421,7 +423,7 @@ function SustainabilityScore({ fabric, widthCm, heightCm }) {
                     background: 'rgba(46, 204, 113, 0.08)', textAlign: 'center',
                 }}>
                     <div style={{ fontSize: '0.6rem', color: 'var(--text-tertiary)', marginBottom: '2px' }}>Yıllık Tasarruf</div>
-                    <div style={{ fontSize: '1.3rem', fontWeight: 800, color: '#27ae60' }}>₺{score.annualSavings.toLocaleString('tr-TR')}</div>
+                    <div style={{ fontSize: '1.3rem', fontWeight: 800, color: '#27ae60' }}>{formatMoney(score.annualSavings)}</div>
                     <div style={{ fontSize: '0.6rem', color: 'var(--text-tertiary)' }}>tahmini</div>
                 </div>
                 <div style={{
@@ -450,6 +452,7 @@ function SustainabilityScore({ fabric, widthCm, heightCm }) {
 /* ─── Main Component ─── */
 export default function SmartQuote() {
     const { t } = useTranslation('quote')
+    const { symbol, formatMoney } = useCurrency()
     const [form, setForm] = useState({
         customerName: '', customerPhone: '', customerAddress: '',
         fabric: 'Kadife Bordo', width: 200, height: 250,
@@ -479,7 +482,7 @@ export default function SmartQuote() {
     }, [form.customerName])
 
     const handleShare = useCallback(() => {
-        const text = `🪟 *Perdemo Teklif*\n\nMüşteri: ${form.customerName}\nKumaş: ${form.fabric}\nÖlçü: ${form.width}×${form.height}cm\nMetretül: ${totalMeters}m\nToplam: ₺${total.toLocaleString('tr-TR')}\n\n🔗 Detaylı teklifi görüntüleyin: ${window.location.origin}/quote`
+        const text = `🪟 *Perdemo Teklif*\n\nMüşteri: ${form.customerName}\nKumaş: ${form.fabric}\nÖlçü: ${form.width}×${form.height}cm\nMetretül: ${totalMeters}m\nToplam: ${formatMoney(total)}\n\n🔗 Detaylı teklifi görüntüleyin: ${window.location.origin}/quote`
         window.open(`https://wa.me/?text=${encodeURIComponent(text)}`, '_blank')
     }, [form, totalMeters, total])
 
@@ -549,7 +552,7 @@ export default function SmartQuote() {
                                 <select className="input" value={form.fabric}
                                     onChange={e => update('fabric', e.target.value)}>
                                     {Object.keys(fabricPrices).map(f => (
-                                        <option key={f} value={f}>{f} — ₺{fabricPrices[f].pricePerMeter}/m</option>
+                                        <option key={f} value={f}>{f} — {symbol}{fabricPrices[f].pricePerMeter}/m</option>
                                     ))}
                                 </select>
                             </div>
@@ -585,7 +588,7 @@ export default function SmartQuote() {
                                 <label style={styles.label}>Montaj</label>
                                 <select className="input" value={form.mounting}
                                     onChange={e => update('mounting', e.target.value)}>
-                                    <option value="included">Dahil (+₺350)</option>
+                                    <option value="included">Dahil (+{symbol}350)</option>
                                     <option value="excluded">Hariç</option>
                                 </select>
                             </div>
@@ -633,22 +636,22 @@ export default function SmartQuote() {
                             <hr style={{ border: 'none', borderTop: '1px solid var(--border-primary)', margin: '4px 0' }} />
                             <div style={{ display: 'flex', justifyContent: 'space-between' }}>
                                 <span>Kumaş:</span>
-                                <span>₺{fabricCost.toLocaleString('tr-TR')}</span>
+                                <span>{formatMoney(fabricCost)}</span>
                             </div>
                             {mountingCost > 0 && (
                                 <div style={{ display: 'flex', justifyContent: 'space-between' }}>
                                     <span>Montaj:</span>
-                                    <span>₺{mountingCost}</span>
+                                    <span>{symbol}{mountingCost}</span>
                                 </div>
                             )}
                             <div style={{ display: 'flex', justifyContent: 'space-between' }}>
                                 <span>KDV (%20):</span>
-                                <span>₺{kdv.toLocaleString('tr-TR')}</span>
+                                <span>{formatMoney(kdv)}</span>
                             </div>
                             <hr style={{ border: 'none', borderTop: '1px solid var(--border-primary)', margin: '4px 0' }} />
                             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline' }}>
                                 <span style={{ fontWeight: 700, fontSize: '0.9rem' }}>Toplam:</span>
-                                <span style={styles.total}>₺{total.toLocaleString('tr-TR')}</span>
+                                <span style={styles.total}>{formatMoney(total)}</span>
                             </div>
                         </div>
 

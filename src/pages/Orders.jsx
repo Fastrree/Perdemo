@@ -1,6 +1,7 @@
 import { useState, useCallback, useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useOrders } from '../hooks/useOrders'
+import { useCurrency } from '../hooks/useCurrency'
 
 
 
@@ -66,6 +67,7 @@ const filterLabelToKey = {
 export default function Orders() {
     const { t } = useTranslation('orders')
     const { orders: rawOrders, loading, error, createOrder, updateOrder, deleteOrder } = useOrders()
+    const { formatMoney, symbol } = useCurrency()
 
     // Normalize DB fields to match UI expectations
     const orders = useMemo(() => rawOrders.map(o => ({
@@ -108,7 +110,7 @@ export default function Orders() {
 
     const kpiDisplay = useMemo(() => ({
         totalOrders: String(kpiValues.totalOrders),
-        totalRevenue: `₺${kpiValues.totalRevenue.toLocaleString('tr-TR')}`,
+        totalRevenue: formatMoney(kpiValues.totalRevenue),
         pendingCount: String(kpiValues.pendingCount),
         deliveredCount: String(kpiValues.deliveredCount),
     }), [kpiValues])
@@ -201,7 +203,7 @@ export default function Orders() {
                             {orders.length} {t('activeOrders')}
                         </span>
                         <span style={{ color: 'var(--text-tertiary)' }}>•</span>
-                        {t('total')}: ₺{totalAmount.toLocaleString('tr-TR')}
+                        {t('total')}: {formatMoney(totalAmount)}
                     </p>
                 </div>
                 <button className="btn btn-primary btn-lg" onClick={() => setModalOpen(true)}
@@ -472,7 +474,7 @@ export default function Orders() {
                                                 padding: '14px 20px', fontWeight: 700,
                                                 fontFamily: 'var(--font-display)', fontSize: '0.95rem',
                                                 color: 'var(--text-primary)',
-                                            }}>₺{order.amount.toLocaleString('tr-TR')}</td>
+                                            }}>{formatMoney(order.amount)}</td>
                                             <td style={{ padding: '14px 20px' }}>
                                                 <span className={`badge ${paymentInfo.cls}`}
                                                     style={{
@@ -760,7 +762,7 @@ export default function Orders() {
                                 </div>
                             </div>
                             <div>
-                                <label style={formLabelStyle}>Tutar (₺)</label>
+                                <label style={formLabelStyle}>Tutar ({symbol})</label>
                                 <input className="input" type="number" value={form.amount}
                                     onChange={e => setForm(f => ({ ...f, amount: e.target.value }))}
                                     placeholder="3450" />

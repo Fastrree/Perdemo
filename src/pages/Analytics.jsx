@@ -1,21 +1,25 @@
 import { useState, useMemo, useRef, useEffect, memo } from 'react'
 import { useTranslation } from 'react-i18next'
+import { useCurrency } from '../hooks/useCurrency'
+import { useAnalytics } from '../hooks/useAnalytics'
 
 /* ═══════════════════════════════════════════════════
    MOCK DATA
    ═══════════════════════════════════════════════════ */
 const months = ['Oca', 'Sub', 'Mar', 'Nis', 'May', 'Haz', 'Tem', 'Agu', 'Eyl', 'Eki', 'Kas', 'Ara']
 
-const fabricHeatmapData = [
-    { name: 'Kadife Bordo', demos: 145, orders: 52, conversion: 35.9, color: '#8B1A1A' },
-    { name: 'Ipek Krem', demos: 210, orders: 89, conversion: 42.4, color: '#F5E6D3' },
-    { name: 'Keten Lacivert', demos: 178, orders: 41, conversion: 23.0, color: '#1B2A4A' },
-    { name: 'Pamuk Gri', demos: 95, orders: 38, conversion: 40.0, color: '#7A7D82' },
-    { name: 'Blackout Siyah', demos: 132, orders: 78, conversion: 59.1, color: '#1A1A2E' },
-    { name: 'Tul Beyaz', demos: 285, orders: 156, conversion: 54.7, color: '#E8E8FF' },
-    { name: 'Jakar Altin', demos: 67, orders: 31, conversion: 46.3, color: '#B8860B' },
-    { name: 'Kadife Zumrut', demos: 98, orders: 29, conversion: 29.6, color: '#1B5E3B' },
-]
+// Fabric heatmap colors (used when API returns fabric names)
+const fabricColors = {
+    'Kadife': '#8B1A1A', 'Ipek': '#F5E6D3', 'Keten': '#1B2A4A',
+    'Pamuk': '#7A7D82', 'Blackout': '#1A1A2E', 'Tul': '#E8E8FF',
+    'Jakar': '#B8860B', 'Zebra': '#556B2F', 'Stor': '#4A5568',
+}
+function getFabricColor(name) {
+    for (const [key, color] of Object.entries(fabricColors)) {
+        if (name?.toLowerCase().includes(key.toLowerCase())) return color
+    }
+    return '#58a6ff'
+}
 
 const teamData = [
     { name: 'Ekip A (Ahmet)', avgSpeed: 92, satisfaction: 4.7, jobs: 48, efficiency: 95, trend: 3.2 },
@@ -24,10 +28,7 @@ const teamData = [
     { name: 'Ekip D (Fatma)', avgSpeed: 78, satisfaction: 4.1, jobs: 35, efficiency: 82, trend: -2.8 },
 ]
 
-const revenueData = [42000, 38000, 51000, 55000, 48000, 62000, 71000, 65000, 78000, 82000, 75000, 89000]
-const orderData = [28, 22, 35, 38, 32, 42, 48, 44, 52, 55, 50, 60]
 const conversionData = [32, 28, 38, 41, 35, 44, 48, 42, 51, 54, 49, 56]
-const currentMonthIdx = 1
 
 /* ═══════════════════════════════════════════════════
    RESPONSIVE CANVAS CHART
@@ -258,15 +259,34 @@ function ConversionBar({ demos, orders, conversion, color, name }) {
    ═══════════════════════════════════════════════════ */
 export default function Analytics() {
     const { t } = useTranslation('analytics')
+    const { symbol, formatMoney } = useCurrency()
+    const { stats: apiStats, loading, error } = useAnalytics()
     const [period, setPeriod] = useState('year')
     const [activeChart, setActiveChart] = useState('revenue')
     const [selectedTeam, setSelectedTeam] = useState(null)
 
-    const totalRevenue = useMemo(() => revenueData.reduce((a, b) => a + b, 0), [])
-    const totalOrders = useMemo(() => orderData.reduce((a, b) => a + b, 0), [])
+    // API data with fallbacks
+    const revenueData = apiStats?.revenueData || Array(12).fill(0)
+    const orderData = apiStats?.orderData || Array(12).fill(0)
+    const currentMonthIdx = apiStats?.currentMonthIdx ?? 0
+    const fabricHeatmapData = useMemo(() => {
+        if (!apiStats?.fabricData?.length) return []
+        return apiStats.fabricData.map(f => ({
+            name: f.name,
+            demos: Math.round(f.quantity),
+            orders: f.orders,
+            conversion: f.orders > 0 ? Math.round((f.orders / f.quantity) * 1000) / 10 : 0,
+            color: getFabricColor(f.name),
+        }))
+    }, [apiStats])
+
+    const totalRevenue = useMemo(() => revenueData.reduce((a, b) => a + b, 0), [revenueData])
+    const totalOrders = useMemo(() => orderData.reduce((a, b) => a + b, 0), [orderData])
     const avgConversion = useMemo(() =>
-        Math.round(fabricHeatmapData.reduce((a, b) => a + b.conversion, 0) / fabricHeatmapData.length * 10) / 10
-        , [])
+        fabricHeatmapData.length > 0
+            ? Math.round(fabricHeatmapData.reduce((a, b) => a + b.conversion, 0) / fabricHeatmapData.length * 10) / 10
+            : 0
+        , [fabricHeatmapData])
     const avgSatisfaction = useMemo(() =>
         (teamData.reduce((a, b) => a + b.satisfaction, 0) / teamData.length).toFixed(1)
         , [])
@@ -275,12 +295,12 @@ export default function Analytics() {
         , [])
 
     const kpiStats = useMemo(() => [
-        { label: 'Toplam Gelir', value: `${(totalRevenue / 1000).toFixed(0)}K`, prefix: '₺', trend: 12.4, icon: '💰', color: 'rgba(88, 166, 255, 0.12)', accent: 'var(--accent-blue)', gradientFrom: '#58a6ff', gradientTo: '#3b82f6' },
+        { label: 'Toplam Gelir', value: `${(totalRevenue / 1000).toFixed(0)}K`, prefix: symbol, trend: 12.4, icon: '💰', color: 'rgba(88, 166, 255, 0.12)', accent: 'var(--accent-blue)', gradientFrom: '#58a6ff', gradientTo: '#3b82f6' },
         { label: 'Toplam Siparis', value: totalOrders, trend: 8.2, icon: '📦', color: 'rgba(139, 92, 246, 0.12)', accent: '#bc8cff', gradientFrom: '#bc8cff', gradientTo: '#8b5cf6' },
         { label: 'Donusum Orani', value: avgConversion, suffix: '%', trend: 3.1, icon: '🎯', color: 'rgba(46, 204, 113, 0.12)', accent: '#2ecc71', gradientFrom: '#2ecc71', gradientTo: '#27ae60' },
         { label: 'Musteri Memnuniyeti', value: avgSatisfaction, suffix: '⭐', trend: 1.8, icon: '😊', color: 'rgba(240, 180, 41, 0.12)', accent: '#f0b429', gradientFrom: '#f0b429', gradientTo: '#d4a017' },
         { label: 'En Iyi Ekip', value: bestTeam.name.split('(')[1]?.replace(')', '') || bestTeam.name, suffix: '', trend: bestTeam.trend, icon: '🏆', color: 'rgba(247, 120, 186, 0.12)', accent: '#f778ba', gradientFrom: '#f778ba', gradientTo: '#ec4899' },
-    ], [totalRevenue, totalOrders, avgConversion, avgSatisfaction, bestTeam])
+    ], [totalRevenue, totalOrders, avgConversion, avgSatisfaction, bestTeam, symbol])
 
     const chartTabs = useMemo(() => [
         { key: 'revenue', label: 'Gelir', icon: '📈' },
@@ -292,11 +312,26 @@ export default function Analytics() {
         revenue: { data: revenueData, color: '#58a6ff', type: 'line' },
         orders: { data: orderData, color: '#2ecc71', type: 'bar' },
         conversion: { data: conversionData, color: '#bc8cff', type: 'line' },
-    }), [])
+    }), [revenueData, orderData])
 
     const sortedFabrics = useMemo(() =>
         [...fabricHeatmapData].sort((a, b) => b.conversion - a.conversion)
-        , [])
+        , [fabricHeatmapData])
+
+    if (loading) return (
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: '400px', flexDirection: 'column', gap: '16px' }}>
+            <div style={{ width: '48px', height: '48px', border: '3px solid var(--border-primary)', borderTopColor: 'var(--accent-blue)', borderRadius: '50%', animation: 'spin 0.8s linear infinite' }} />
+            <span style={{ fontSize: '0.88rem', color: 'var(--text-tertiary)' }}>Analitik yükleniyor...</span>
+        </div>
+    )
+
+    if (error) return (
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: '400px', flexDirection: 'column', gap: '16px' }}>
+            <span style={{ fontSize: '2.5rem' }}>⚠️</span>
+            <span style={{ fontSize: '0.95rem', color: '#f87171', fontWeight: 600 }}>{error}</span>
+            <button className="btn btn-secondary" onClick={() => window.location.reload()}>Tekrar Dene</button>
+        </div>
+    )
 
     const sortedTeams = useMemo(() =>
         [...teamData].sort((a, b) => b.efficiency - a.efficiency)
@@ -538,10 +573,10 @@ export default function Analytics() {
                     position: 'relative',
                 }}>
                     {[
-                        { label: 'En Yuksek', value: `${activeChart === 'revenue' ? '₺' : ''}${Math.max(...chartConfig[activeChart].data) >= 1000 ? (Math.max(...chartConfig[activeChart].data) / 1000).toFixed(0) + 'K' : Math.max(...chartConfig[activeChart].data)}`, month: months[chartConfig[activeChart].data.indexOf(Math.max(...chartConfig[activeChart].data))] },
-                        { label: 'En Dusuk', value: `${activeChart === 'revenue' ? '₺' : ''}${Math.min(...chartConfig[activeChart].data) >= 1000 ? (Math.min(...chartConfig[activeChart].data) / 1000).toFixed(0) + 'K' : Math.min(...chartConfig[activeChart].data)}`, month: months[chartConfig[activeChart].data.indexOf(Math.min(...chartConfig[activeChart].data))] },
-                        { label: 'Ortalama', value: `${activeChart === 'revenue' ? '₺' : ''}${(chartConfig[activeChart].data.reduce((a, b) => a + b, 0) / 12) >= 1000 ? ((chartConfig[activeChart].data.reduce((a, b) => a + b, 0) / 12) / 1000).toFixed(0) + 'K' : Math.round(chartConfig[activeChart].data.reduce((a, b) => a + b, 0) / 12)}` },
-                        { label: 'Bu Ay', value: `${activeChart === 'revenue' ? '₺' : ''}${chartConfig[activeChart].data[currentMonthIdx] >= 1000 ? (chartConfig[activeChart].data[currentMonthIdx] / 1000).toFixed(0) + 'K' : chartConfig[activeChart].data[currentMonthIdx]}` },
+                        { label: 'En Yuksek', value: `${activeChart === 'revenue' ? symbol : ''}${Math.max(...chartConfig[activeChart].data) >= 1000 ? (Math.max(...chartConfig[activeChart].data) / 1000).toFixed(0) + 'K' : Math.max(...chartConfig[activeChart].data)}`, month: months[chartConfig[activeChart].data.indexOf(Math.max(...chartConfig[activeChart].data))] },
+                        { label: 'En Dusuk', value: `${activeChart === 'revenue' ? symbol : ''}${Math.min(...chartConfig[activeChart].data) >= 1000 ? (Math.min(...chartConfig[activeChart].data) / 1000).toFixed(0) + 'K' : Math.min(...chartConfig[activeChart].data)}`, month: months[chartConfig[activeChart].data.indexOf(Math.min(...chartConfig[activeChart].data))] },
+                        { label: 'Ortalama', value: `${activeChart === 'revenue' ? symbol : ''}${(chartConfig[activeChart].data.reduce((a, b) => a + b, 0) / 12) >= 1000 ? ((chartConfig[activeChart].data.reduce((a, b) => a + b, 0) / 12) / 1000).toFixed(0) + 'K' : Math.round(chartConfig[activeChart].data.reduce((a, b) => a + b, 0) / 12)}` },
+                        { label: 'Bu Ay', value: `${activeChart === 'revenue' ? symbol : ''}${chartConfig[activeChart].data[currentMonthIdx] >= 1000 ? (chartConfig[activeChart].data[currentMonthIdx] / 1000).toFixed(0) + 'K' : chartConfig[activeChart].data[currentMonthIdx]}` },
                     ].map((s, i) => (
                         <div key={i} style={{
                             padding: '8px 12px',
