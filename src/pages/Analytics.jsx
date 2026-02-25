@@ -318,6 +318,10 @@ export default function Analytics() {
         [...fabricHeatmapData].sort((a, b) => b.conversion - a.conversion)
         , [fabricHeatmapData])
 
+    const sortedTeams = useMemo(() =>
+        [...teamData].sort((a, b) => b.efficiency - a.efficiency)
+        , [])
+
     if (loading) return (
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: '400px', flexDirection: 'column', gap: '16px' }}>
             <div style={{ width: '48px', height: '48px', border: '3px solid var(--border-primary)', borderTopColor: 'var(--accent-blue)', borderRadius: '50%', animation: 'spin 0.8s linear infinite' }} />
@@ -332,10 +336,6 @@ export default function Analytics() {
             <button className="btn btn-secondary" onClick={() => window.location.reload()}>Tekrar Dene</button>
         </div>
     )
-
-    const sortedTeams = useMemo(() =>
-        [...teamData].sort((a, b) => b.efficiency - a.efficiency)
-        , [])
 
     return (
         <div style={{ position: 'relative', overflow: 'hidden' }}>
