@@ -1,35 +1,51 @@
 /**
- * /api/customers — GET (list) + POST (create)
- * RLS automatically filters by user's company_id
+ * /api/customers — GET, POST, PUT, DELETE
  */
-import { getUserClient, handlePreflight } from './_lib/supabase.js'
+import { getAuthContext, handlePreflight, db } from './_lib/db.js'
+import { customers, orders } from '../db/schema.js'
+import { eq, and, ilike, or, desc, sql } from 'drizzle-orm'
 
 export default async function handler(req, res) {
-    if (handlePreflight(req, res, ['GET', 'POST'])) return
+    if (handlePreflight(req, res, ['GET', 'POST', 'PUT', 'DELETE'])) return
 
-    const { user, supabase, error: authError } = await getUserClient(req)
-    if (authError) return res.status(authError.status).json({ error: authError.message })
+    const auth = await getAuthContext(req)
+    if (auth.error) return res.status(auth.error.status).json({ error: auth.error.message })
 
-    // ── GET: List customers ──
+    const { id, search } = req.query
+    const companyGuard = id ? and(eq(customers.id, id), eq(customers.company_id, auth.companyId)) : null
+
+    // GET — List or Single
     if (req.method === 'GET') {
         try {
-            const { search, status } = req.query
+            if (id) {
+                const [data] = await db.select().from(customers).where(companyGuard).limit(1)
+                if (!data) return res.status(404).json({ error: 'Customer not found' })
+                return res.status(200).json(data)
+            }
 
-            let query = supabase
-                .from('customers')
-                .select('*')
-                .order('created_at', { ascending: false })
-
+            let data
             if (search) {
-                query = query.or(`full_name.ilike.%${search}%,email.ilike.%${search}%,phone.ilike.%${search}%,city.ilike.%${search}%`)
+                const pattern = `%${search}%`
+                data = await db
+                    .select()
+                    .from(customers)
+                    .where(and(
+                        eq(customers.company_id, auth.companyId),
+                        or(
+                            ilike(customers.full_name, pattern),
+                            ilike(customers.email, pattern),
+                            ilike(customers.phone, pattern),
+                            ilike(customers.city, pattern),
+                        )
+                    ))
+                    .orderBy(desc(customers.created_at))
+            } else {
+                data = await db
+                    .select()
+                    .from(customers)
+                    .where(eq(customers.company_id, auth.companyId))
+                    .orderBy(desc(customers.created_at))
             }
-            if (status) {
-                query = query.eq('status', status)
-            }
-
-            const { data, error } = await query
-            if (error) throw error
-
             return res.status(200).json(data)
         } catch (err) {
             console.error('GET /api/customers error:', err.message)
@@ -37,47 +53,80 @@ export default async function handler(req, res) {
         }
     }
 
-    // ── POST: Create customer ──
+    // POST — Create
     if (req.method === 'POST') {
         try {
-            const { full_name, email, phone, address, city, notes, status } = req.body
-
+            const { full_name, email, phone, city } = req.body
             if (!full_name?.trim()) {
                 return res.status(400).json({ error: 'Customer name is required' })
             }
 
-            // Get user's company_id
-            const { data: profile } = await supabase
-                .from('profiles')
-                .select('company_id')
-                .eq('id', user.id)
-                .single()
-
-            if (!profile?.company_id) {
-                return res.status(400).json({ error: 'User has no company' })
-            }
-
-            const { data, error } = await supabase
-                .from('customers')
-                .insert({
-                    company_id: profile.company_id,
+            const [data] = await db
+                .insert(customers)
+                .values({
+                    company_id: auth.companyId,
                     full_name: full_name.trim(),
                     email: email || null,
                     phone: phone || null,
-                    address: address || null,
                     city: city || null,
-                    notes: notes || null,
-                    status: status || 'active',
                 })
-                .select()
-                .single()
-
-            if (error) throw error
+                .returning()
 
             return res.status(201).json(data)
         } catch (err) {
             console.error('POST /api/customers error:', err.message)
             return res.status(500).json({ error: 'Failed to create customer' })
+        }
+    }
+
+    // PUT — Update
+    if (req.method === 'PUT') {
+        if (!id) return res.status(400).json({ error: 'Customer ID is required' })
+        try {
+            const updates = { ...req.body }
+            delete updates.id
+            delete updates.company_id
+            delete updates.created_at
+            updates.updated_at = sql`now()`
+
+            if (updates.total_spent != null) {
+                updates.total_spent = String(Number(updates.total_spent))
+            }
+
+            const [data] = await db.update(customers).set(updates).where(companyGuard).returning()
+            if (!data) return res.status(404).json({ error: 'Customer not found' })
+            return res.status(200).json(data)
+        } catch (err) {
+            console.error('PUT /api/customers error:', err.message)
+            return res.status(500).json({ error: 'Failed to update customer' })
+        }
+    }
+
+    // DELETE
+    if (req.method === 'DELETE') {
+        const { delete_all } = req.query
+
+        if (delete_all === 'true') {
+            try {
+                // Free up orders before deleting customers
+                await db.update(orders).set({ customer_id: null }).where(eq(orders.company_id, auth.companyId))
+                // If soft delete is preferred later, change this to an update query on is_active: false
+                await db.delete(customers).where(eq(customers.company_id, auth.companyId))
+                return res.status(204).end()
+            } catch (err) {
+                console.error('DELETE_ALL /api/customers error:', err.message)
+                return res.status(500).json({ error: 'Failed to delete all customers' })
+            }
+        }
+
+        if (!id) return res.status(400).json({ error: 'Customer ID is required' })
+        try {
+            await db.update(orders).set({ customer_id: null }).where(and(eq(orders.customer_id, id), eq(orders.company_id, auth.companyId)))
+            await db.delete(customers).where(companyGuard)
+            return res.status(204).end()
+        } catch (err) {
+            console.error('DELETE /api/customers error:', err.message)
+            return res.status(500).json({ error: 'Failed to delete customer' })
         }
     }
 }

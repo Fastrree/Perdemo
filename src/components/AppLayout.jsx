@@ -3,6 +3,7 @@ import { Outlet, NavLink, useLocation, useNavigate } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { useTheme } from '../App'
 import { useAuth } from '../contexts/AuthContext'
+import { useNotifications } from '../hooks/useNotifications'
 import useIsMobile from '../hooks/useIsMobile'
 import LanguageSwitcher from './LanguageSwitcher'
 
@@ -20,13 +21,7 @@ const navItemDefs = [
     { path: '/white-label', labelKey: 'nav.whitelabel', icon: '🏢', sectionKey: 'nav.sections.management' },
 ]
 
-const mockNotificationDefs = [
-    { id: 1, textKey: 'notifications.mock.1', timeKey: 'notifications.times.1', read: false, link: '/orders' },
-    { id: 2, textKey: 'notifications.mock.2', timeKey: 'notifications.times.2', read: false, link: '/products' },
-    { id: 3, textKey: 'notifications.mock.3', timeKey: 'notifications.times.3', read: true, link: '/orders' },
-    { id: 4, textKey: 'notifications.mock.4', timeKey: 'notifications.times.4', read: true, link: '/customers' },
-    { id: 5, textKey: 'notifications.mock.5', timeKey: 'notifications.times.5', read: true, link: '/analytics' },
-]
+// Notifications are now fetched from DB via useNotifications hook
 
 export default function AppLayout() {
     const { t } = useTranslation('common')
@@ -36,7 +31,7 @@ export default function AppLayout() {
     const navigate = useNavigate()
     const [notifOpen, setNotifOpen] = useState(false)
     const [profileOpen, setProfileOpen] = useState(false)
-    const [notifications, setNotifications] = useState(mockNotificationDefs)
+    const { notifications, unreadCount, markAllRead: markAllReadDB, markOneRead } = useNotifications()
     const [globalSearch, setGlobalSearch] = useState('')
     const [searchResults, setSearchResults] = useState([])
     const [sidebarOpen, setSidebarOpen] = useState(false)
@@ -52,7 +47,7 @@ export default function AppLayout() {
         section: t(item.sectionKey),
     }))
 
-    const unreadCount = notifications.filter(n => !n.read).length
+    // unreadCount comes from useNotifications hook
 
     // Close dropdowns on outside click
     useEffect(() => {
@@ -71,14 +66,14 @@ export default function AppLayout() {
     }, [location.pathname])
 
     const markAllRead = useCallback(() => {
-        setNotifications(prev => prev.map(n => ({ ...n, read: true })))
-    }, [])
+        markAllReadDB()
+    }, [markAllReadDB])
 
     const handleNotifClick = useCallback((notif) => {
-        setNotifications(prev => prev.map(n => n.id === notif.id ? { ...n, read: true } : n))
+        markOneRead(notif.id)
         setNotifOpen(false)
-        navigate(notif.link)
-    }, [navigate])
+        if (notif.link) navigate(notif.link)
+    }, [navigate, markOneRead])
 
     // Global search across nav items
     const handleSearch = useCallback((query) => {
@@ -221,7 +216,11 @@ export default function AppLayout() {
                                         )}
                                     </div>
                                     <div style={{ maxHeight: '320px', overflowY: 'auto' }}>
-                                        {notifications.map(n => (
+                                        {notifications.length === 0 ? (
+                                            <div style={{ padding: '24px 16px', textAlign: 'center', color: 'var(--text-tertiary)', fontSize: '0.82rem' }}>
+                                                Bildirim yok
+                                            </div>
+                                        ) : notifications.map(n => (
                                             <button key={n.id} onClick={() => handleNotifClick(n)} style={{
                                                 display: 'flex', gap: '10px', padding: '12px 16px', width: '100%',
                                                 border: 'none', background: n.read ? 'transparent' : 'rgba(88,166,255,0.05)',
@@ -233,8 +232,11 @@ export default function AppLayout() {
                                                 onMouseLeave={e => e.currentTarget.style.background = n.read ? 'transparent' : 'rgba(88,166,255,0.05)'}>
                                                 {!n.read && <div style={{ width: '6px', height: '6px', borderRadius: '50%', background: 'var(--accent-blue)', marginTop: '6px', flexShrink: 0 }} />}
                                                 <div style={{ flex: 1, minWidth: 0 }}>
-                                                    <div style={{ fontSize: '0.82rem', lineHeight: 1.4 }}>{t(n.textKey)}</div>
-                                                    <div style={{ fontSize: '0.7rem', color: 'var(--text-tertiary)', marginTop: '2px' }}>{t(n.timeKey)}</div>
+                                                    <div style={{ fontSize: '0.82rem', lineHeight: 1.4, fontWeight: n.read ? 400 : 600 }}>{n.title}</div>
+                                                    {n.message && <div style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', marginTop: '2px', lineHeight: 1.3 }}>{n.message}</div>}
+                                                    <div style={{ fontSize: '0.7rem', color: 'var(--text-tertiary)', marginTop: '2px' }}>
+                                                        {n.created_at ? new Date(n.created_at).toLocaleDateString('tr-TR', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' }) : ''}
+                                                    </div>
                                                 </div>
                                             </button>
                                         ))}

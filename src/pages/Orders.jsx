@@ -1,7 +1,9 @@
-import { useState, useCallback, useMemo } from 'react'
+import { useState, useCallback, useMemo, useRef, useEffect } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useOrders } from '../hooks/useOrders'
 import { useCurrency } from '../hooks/useCurrency'
+import { useAuth } from '../contexts/AuthContext'
+import { apiFetch } from '../lib/apiClient'
 
 
 
@@ -66,39 +68,61 @@ const filterLabelToKey = {
 
 export default function Orders() {
     const { t } = useTranslation('orders')
-    const { orders: rawOrders, loading, error, createOrder, updateOrder, deleteOrder } = useOrders()
+    const { getToken } = useAuth()
+    const { orders: rawOrders, loading, error, fetchOrders, createOrder, updateOrder, deleteOrder } = useOrders()
     const { formatMoney, symbol } = useCurrency()
 
     // Normalize DB fields to match UI expectations
-    const orders = useMemo(() => rawOrders.map(o => ({
-        ...o,
-        id: o.order_number || o.id,
-        customer: o.customers?.full_name || o.customer_name || 'Bilinmiyor',
-        product: `${o.item_count || 0} ürün`,
-        qty: o.item_count || 0,
-        width: '-',
-        height: '-',
-        amount: o.total_amount || 0,
-        status: o.status || 'pending',
-        date: o.created_at ? new Date(o.created_at).toLocaleDateString('tr-TR', { day: 'numeric', month: 'short', year: 'numeric' }) : '-',
-        payment: o.payment_status || 'pending',
-        _id: o.id, // Keep original UUID for API calls
-    })), [rawOrders])
+    const orders = useMemo(() => rawOrders.map(o => {
+        const firstItem = o.items?.[0]
+        const productText = firstItem?.product_name || (o.item_count ? `${o.item_count} ürün` : 'Bilinmiyor')
+        const w = firstItem?.width ? String(firstItem.width) : '-'
+        const h = firstItem?.height ? String(firstItem.height) : '-'
+        const itemQty = firstItem?.quantity || o.item_count || 1
+
+        return {
+            ...o,
+            id: o.order_number || o.id,
+            customer: o.customers?.full_name || o.customer_name || 'Bilinmiyor',
+            product: productText,
+            qty: itemQty,
+            width: w,
+            height: h,
+            amount: o.total_amount || 0,
+            status: o.status || 'pending',
+            date: o.created_at ? new Date(o.created_at).toLocaleDateString('tr-TR', { day: 'numeric', month: 'short', year: 'numeric' }) : '-',
+            payment: o.payment_status || 'pending',
+            _id: o.id, // Keep original UUID for API calls
+        }
+    }), [rawOrders])
 
     const [search, setSearch] = useState('')
     const [statusFilter, setStatusFilter] = useState('all')
     const [expandedOrder, setExpandedOrder] = useState(null)
     const [modalOpen, setModalOpen] = useState(false)
+    const [editingOrderId, setEditingOrderId] = useState(null)
     const [form, setForm] = useState({ customer: '', product: '', qty: '1', width: '', height: '', amount: '' })
+    const [amountDisplay, setAmountDisplay] = useState('')
+    const [initialForm, setInitialForm] = useState(null)
     const [saving, setSaving] = useState(false)
 
-    const filtered = orders.filter(o => {
-        const matchSearch = o.id.toLowerCase().includes(search.toLowerCase()) ||
-            o.customer.toLowerCase().includes(search.toLowerCase()) ||
-            o.product.toLowerCase().includes(search.toLowerCase())
-        const matchStatus = statusFilter === 'all' || o.status === statusFilter
-        return matchSearch && matchStatus
-    })
+    // Server-side filtering for search, client-side for status
+    const searchTimer = useRef(null)
+    useEffect(() => {
+        if (searchTimer.current) clearTimeout(searchTimer.current)
+        searchTimer.current = setTimeout(() => {
+            const filters = {}
+            if (search) filters.search = search
+            fetchOrders(filters)
+        }, 300)
+        return () => { if (searchTimer.current) clearTimeout(searchTimer.current) }
+    }, [search]) // eslint-disable-line react-hooks/exhaustive-deps
+
+    const filtered = useMemo(() => {
+        const key = filterLabelToKey[statusFilter]
+        if (!key) return orders
+        return orders.filter(o => o.status === key)
+    }, [orders, statusFilter])
 
     const kpiValues = useMemo(() => {
         const totalOrders = orders.length
@@ -122,7 +146,7 @@ export default function Orders() {
         return counts
     }, [orders])
 
-    const totalAmount = filtered.reduce((sum, o) => sum + o.amount, 0)
+    const totalAmount = orders.reduce((sum, o) => sum + o.amount, 0)
 
     const advanceStatus = useCallback(async (order) => {
         const currentIdx = statusFlow.indexOf(order.status)
@@ -135,26 +159,123 @@ export default function Orders() {
         await deleteOrder(order._id)
     }, [deleteOrder])
 
-    const handleNewOrder = useCallback(async () => {
-        if (!form.customer.trim() || !form.product.trim()) return alert(t('form.customerProductRequired'))
+    const hardDeleteOrder = useCallback(async (order) => {
+        if (!window.confirm('Bu siparişi silmek istediğinize emin misiniz? Bu işlem geri alınamaz!')) return
+        const { error: err } = await apiFetch(`/api/orders?id=${order._id}&hard=true`, {
+            getToken,
+            method: 'DELETE',
+        })
+        if (err) return alert(err)
+        fetchOrders({ search })
+    }, [getToken, fetchOrders, search])
+
+    const deleteAllOrders = useCallback(async () => {
+        if (!window.confirm('Tüm siparişlerinizi tamamen silmek istediğinize emin misiniz? Bu işlem şirketinize ait tüm sipariş geçmişini geri dönülemez şekilde yok edecektir!')) return
+        const promptReset = window.prompt('Bu işlemi onaylamak için lütfen "LİSTEYİ TEMİZLE" yazın:')
+        if (promptReset !== 'LİSTEYİ TEMİZLE') {
+            alert('İşlem iptal edildi.')
+            return
+        }
+
         setSaving(true)
-        const { error: err } = await createOrder({
-            customer_name: form.customer.trim(),
-            items: [{
-                product_name: form.product.trim(),
-                quantity: parseInt(form.qty) || 1,
-                unit_price: parseFloat(form.amount) || 0,
-                width: form.width || null,
-                height: form.height || null,
-            }],
-            total_amount: parseFloat(form.amount) || 0,
-            notes: `${form.width || '-'} × ${form.height || '-'}`,
+        const { error: err } = await apiFetch(`/api/orders?hard=all`, {
+            getToken,
+            method: 'DELETE',
         })
         setSaving(false)
+
         if (err) return alert(err)
-        setModalOpen(false)
+        fetchOrders({ search })
+    }, [getToken, fetchOrders, search, setSaving])
+
+    const openNewOrderModal = useCallback(() => {
+        setEditingOrderId(null)
+        setInitialForm(null)
         setForm({ customer: '', product: '', qty: '1', width: '', height: '', amount: '' })
-    }, [form, createOrder, t])
+        setAmountDisplay('')
+        setModalOpen(true)
+    }, [])
+
+    const openEditModal = useCallback((order) => {
+        setEditingOrderId(order._id)
+        const amtStr = String(order.amount || '')
+        const newForm = {
+            customer: order.customer || '',
+            product: order.product || '',
+            qty: String(order.qty || '1'),
+            width: order.width || '',
+            height: order.height || '',
+            amount: amtStr,
+        }
+        setForm(newForm)
+        setInitialForm(newForm)
+
+        // Format for display
+        if (amtStr && !isNaN(parseFloat(amtStr))) {
+            const formatted = new Intl.NumberFormat('tr-TR', { maximumFractionDigits: 2 }).format(parseFloat(amtStr))
+            setAmountDisplay(formatted)
+        } else {
+            setAmountDisplay('')
+        }
+
+        setModalOpen(true)
+    }, [])
+
+    const handleSaveOrder = useCallback(async () => {
+        if (!form.customer.trim() || !form.product.trim()) return alert(t('form.customerProductRequired'))
+
+        if (editingOrderId && initialForm) {
+            const hasChanges = Object.keys(initialForm).some(key => form[key] !== initialForm[key])
+            if (!hasChanges) {
+                return alert('Herhangi bir değişiklik yapmadınız. Lütfen güncellemek için en az 1 veriyi güncelleyin.')
+            }
+        }
+
+        setSaving(true)
+
+        if (editingOrderId) {
+            // Edit Mode - PUT request to backend
+            const { error: err } = await apiFetch(`/api/orders?id=${editingOrderId}`, {
+                method: 'PUT',
+                getToken,
+                body: {
+                    customer_name: form.customer.trim(),
+                    product_name: form.product.trim(),
+                    quantity: parseInt(form.qty) || 1,
+                    unit_price: parseFloat(form.amount) || 0,
+                    total_amount: parseFloat(form.amount) || 0,
+                    width: form.width || null,
+                    height: form.height || null,
+                    notes: `${form.width || '-'} × ${form.height || '-'}`,
+                }
+            })
+            setSaving(false)
+            if (err) return alert(err)
+        } else {
+            // Create Mode - POST request
+            const { error: err } = await createOrder({
+                customer_name: form.customer.trim(),
+                items: [{
+                    product_name: form.product.trim(),
+                    quantity: parseInt(form.qty) || 1,
+                    unit_price: parseFloat(form.amount) || 0,
+                    width: form.width || null,
+                    height: form.height || null,
+                }],
+                total_amount: parseFloat(form.amount) || 0,
+                notes: `${form.width || '-'} × ${form.height || '-'}`,
+            })
+            setSaving(false)
+            if (err) return alert(err)
+        }
+
+        await fetchOrders({ search }) // Refresh list with active filters
+
+        setModalOpen(false)
+        setEditingOrderId(null)
+        setForm({ customer: '', product: '', qty: '1', width: '', height: '', amount: '' })
+        setAmountDisplay('')
+    }, [form, createOrder, fetchOrders, search, t, editingOrderId, getToken])
 
     if (loading) return (
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: '400px', flexDirection: 'column', gap: '16px' }}>
@@ -206,17 +327,37 @@ export default function Orders() {
                         {t('total')}: {formatMoney(totalAmount)}
                     </p>
                 </div>
-                <button className="btn btn-primary btn-lg" onClick={() => setModalOpen(true)}
-                    style={{
-                        boxShadow: '0 6px 28px rgba(88, 166, 255, 0.3), inset 0 1px 0 rgba(255,255,255,0.18)',
-                        letterSpacing: '0.02em',
-                    }}>
-                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                        strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                        <path d="M12 5v14M5 12h14" />
-                    </svg>
-                    {t('addOrder')}
-                </button>
+                <div style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
+                    <button className="btn btn-secondary"
+                        style={{
+                            padding: '12px 20px', fontSize: '0.9rem',
+                            color: '#ef4444', borderColor: 'rgba(239, 68, 68, 0.35)', fontWeight: 600,
+                        }}
+                        onMouseEnter={e => {
+                            e.currentTarget.style.background = 'rgba(239, 68, 68, 0.1)'
+                            e.currentTarget.style.borderColor = 'rgba(239, 68, 68, 0.6)'
+                            e.currentTarget.style.boxShadow = '0 4px 16px rgba(239, 68, 68, 0.2)'
+                        }}
+                        onMouseLeave={e => {
+                            e.currentTarget.style.background = 'rgba(255, 255, 255, 0.04)'
+                            e.currentTarget.style.borderColor = 'rgba(239, 68, 68, 0.35)'
+                            e.currentTarget.style.boxShadow = 'none'
+                        }}
+                        onClick={deleteAllOrders}>
+                        🔥 Listeyi Temizle
+                    </button>
+                    <button className="btn btn-primary btn-lg" onClick={openNewOrderModal}
+                        style={{
+                            boxShadow: '0 6px 28px rgba(88, 166, 255, 0.3), inset 0 1px 0 rgba(255,255,255,0.18)',
+                            letterSpacing: '0.02em',
+                        }}>
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                            <path d="M12 5v14M5 12h14" />
+                        </svg>
+                        {t('addOrder')}
+                    </button>
+                </div>
             </div>
 
             {/* ═══ KPI Summary Cards — Glassmorphism + Gradient Accent ═══ */}
@@ -469,7 +610,7 @@ export default function Orders() {
                                             <td style={{
                                                 padding: '14px 20px', fontSize: '0.8rem',
                                                 color: 'var(--text-tertiary)', fontFamily: 'var(--font-display)',
-                                            }}>{order.width} × {order.height}</td>
+                                            }}>{order.width ? `${order.width} cm` : '-'} × {order.height ? `${order.height} cm` : '-'}</td>
                                             <td style={{
                                                 padding: '14px 20px', fontWeight: 700,
                                                 fontFamily: 'var(--font-display)', fontSize: '0.95rem',
@@ -611,6 +752,24 @@ export default function Orders() {
                                                                 display: 'flex', gap: '10px', flexShrink: 0,
                                                                 alignItems: 'center', flexWrap: 'wrap',
                                                             }}>
+                                                                <button className="btn btn-secondary"
+                                                                    style={{
+                                                                        fontSize: '0.82rem', padding: '10px 22px',
+                                                                        color: 'var(--accent-blue)',
+                                                                        borderColor: 'rgba(88, 166, 255, 0.35)',
+                                                                        fontWeight: 600,
+                                                                    }}
+                                                                    onMouseEnter={e => {
+                                                                        e.currentTarget.style.background = 'rgba(88, 166, 255, 0.1)'
+                                                                        e.currentTarget.style.borderColor = 'rgba(88, 166, 255, 0.6)'
+                                                                    }}
+                                                                    onMouseLeave={e => {
+                                                                        e.currentTarget.style.background = 'rgba(255, 255, 255, 0.04)'
+                                                                        e.currentTarget.style.borderColor = 'rgba(88, 166, 255, 0.35)'
+                                                                    }}
+                                                                    onClick={(e) => { e.stopPropagation(); openEditModal(order) }}>
+                                                                    ✏️ Düzenle
+                                                                </button>
                                                                 {order.status !== 'delivered' && order.status !== 'cancelled' && (
                                                                     <button className="btn btn-primary"
                                                                         style={{
@@ -654,6 +813,26 @@ export default function Orders() {
                                                                         <span style={{ fontSize: '0.82rem', color: 'var(--text-tertiary)', fontStyle: 'italic' }}>Bu sipariş iptal edildi</span>
                                                                     </div>
                                                                 )}
+                                                                <button className="btn btn-secondary"
+                                                                    style={{
+                                                                        fontSize: '0.82rem', padding: '10px 22px',
+                                                                        color: '#ef4444',
+                                                                        borderColor: 'rgba(239, 68, 68, 0.35)',
+                                                                        fontWeight: 600,
+                                                                    }}
+                                                                    onMouseEnter={e => {
+                                                                        e.currentTarget.style.background = 'rgba(239, 68, 68, 0.1)'
+                                                                        e.currentTarget.style.borderColor = 'rgba(239, 68, 68, 0.6)'
+                                                                        e.currentTarget.style.boxShadow = '0 4px 16px rgba(239, 68, 68, 0.2)'
+                                                                    }}
+                                                                    onMouseLeave={e => {
+                                                                        e.currentTarget.style.background = 'rgba(255, 255, 255, 0.04)'
+                                                                        e.currentTarget.style.borderColor = 'rgba(239, 68, 68, 0.35)'
+                                                                        e.currentTarget.style.boxShadow = 'none'
+                                                                    }}
+                                                                    onClick={(e) => { e.stopPropagation(); hardDeleteOrder(order) }}>
+                                                                    🗑️ Sil
+                                                                </button>
                                                                 {order.status === 'delivered' && (
                                                                     <div style={{
                                                                         display: 'flex', alignItems: 'center', gap: '8px',
@@ -709,11 +888,11 @@ export default function Orders() {
                                 <h3 style={{
                                     fontSize: '1.2rem', fontWeight: 800, margin: 0,
                                     fontFamily: 'var(--font-display)',
-                                }}>Yeni Sipariş</h3>
+                                }}>{editingOrderId ? 'Siparişi Düzenle' : 'Yeni Sipariş'}</h3>
                                 <span style={{
                                     fontSize: '0.72rem', color: 'var(--text-tertiary)',
                                     letterSpacing: '0.02em',
-                                }}>Sipariş bilgilerini doldurun</span>
+                                }}>{editingOrderId ? 'Sipariş bilgilerini güncelleyin' : 'Sipariş bilgilerini doldurun'}</span>
                             </div>
                             {/* Close button */}
                             <button className="btn btn-ghost btn-icon"
@@ -745,27 +924,50 @@ export default function Orders() {
                             <div className="grid-3" style={{ gap: '12px' }}>
                                 <div>
                                     <label style={formLabelStyle}>Adet</label>
-                                    <input className="input" type="number" value={form.qty}
+                                    <input className="input" type="number" min="1" step="1" value={form.qty}
                                         onChange={e => setForm(f => ({ ...f, qty: e.target.value }))} />
                                 </div>
                                 <div>
-                                    <label style={formLabelStyle}>Genişlik</label>
-                                    <input className="input" value={form.width}
+                                    <label style={formLabelStyle}>Genişlik (cm)</label>
+                                    <input className="input" type="number" min="0" step="0.1" value={form.width}
                                         onChange={e => setForm(f => ({ ...f, width: e.target.value }))}
-                                        placeholder="240cm" />
+                                        placeholder="240" />
                                 </div>
                                 <div>
-                                    <label style={formLabelStyle}>Yükseklik</label>
-                                    <input className="input" value={form.height}
+                                    <label style={formLabelStyle}>Yükseklik (cm)</label>
+                                    <input className="input" type="number" min="0" step="0.1" value={form.height}
                                         onChange={e => setForm(f => ({ ...f, height: e.target.value }))}
-                                        placeholder="260cm" />
+                                        placeholder="260" />
                                 </div>
                             </div>
                             <div>
                                 <label style={formLabelStyle}>Tutar ({symbol})</label>
-                                <input className="input" type="number" value={form.amount}
-                                    onChange={e => setForm(f => ({ ...f, amount: e.target.value }))}
-                                    placeholder="3450" />
+                                <input className="input" type="text" inputMode="decimal"
+                                    value={amountDisplay}
+                                    onChange={e => {
+                                        const rawValue = e.target.value
+                                        // Sadece rakam ve virgül kalmasına izin ver (Türkçe ondalık)
+                                        const cleanVal = rawValue.replace(/[^\d,]/g, '')
+                                        setAmountDisplay(cleanVal)
+
+                                        // Gerçek değer için virgülü noktaya çevirip sakla
+                                        const numVal = cleanVal.replace(',', '.')
+                                        setForm(f => ({ ...f, amount: numVal }))
+                                    }}
+                                    onBlur={(e) => {
+                                        const val = parseFloat(form.amount)
+                                        if (!isNaN(val)) {
+                                            const formatted = new Intl.NumberFormat('tr-TR', { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(val)
+                                            setAmountDisplay(formatted)
+                                        }
+                                    }}
+                                    onFocus={(e) => {
+                                        // Focus olduğunda düz halini ver (Örn: 1540,50) ki düzenlemesi kolay olsun
+                                        if (form.amount) {
+                                            setAmountDisplay(String(form.amount).replace('.', ','))
+                                        }
+                                    }}
+                                    placeholder="3.450,00" />
                             </div>
                         </div>
                         <div style={{ display: 'flex', gap: '10px', marginTop: '28px' }}>
@@ -773,12 +975,18 @@ export default function Orders() {
                                 flex: 1, fontWeight: 700, fontSize: '0.92rem',
                                 boxShadow: '0 6px 24px rgba(88, 166, 255, 0.3)',
                                 padding: '12px 24px',
-                            }} onClick={handleNewOrder}>
-                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                                    strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                                    <path d="M12 5v14M5 12h14" />
-                                </svg>
-                                Sipariş Oluştur
+                            }} onClick={handleSaveOrder} disabled={saving}>
+                                {saving ? (
+                                    <div style={{ width: '16px', height: '16px', border: '2px solid rgba(255,255,255,0.3)', borderTopColor: '#fff', borderRadius: '50%', animation: 'spin 0.6s linear infinite' }} />
+                                ) : (
+                                    <>
+                                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                            strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                                            {editingOrderId ? <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" /> : <path d="M12 5v14M5 12h14" />}
+                                        </svg>
+                                        {editingOrderId ? 'Güncelle' : 'Sipariş Oluştur'}
+                                    </>
+                                )}
                             </button>
                             <button className="btn btn-secondary" onClick={() => setModalOpen(false)}
                                 style={{ padding: '12px 20px' }}>İptal</button>

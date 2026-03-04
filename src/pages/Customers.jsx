@@ -1,101 +1,9 @@
-import { useState, useCallback, useMemo, memo, startTransition } from 'react'
+import { useState, useCallback, useMemo, memo, startTransition, useRef, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { useCustomers } from '../hooks/useCustomers'
+import { useOrders } from '../hooks/useOrders'
 import { useCurrency } from '../hooks/useCurrency'
-
-
-
-/* ═══════════════════════════════════════════════════
-   DIGITAL TWIN — Per-Customer Window Archive
-   ═══════════════════════════════════════════════════ */
-const digitalTwins = {
-    1: {
-        rooms: [
-            {
-                name: 'Salon', icon: '🛋️', windows: [
-                    { id: 'w1', width: 200, height: 250, fabric: 'Kadife Bordo', style: 'Büzgülü', mechanism: 'Kornişli Ray', installedDate: '2024-03-15', washTemp: 30, washCycle: 6 },
-                    { id: 'w2', width: 140, height: 220, fabric: 'Tül Beyaz', style: 'Büzgülü', mechanism: 'Boru Korniş', installedDate: '2024-03-15', washTemp: 30, washCycle: 4 },
-                ]
-            },
-            {
-                name: 'Yatak Odası', icon: '🛏️', windows: [
-                    { id: 'w3', width: 180, height: 240, fabric: 'Blackout Siyah', style: 'Halkalı', mechanism: 'Motorlu Ray', installedDate: '2025-01-10', washTemp: 40, washCycle: 8 },
-                ]
-            },
-        ],
-        projects: [
-            { date: '2024-03-15', room: 'Salon', fabric: 'Kadife Bordo + Tül Beyaz', cost: 8400, status: 'completed' },
-            { date: '2025-01-10', room: 'Yatak Odası', fabric: 'Blackout Siyah', cost: 4200, status: 'completed' },
-        ]
-    },
-    2: {
-        rooms: [
-            {
-                name: 'Salon', icon: '🛋️', windows: [
-                    { id: 'w4', width: 220, height: 260, fabric: 'Keten Lacivert', style: 'Kulaklı', mechanism: 'Kornişli Ray', installedDate: '2025-06-22', washTemp: 40, washCycle: 6 },
-                ]
-            },
-        ],
-        projects: [
-            { date: '2025-06-22', room: 'Salon', fabric: 'Keten Lacivert', cost: 5100, status: 'completed' },
-        ]
-    },
-    3: {
-        rooms: [
-            {
-                name: 'Salon', icon: '🛋️', windows: [
-                    { id: 'w5', width: 260, height: 280, fabric: 'İpek Krem', style: 'Büzgülü', mechanism: 'Motorlu Ray', installedDate: '2023-09-05', washTemp: 30, washCycle: 4 },
-                    { id: 'w6', width: 180, height: 250, fabric: 'Jakar Altın', style: 'Halkalı', mechanism: 'Kornişli Ray', installedDate: '2023-09-05', washTemp: 30, washCycle: 6 },
-                ]
-            },
-            {
-                name: 'Yatak Odası', icon: '🛏️', windows: [
-                    { id: 'w7', width: 200, height: 240, fabric: 'Kadife Zümrüt', style: 'Büzgülü', mechanism: 'Kornişli Ray', installedDate: '2024-11-18', washTemp: 30, washCycle: 6 },
-                ]
-            },
-            {
-                name: 'Çocuk Odası', icon: '🧒', windows: [
-                    { id: 'w8', width: 150, height: 200, fabric: 'Pamuk Gri', style: 'Kulaklı', mechanism: 'Boru Korniş', installedDate: '2024-11-18', washTemp: 40, washCycle: 4 },
-                ]
-            },
-        ],
-        projects: [
-            { date: '2023-09-05', room: 'Salon', fabric: 'İpek Krem + Jakar Altın', cost: 14200, status: 'completed' },
-            { date: '2024-11-18', room: 'Yatak + Çocuk', fabric: 'Kadife Zümrüt + Pamuk Gri', cost: 9800, status: 'completed' },
-        ]
-    },
-    6: {
-        rooms: [
-            {
-                name: 'Salon', icon: '🛋️', windows: [
-                    { id: 'w9', width: 300, height: 300, fabric: 'Kadife Bordo', style: 'Halkalı', mechanism: 'Motorlu Ray', installedDate: '2022-04-10', washTemp: 30, washCycle: 6 },
-                    { id: 'w10', width: 250, height: 280, fabric: 'Tül Beyaz', style: 'Büzgülü', mechanism: 'Kornişli Ray', installedDate: '2022-04-10', washTemp: 30, washCycle: 4 },
-                ]
-            },
-            {
-                name: 'Yatak Odası', icon: '🛏️', windows: [
-                    { id: 'w11', width: 200, height: 250, fabric: 'İpek Krem', style: 'Büzgülü', mechanism: 'Kornişli Ray', installedDate: '2023-02-14', washTemp: 30, washCycle: 4 },
-                ]
-            },
-            {
-                name: 'Misafir Odası', icon: '🛋️', windows: [
-                    { id: 'w12', width: 160, height: 220, fabric: 'Keten Lacivert', style: 'Kulaklı', mechanism: 'Boru Korniş', installedDate: '2024-08-20', washTemp: 40, washCycle: 6 },
-                ]
-            },
-            {
-                name: 'Mutfak', icon: '🍳', windows: [
-                    { id: 'w13', width: 120, height: 150, fabric: 'Pamuk Gri', style: 'Kulaklı', mechanism: 'Boru Korniş', installedDate: '2024-08-20', washTemp: 40, washCycle: 3 },
-                ]
-            },
-        ],
-        projects: [
-            { date: '2022-04-10', room: 'Salon', fabric: 'Kadife Bordo + Tül', cost: 18500, status: 'completed' },
-            { date: '2023-02-14', room: 'Yatak Odası', fabric: 'İpek Krem', cost: 7200, status: 'completed' },
-            { date: '2024-08-20', room: 'Misafir + Mutfak', fabric: 'Keten Lacivert + Pamuk Gri', cost: 6400, status: 'completed' },
-        ]
-    },
-}
 
 const statusBadge = {
     active: { label: 'Aktif', cls: 'badge-success' },
@@ -115,6 +23,52 @@ const CustomerDetailSlideOver = memo(function CustomerDetailSlideOver({ customer
     const [detailTab, setDetailTab] = useState('info') // 'info' | 'twin'
     // internal state resets automatically when key={customer.id} changes in parent
 
+    const { orders, fetchOrders } = useOrders({ autoFetch: false })
+
+    useEffect(() => {
+        if (customer) fetchOrders({ customer_id: customer.id })
+    }, [customer, fetchOrders])
+
+    const twin = useMemo(() => {
+        if (!orders || orders.length === 0) return null
+
+        let roomsMap = {}
+        let projects = []
+
+        orders.forEach(order => {
+            const dateStr = new Date(order.created_at).toLocaleDateString('tr-TR', { day: 'numeric', month: 'short', year: 'numeric' })
+            projects.push({
+                date: dateStr,
+                room: order.notes || 'Genel Proje',
+                fabric: order.items?.map(i => i.product_name)?.join(' + ') || 'Belirtilmemiş Ürün',
+                cost: parseFloat(order.total_amount) || 0,
+                status: order.status === 'delivered' ? 'completed' : 'pending'
+            })
+
+            const roomName = order.notes || 'Genel'
+            if (!roomsMap[roomName]) roomsMap[roomName] = { name: roomName, icon: '🏠', windows: [] }
+
+            order.items?.forEach((item, idx) => {
+                roomsMap[roomName].windows.push({
+                    id: `${order.id}-${idx}`,
+                    width: item.width || 0,
+                    height: item.height || 0,
+                    fabric: item.product_name || 'Standart Kumaş',
+                    style: 'Büzgülü',
+                    mechanism: 'Standart Korniş',
+                    installedDate: dateStr,
+                    washTemp: 30,
+                    washCycle: 6
+                })
+            })
+        })
+
+        return {
+            rooms: Object.values(roomsMap),
+            projects: projects
+        }
+    }, [orders])
+
     if (!customer) return null
 
     return (
@@ -133,7 +87,7 @@ const CustomerDetailSlideOver = memo(function CustomerDetailSlideOver({ customer
                         </div>
                         <div>
                             <h3 style={{ fontSize: '1.15rem', fontWeight: 700, marginBottom: '2px' }}>{customer.name}</h3>
-                            <span className={`badge ${statusBadge[customer.status].cls}`}>{statusBadge[customer.status].label}</span>
+                            <span className={`badge ${statusBadge[customer.status].cls} `}>{statusBadge[customer.status].label}</span>
                         </div>
                     </div>
 
@@ -147,7 +101,7 @@ const CustomerDetailSlideOver = memo(function CustomerDetailSlideOver({ customer
                                     color: detailTab === key ? 'var(--accent-blue)' : 'var(--text-tertiary)',
                                     borderBottom: detailTab === key ? '2px solid var(--accent-blue)' : '2px solid transparent',
                                     transition: 'all 0.2s',
-                                }}>{label}{key === 'twin' && digitalTwins[customer.id] ? ` (${digitalTwins[customer.id].rooms.reduce((s, r) => s + r.windows.length, 0)})` : ''}</button>
+                                }}>{label}{key === 'twin' && twin ? ` (${twin.rooms.reduce((s, r) => s + r.windows.length, 0)})` : ''}</button>
                         ))}
                     </div>
 
@@ -184,22 +138,59 @@ const CustomerDetailSlideOver = memo(function CustomerDetailSlideOver({ customer
                                 </div>
                             </div>
 
-                            <div className="action-col">
-                                <button className="btn btn-primary" style={{ width: '100%' }}
-                                    onClick={() => { onEdit(customer) }}>✏️ Bilgileri Düzenle</button>
-                                <button className="btn btn-secondary" style={{ width: '100%' }}
-                                    onClick={() => window.open(`tel:${customer.phone.replace(/\s/g, '')}`)}>📱 Ara</button>
-                                <button className="btn btn-secondary" style={{ width: '100%' }}
-                                    onClick={() => window.open(`mailto:${customer.email}`)}>📧 E-posta Gönder</button>
-                                <button className="btn btn-secondary" style={{ width: '100%', color: '#e74c3c', borderColor: 'rgba(231,76,60,0.3)' }}
-                                    onClick={() => { if (confirm('Bu müşteriyi silmek istediğinizden emin misiniz?')) onDelete(customer.id) }}>🗑️ Sil</button>
+                            <div className="action-col" style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                                <div style={{ display: 'flex', gap: '8px' }}>
+                                    <button className="btn btn-secondary" style={{ flex: 1 }}
+                                        onClick={() => window.open(`tel:${customer.phone.replace(/\s/g, '')}`)}>📱 Ara</button>
+                                    <button className="btn btn-secondary" style={{ flex: 1 }}
+                                        onClick={() => window.open(`mailto:${customer.email}`)}>📧 E-posta</button>
+                                </div>
+                                <div style={{ display: 'flex', gap: '8px' }}>
+                                    <button className="btn btn-secondary"
+                                        style={{
+                                            fontSize: '0.82rem', padding: '10px 22px', flex: 1,
+                                            color: 'var(--accent-blue)',
+                                            borderColor: 'rgba(88, 166, 255, 0.35)',
+                                            fontWeight: 600,
+                                        }}
+                                        onMouseEnter={e => {
+                                            e.currentTarget.style.background = 'rgba(88, 166, 255, 0.1)'
+                                            e.currentTarget.style.borderColor = 'rgba(88, 166, 255, 0.6)'
+                                        }}
+                                        onMouseLeave={e => {
+                                            e.currentTarget.style.background = 'rgba(255, 255, 255, 0.04)'
+                                            e.currentTarget.style.borderColor = 'rgba(88, 166, 255, 0.35)'
+                                        }}
+                                        onClick={() => { onEdit(customer) }}>
+                                        ✏️ Bilgileri Düzenle
+                                    </button>
+                                    <button className="btn btn-secondary"
+                                        style={{
+                                            fontSize: '0.82rem', padding: '10px 22px', flex: 1,
+                                            color: '#ef4444',
+                                            borderColor: 'rgba(239, 68, 68, 0.35)',
+                                            fontWeight: 600,
+                                        }}
+                                        onMouseEnter={e => {
+                                            e.currentTarget.style.background = 'rgba(239, 68, 68, 0.1)'
+                                            e.currentTarget.style.borderColor = 'rgba(239, 68, 68, 0.6)'
+                                            e.currentTarget.style.boxShadow = '0 4px 16px rgba(239, 68, 68, 0.2)'
+                                        }}
+                                        onMouseLeave={e => {
+                                            e.currentTarget.style.background = 'rgba(255, 255, 255, 0.04)'
+                                            e.currentTarget.style.borderColor = 'rgba(239, 68, 68, 0.35)'
+                                            e.currentTarget.style.boxShadow = 'none'
+                                        }}
+                                        onClick={() => { if (confirm('Bu müşteriyi silmek istediğinizden emin misiniz?')) onDelete(customer.id) }}>
+                                        🗑️ Sil
+                                    </button>
+                                </div>
                             </div>
                         </>
                     )}
 
                     {/* TAB: Digital Twin */}
                     {detailTab === 'twin' && (() => {
-                        const twin = digitalTwins[customer.id]
                         if (!twin) return (
                             <div style={{ textAlign: 'center', padding: '40px 0' }}>
                                 <div style={{ fontSize: '3rem', marginBottom: '12px', opacity: 0.3 }}>🏠</div>
@@ -338,7 +329,7 @@ const CustomerDetailSlideOver = memo(function CustomerDetailSlideOver({ customer
    ═══════════════════════════════════════════════════ */
 export default function Customers() {
     const { t } = useTranslation('customers')
-    const { customers: rawCustomers, loading, error, createCustomer, updateCustomer, deleteCustomer: apiDeleteCustomer } = useCustomers()
+    const { customers: rawCustomers, loading, error, fetchCustomers, createCustomer, updateCustomer, deleteCustomer: apiDeleteCustomer, deleteAllCustomers } = useCustomers()
     const { formatMoney, formatCompact } = useCurrency()
 
     // Normalize DB fields to match UI expectations
@@ -361,16 +352,22 @@ export default function Customers() {
     const [modalOpen, setModalOpen] = useState(false)
     const [editingCustomer, setEditingCustomer] = useState(null)
     const [form, setForm] = useState(emptyForm)
+    const [initialForm, setInitialForm] = useState(null)
     const [saving, setSaving] = useState(false)
 
-    const searchLower = search.toLowerCase()
-    const filtered = useMemo(() =>
-        customers.filter(c =>
-            c.name.toLowerCase().includes(searchLower) ||
-            c.email.toLowerCase().includes(searchLower) ||
-            c.city.toLowerCase().includes(searchLower)
-        )
-        , [customers, searchLower])
+    // Server-side filtering
+    const searchTimer = useRef(null)
+    useEffect(() => {
+        if (searchTimer.current) clearTimeout(searchTimer.current)
+        searchTimer.current = setTimeout(() => {
+            const filters = {}
+            if (search) filters.search = search
+            fetchCustomers(filters)
+        }, 300)
+        return () => { if (searchTimer.current) clearTimeout(searchTimer.current) }
+    }, [search]) // eslint-disable-line react-hooks/exhaustive-deps
+
+    const filtered = customers
 
     const totalRevenue = useMemo(() => customers.reduce((sum, c) => sum + c.totalSpent, 0), [customers])
     const updateForm = useCallback((field, value) => setForm(f => ({ ...f, [field]: value })), [])
@@ -381,19 +378,30 @@ export default function Customers() {
 
     const openAddModal = useCallback(() => {
         setEditingCustomer(null)
+        setInitialForm(null)
         setForm(emptyForm)
         setModalOpen(true)
     }, [])
 
     const openEditModal = useCallback((customer) => {
         setEditingCustomer(customer)
-        setForm({ name: customer.name, email: customer.email, phone: customer.phone, city: customer.city })
+        const newForm = { name: customer.name, email: customer.email, phone: customer.phone, city: customer.city }
+        setForm(newForm)
+        setInitialForm(newForm)
         setModalOpen(true)
         setSelectedCustomer(null)
     }, [])
 
     const handleSave = useCallback(async () => {
         if (!form.name.trim()) return alert('İsim gerekli')
+
+        if (editingCustomer && initialForm) {
+            const hasChanges = Object.keys(initialForm).some(key => form[key] !== initialForm[key])
+            if (!hasChanges) {
+                return alert('Herhangi bir değişiklik yapmadınız. Lütfen güncellemek için en az 1 veriyi güncelleyin.')
+            }
+        }
+
         setSaving(true)
         const payload = {
             full_name: form.name.trim(),
@@ -411,13 +419,29 @@ export default function Customers() {
         setSaving(false)
         setModalOpen(false)
         setForm(emptyForm)
-    }, [form, editingCustomer, createCustomer, updateCustomer])
+    }, [form, editingCustomer, initialForm, createCustomer, updateCustomer])
 
     const handleDelete = useCallback(async (id) => {
         const { error: err } = await apiDeleteCustomer(id)
         if (err) return alert(err)
         setSelectedCustomer(null)
     }, [apiDeleteCustomer])
+
+    const deleteAllCustomersHandler = useCallback(async () => {
+        if (!window.confirm('Tüm müşterileri tamamen silmek istediğinize emin misiniz? Müşterilerin geçmiş siparişleri bağlantısız/isimsiz olarak kalacaktır ve bu işlem geri alınamaz!')) return
+        const promptReset = window.prompt('Bu işlemi onaylamak için lütfen "LİSTEYİ TEMİZLE" yazın:')
+        if (promptReset !== 'LİSTEYİ TEMİZLE') {
+            alert('İşlem iptal edildi.')
+            return
+        }
+
+        setSaving(true)
+        const { error: err } = await deleteAllCustomers()
+        setSaving(false)
+
+        if (err) return alert(err)
+        fetchCustomers({ search: search })
+    }, [deleteAllCustomers, fetchCustomers, search])
 
     if (loading) return (
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: '400px', flexDirection: 'column', gap: '16px' }}>
@@ -436,12 +460,35 @@ export default function Customers() {
 
     return (
         <div>
-            <div className="page-header">
+            <div className="page-header" style={{ display: 'flex', flexWrap: 'wrap', gap: '16px', justifyContent: 'space-between', alignItems: 'flex-start' }}>
                 <div>
                     <h1 className="page-title">Müşteriler</h1>
                     <p className="page-subtitle">{customers.length} müşteri — Toplam Ciro: {formatMoney(totalRevenue)}</p>
                 </div>
-                <button className="btn btn-primary" onClick={openAddModal}>+ Yeni Müşteri</button>
+                <div style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
+                    <button className="btn btn-secondary"
+                        style={{
+                            padding: '12px 20px', fontSize: '0.9rem',
+                            color: '#ef4444', borderColor: 'rgba(239, 68, 68, 0.35)', fontWeight: 600,
+                        }}
+                        onMouseEnter={e => {
+                            e.currentTarget.style.background = 'rgba(239, 68, 68, 0.1)'
+                            e.currentTarget.style.borderColor = 'rgba(239, 68, 68, 0.6)'
+                            e.currentTarget.style.boxShadow = '0 4px 16px rgba(239, 68, 68, 0.2)'
+                        }}
+                        onMouseLeave={e => {
+                            e.currentTarget.style.background = 'rgba(255, 255, 255, 0.04)'
+                            e.currentTarget.style.borderColor = 'rgba(239, 68, 68, 0.35)'
+                            e.currentTarget.style.boxShadow = 'none'
+                        }}
+                        onClick={deleteAllCustomersHandler}>
+                        🔥 Listeyi Temizle
+                    </button>
+                    <button className="btn btn-primary" onClick={openAddModal}
+                        style={{ position: 'relative', overflow: 'hidden', padding: '12px 20px' }}>
+                        <span style={{ position: 'relative', zIndex: 1 }}>+ Yeni Müşteri</span>
+                    </button>
+                </div>
             </div>
 
             {/* Search */}
@@ -461,19 +508,23 @@ export default function Customers() {
                     <div className="empty-state-icon">👥</div>
                     <div className="empty-state-title">Müşteri bulunamadı</div>
                     <div className="empty-state-desc">Arama kriterlerinize uygun müşteri yok.</div>
+                    <button className="btn btn-secondary" style={{ marginTop: '20px' }}
+                        onClick={() => setSearch('')}>
+                        Aramayı Temizle
+                    </button>
                 </div>
             ) : (
                 <div className="grid-3">
                     {filtered.map((customer, i) => (
                         <div key={customer.id} className="card animate-fade-in-up"
-                            style={{ animationDelay: `${i * 0.05}s`, cursor: 'pointer' }}
+                            style={{ animationDelay: `${i * 0.05} s`, cursor: 'pointer' }}
                             onClick={() => selectCustomer(customer)}>
                             <div style={{ display: 'flex', alignItems: 'flex-start', gap: '14px', marginBottom: '16px' }}>
                                 <div className="avatar avatar-lg">{customer.name.split(' ').map(n => n[0]).join('')}</div>
                                 <div style={{ flex: 1, minWidth: 0 }}>
                                     <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '2px' }}>
                                         <h3 style={{ fontSize: '1rem', fontWeight: 700 }}>{customer.name}</h3>
-                                        <span className={`badge ${statusBadge[customer.status].cls}`}>{statusBadge[customer.status].label}</span>
+                                        <span className={`badge ${statusBadge[customer.status].cls} `}>{statusBadge[customer.status].label}</span>
                                     </div>
                                     <div style={{ fontSize: '0.8rem', color: 'var(--text-secondary)' }}>{customer.email}</div>
                                     <div style={{ fontSize: '0.8rem', color: 'var(--text-tertiary)' }}>{customer.phone}</div>

@@ -1,136 +1,134 @@
 /**
- * Auth Context — Supabase Authentication
+ * Auth Context — Clerk Authentication
  * 
- * Provides: user, session, profile, loading, signIn, signUp, signOut
- * Wraps entire app to make auth state available everywhere.
+ * Provides: user, session, profile, loading, signIn, signUp, signOut, resetPassword
+ * Wraps Clerk hooks to maintain the same API as the old Supabase auth.
+ * 
+ * Important: ClerkProvider must wrap this in App.jsx
  */
 import { createContext, useContext, useState, useEffect, useCallback } from 'react'
-import { supabase } from '../lib/supabaseClient'
+import { useUser, useClerk, useAuth as useClerkAuth } from '@clerk/clerk-react'
+import { apiFetch } from '../lib/apiClient'
 
 const AuthContext = createContext(null)
 
 export function AuthProvider({ children }) {
-    const [user, setUser] = useState(null)
-    const [session, setSession] = useState(null)
+    const { user: clerkUser, isLoaded: userLoaded } = useUser()
+    const { getToken, isSignedIn } = useClerkAuth()
+    const clerk = useClerk()
+
     const [profile, setProfile] = useState(null)
-    const [loading, setLoading] = useState(true)
+    const [profileLoading, setProfileLoading] = useState(false)
 
-    // Fetch user profile from profiles table
-    const fetchProfile = useCallback(async (userId) => {
-        try {
-            const { data, error } = await supabase
-                .from('profiles')
-                .select('*, companies(*)')
-                .eq('id', userId)
-                .single()
+    // Build a session-like object for apiClient compatibility
+    const [sessionObj, setSessionObj] = useState(null)
 
-            if (error) {
-                console.error('Profile fetch error:', error.message)
-                return null
-            }
-            return data
-        } catch (err) {
-            console.error('Profile fetch exception:', err)
+    // Refresh the session token
+    const refreshSession = useCallback(async () => {
+        if (!isSignedIn) {
+            setSessionObj(null)
             return null
         }
-    }, [])
-
-    // Initialize: check existing session
-    useEffect(() => {
-        const initAuth = async () => {
-            try {
-                const { data: { session: existingSession } } = await supabase.auth.getSession()
-
-                if (existingSession) {
-                    setSession(existingSession)
-                    setUser(existingSession.user)
-                    const userProfile = await fetchProfile(existingSession.user.id)
-                    setProfile(userProfile)
-                }
-            } catch (err) {
-                console.error('Auth init error:', err)
-            } finally {
-                setLoading(false)
-            }
+        try {
+            const token = await getToken()
+            const session = { access_token: token }
+            setSessionObj(session)
+            return session
+        } catch {
+            setSessionObj(null)
+            return null
         }
+    }, [isSignedIn, getToken])
 
-        initAuth()
+    // Load profile from our DB when user signs in
+    useEffect(() => {
+        if (!userLoaded) return
 
-        // Listen for auth state changes
-        const { data: { subscription } } = supabase.auth.onAuthStateChange(
-            async (event, newSession) => {
-                setSession(newSession)
-                setUser(newSession?.user ?? null)
-
-                if (newSession?.user) {
-                    const userProfile = await fetchProfile(newSession.user.id)
-                    setProfile(userProfile)
-                } else {
-                    setProfile(null)
-                }
-
-                if (event === 'SIGNED_OUT') {
-                    setProfile(null)
-                }
-            }
-        )
-
-        return () => subscription.unsubscribe()
-    }, [fetchProfile])
+        if (clerkUser) {
+            refreshSession()
+            // Profile will be fetched from our own API after first sign-in
+            // For now, build a basic profile from Clerk user data
+            setProfile({
+                id: clerkUser.id,
+                email: clerkUser.primaryEmailAddress?.emailAddress,
+                full_name: clerkUser.fullName || clerkUser.firstName || '',
+                company_id: clerkUser.publicMetadata?.company_id || null,
+                companies: clerkUser.publicMetadata?.company_name
+                    ? { name: clerkUser.publicMetadata.company_name }
+                    : null,
+            })
+        } else {
+            setSessionObj(null)
+            setProfile(null)
+        }
+    }, [clerkUser, userLoaded, refreshSession])
 
     // Sign in with email/password
     const signIn = useCallback(async (email, password) => {
-        const { data, error } = await supabase.auth.signInWithPassword({
-            email,
+        const result = await clerk.client.signIn.create({
+            identifier: email,
             password,
         })
-        if (error) throw error
-        return data
-    }, [])
+
+        if (result.status === 'complete') {
+            await clerk.setActive({ session: result.createdSessionId })
+        } else {
+            throw new Error('Sign in failed')
+        }
+    }, [clerk])
 
     // Sign up with email/password + metadata
     const signUp = useCallback(async (email, password, metadata = {}) => {
-        const { data, error } = await supabase.auth.signUp({
-            email,
+        const result = await clerk.client.signUp.create({
+            emailAddress: email,
             password,
-            options: {
-                data: {
-                    full_name: metadata.fullName || '',
-                    company_name: metadata.companyName || '',
-                },
+            firstName: metadata.fullName?.split(' ')[0] || '',
+            lastName: metadata.fullName?.split(' ').slice(1).join(' ') || '',
+            unsafeMetadata: {
+                company_name: metadata.companyName || '',
             },
         })
-        if (error) throw error
-        return data
-    }, [])
+
+        if (result.status === 'complete') {
+            await clerk.setActive({ session: result.createdSessionId })
+        } else {
+            // May need email verification depending on Clerk settings
+            throw new Error('Please verify your email to continue')
+        }
+    }, [clerk])
 
     // Sign out
     const signOut = useCallback(async () => {
-        const { error } = await supabase.auth.signOut()
-        if (error) throw error
-        setUser(null)
-        setSession(null)
+        await clerk.signOut()
         setProfile(null)
-    }, [])
+        setSessionObj(null)
+    }, [clerk])
 
-    // Reset password — sends reset link to email
+    // Reset password — Clerk handles this via their UI or we use the API
     const resetPassword = useCallback(async (email) => {
-        const { error } = await supabase.auth.resetPasswordForEmail(email, {
-            redirectTo: `${window.location.origin}/login`,
+        await clerk.client.signIn.create({
+            strategy: 'reset_password_email_code',
+            identifier: email,
         })
-        if (error) throw error
-    }, [])
+    }, [clerk])
+
+    const loading = !userLoaded
+    const user = clerkUser ? {
+        id: clerkUser.id,
+        email: clerkUser.primaryEmailAddress?.emailAddress,
+    } : null
 
     const value = {
         user,
-        session,
+        session: sessionObj,
+        getToken,
         profile,
         loading,
         signIn,
         signUp,
         signOut,
         resetPassword,
-        isAuthenticated: !!session,
+        isAuthenticated: !!isSignedIn,
     }
 
     return (

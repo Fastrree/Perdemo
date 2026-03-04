@@ -6,7 +6,7 @@ import { apiFetch } from '../lib/apiClient'
  * useOrders — CRUD hook for orders
  */
 export function useOrders({ autoFetch = true } = {}) {
-    const { session } = useAuth()
+    const { getToken, isAuthenticated } = useAuth()
     const [orders, setOrders] = useState([])
     const [loading, setLoading] = useState(true)
     const [error, setError] = useState(null)
@@ -15,7 +15,7 @@ export function useOrders({ autoFetch = true } = {}) {
         setLoading(true)
         setError(null)
         const { data, error: err } = await apiFetch('/api/orders', {
-            session,
+            getToken,
             params: filters,
         })
         if (err) {
@@ -26,23 +26,24 @@ export function useOrders({ autoFetch = true } = {}) {
         }
         setLoading(false)
         return { data, error: err }
-    }, [session])
+    }, [getToken])
 
     const createOrder = useCallback(async (orderData) => {
         const { data, error: err } = await apiFetch('/api/orders', {
-            session,
+            getToken,
             method: 'POST',
             body: orderData,
         })
-        if (!err && data) {
-            setOrders(prev => [data, ...prev])
-        }
+        // Optimistic update removed because Orders.jsx handles post-create refresh
+        // if (!err && data) {
+        //     setOrders(prev => [data, ...prev])
+        // }
         return { data, error: err }
-    }, [session])
+    }, [getToken])
 
     const updateOrder = useCallback(async (id, updates) => {
-        const { data, error: err } = await apiFetch(`/api/orders/${id}`, {
-            session,
+        const { data, error: err } = await apiFetch(`/api/orders?id=${id}`, {
+            getToken,
             method: 'PUT',
             body: updates,
         })
@@ -50,25 +51,24 @@ export function useOrders({ autoFetch = true } = {}) {
             setOrders(prev => prev.map(o => o.id === id ? data : o))
         }
         return { data, error: err }
-    }, [session])
+    }, [getToken])
 
     const deleteOrder = useCallback(async (id) => {
-        const { data, error: err } = await apiFetch(`/api/orders/${id}`, {
-            session,
+        const { data, error: err } = await apiFetch(`/api/orders?id=${id}`, {
+            getToken,
             method: 'DELETE',
         })
         if (!err) {
-            // Mark as cancelled in local state instead of removing
             setOrders(prev => prev.map(o => o.id === id ? { ...o, status: 'cancelled' } : o))
         }
         return { data, error: err }
-    }, [session])
+    }, [getToken])
 
     useEffect(() => {
-        if (autoFetch && session) {
+        if (autoFetch && isAuthenticated) {
             fetchOrders()
         }
-    }, [autoFetch, session]) // eslint-disable-line react-hooks/exhaustive-deps
+    }, [autoFetch, isAuthenticated]) // eslint-disable-line react-hooks/exhaustive-deps
 
     return { orders, loading, error, fetchOrders, createOrder, updateOrder, deleteOrder }
 }

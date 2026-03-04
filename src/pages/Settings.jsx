@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next'
 import { useSearchParams } from 'react-router-dom'
 import { useTheme } from '../App'
 import { useAuth } from '../contexts/AuthContext'
+import { usePreferences } from '../hooks/usePreferences'
 import { notifyCurrencyChange } from '../hooks/useCurrency'
 
 const STORAGE_KEY = 'perdemo-settings'
@@ -163,6 +164,7 @@ export default function Settings() {
     const { t, i18n } = useTranslation('settings')
     const { theme, toggleTheme } = useTheme()
     const { user, profile } = useAuth()
+    const { prefs, setCurrency: saveCurrencyDB, setLanguage: saveLangDB, setNotificationPrefs: saveNotifDB } = usePreferences()
     const [searchParams, setSearchParams] = useSearchParams()
 
     const activeTab = searchParams.get('tab') === 'notifications' ? 'notifications' : 'general'
@@ -170,23 +172,39 @@ export default function Settings() {
         setSearchParams(tab === 'general' ? {} : { tab })
     }, [setSearchParams])
 
-    // General preferences
-    const [currency, setCurrency] = useState(() => loadPrefs(STORAGE_KEY, { currency: 'TRY' }).currency)
+    // General preferences — init from DB prefs, fallback to localStorage
+    const [currency, setCurrency] = useState(() => {
+        return prefs?.currency || loadPrefs(STORAGE_KEY, { currency: 'TRY' }).currency
+    })
     const [saveToast, setSaveToast] = useState('')
 
-    // Notification preferences
-    const [notifPrefs, setNotifPrefs] = useState(() => loadPrefs(NOTIF_STORAGE_KEY, defaultNotifPrefs))
+    // Notification preferences — init from DB prefs, fallback to localStorage
+    const [notifPrefs, setNotifPrefs] = useState(() => {
+        return prefs?.notification_prefs || loadPrefs(NOTIF_STORAGE_KEY, defaultNotifPrefs)
+    })
 
-    // Save general prefs
+    // Sync from DB when prefs load
+    useEffect(() => {
+        if (prefs?.currency && prefs.currency !== currency) {
+            setCurrency(prefs.currency)
+        }
+        if (prefs?.notification_prefs) {
+            setNotifPrefs(prefs.notification_prefs)
+        }
+    }, [prefs]) // eslint-disable-line react-hooks/exhaustive-deps
+
+    // Save general prefs to localStorage + DB
     useEffect(() => {
         savePrefs(STORAGE_KEY, { currency })
+        saveCurrencyDB(currency)
         notifyCurrencyChange()
-    }, [currency])
+    }, [currency]) // eslint-disable-line react-hooks/exhaustive-deps
 
-    // Save notif prefs
+    // Save notif prefs to localStorage + DB
     useEffect(() => {
         savePrefs(NOTIF_STORAGE_KEY, notifPrefs)
-    }, [notifPrefs])
+        saveNotifDB(notifPrefs)
+    }, [notifPrefs]) // eslint-disable-line react-hooks/exhaustive-deps
 
     const updateNotif = useCallback((key, value) => {
         setNotifPrefs(prev => ({ ...prev, [key]: value }))
@@ -195,7 +213,8 @@ export default function Settings() {
     const handleLanguageChange = useCallback((lng) => {
         i18n.changeLanguage(lng)
         localStorage.setItem('perdemo-lang', lng)
-    }, [i18n])
+        saveLangDB(lng)
+    }, [i18n, saveLangDB])
 
     const handleThemeChange = useCallback((val) => {
         if ((val === 'dark' && theme !== 'dark') || (val === 'light' && theme !== 'light')) {

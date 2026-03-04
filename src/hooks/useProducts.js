@@ -8,7 +8,7 @@ import { apiFetch } from '../lib/apiClient'
  * Returns: { products, loading, error, fetchProducts, createProduct, updateProduct, deleteProduct }
  */
 export function useProducts({ autoFetch = true } = {}) {
-    const { session } = useAuth()
+    const { getToken, isAuthenticated } = useAuth()
     const [products, setProducts] = useState([])
     const [loading, setLoading] = useState(true)
     const [error, setError] = useState(null)
@@ -17,7 +17,7 @@ export function useProducts({ autoFetch = true } = {}) {
         setLoading(true)
         setError(null)
         const { data, error: err } = await apiFetch('/api/products', {
-            session,
+            getToken,
             params: filters,
         })
         if (err) {
@@ -28,11 +28,11 @@ export function useProducts({ autoFetch = true } = {}) {
         }
         setLoading(false)
         return { data, error: err }
-    }, [session])
+    }, [getToken])
 
     const createProduct = useCallback(async (productData) => {
         const { data, error: err } = await apiFetch('/api/products', {
-            session,
+            getToken,
             method: 'POST',
             body: productData,
         })
@@ -40,11 +40,11 @@ export function useProducts({ autoFetch = true } = {}) {
             setProducts(prev => [data, ...prev])
         }
         return { data, error: err }
-    }, [session])
+    }, [getToken])
 
     const updateProduct = useCallback(async (id, updates) => {
-        const { data, error: err } = await apiFetch(`/api/products/${id}`, {
-            session,
+        const { data, error: err } = await apiFetch(`/api/products?id=${id}`, {
+            getToken,
             method: 'PUT',
             body: updates,
         })
@@ -52,24 +52,35 @@ export function useProducts({ autoFetch = true } = {}) {
             setProducts(prev => prev.map(p => p.id === id ? data : p))
         }
         return { data, error: err }
-    }, [session])
+    }, [getToken])
 
     const deleteProduct = useCallback(async (id) => {
-        const { data, error: err } = await apiFetch(`/api/products/${id}`, {
-            session,
+        const { data, error: err } = await apiFetch(`/api/products?id=${id}`, {
+            getToken,
             method: 'DELETE',
         })
         if (!err) {
             setProducts(prev => prev.filter(p => p.id !== id))
         }
         return { data, error: err }
-    }, [session])
+    }, [getToken])
+
+    const deleteAllProducts = useCallback(async () => {
+        const { data, error: err } = await apiFetch(`/api/products?delete_all=true`, {
+            getToken,
+            method: 'DELETE',
+        })
+        if (!err) {
+            setProducts([])
+        }
+        return { data, error: err }
+    }, [getToken])
 
     useEffect(() => {
-        if (autoFetch && session) {
+        if (autoFetch && isAuthenticated) {
             fetchProducts()
         }
-    }, [autoFetch, session]) // eslint-disable-line react-hooks/exhaustive-deps
+    }, [autoFetch, isAuthenticated]) // eslint-disable-line react-hooks/exhaustive-deps
 
-    return { products, loading, error, fetchProducts, createProduct, updateProduct, deleteProduct }
+    return { products, loading, error, fetchProducts, createProduct, updateProduct, deleteProduct, deleteAllProducts }
 }

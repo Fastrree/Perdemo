@@ -7,7 +7,7 @@ import { apiFetch } from '../lib/apiClient'
  * Fetches aggregated analytics data (monthly revenue, orders, fabric breakdown, KPIs)
  */
 export function useAnalytics() {
-    const { session } = useAuth()
+    const { getToken, isAuthenticated } = useAuth()
     const [stats, setStats] = useState(null)
     const [loading, setLoading] = useState(true)
     const [error, setError] = useState(null)
@@ -15,7 +15,7 @@ export function useAnalytics() {
     const fetchStats = useCallback(async () => {
         setLoading(true)
         setError(null)
-        const { data, error: err } = await apiFetch('/api/analytics/stats', { session })
+        const { data, error: err } = await apiFetch('/api/analytics/stats', { getToken })
         if (err) {
             setError(err)
             setStats(null)
@@ -24,13 +24,13 @@ export function useAnalytics() {
         }
         setLoading(false)
         return { data, error: err }
-    }, [session])
+    }, [getToken])
 
     useEffect(() => {
-        if (session) {
+        if (isAuthenticated) {
             fetchStats()
         }
-    }, [session]) // eslint-disable-line react-hooks/exhaustive-deps
+    }, [isAuthenticated]) // eslint-disable-line react-hooks/exhaustive-deps
 
     return { stats, loading, error, fetchStats }
 }

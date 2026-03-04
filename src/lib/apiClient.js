@@ -1,25 +1,41 @@
 /**
- * API Client — Shared fetch helper with JWT authentication
+ * API Client — Shared fetch helper with Clerk JWT authentication
+ * 
+ * Uses a getToken function for fresh tokens on every request.
  * 
  * Usage:
- *   const { data, error } = await apiFetch('/api/products', { session })
- *   const { data, error } = await apiFetch('/api/products', { session, method: 'POST', body: { name: '...' } })
+ *   const { data, error } = await apiFetch('/api/products', { getToken })
+ *   const { data, error } = await apiFetch('/api/products', { getToken, method: 'POST', body: { name: '...' } })
  */
 
 /**
  * Authenticated fetch wrapper for Vercel Serverless API endpoints.
- * Automatically attaches JWT token and handles JSON parsing.
+ * Calls getToken() on every request to ensure a fresh Clerk JWT.
  * 
  * @param {string} url - API endpoint path (e.g. '/api/products')
  * @param {Object} options
- * @param {Object} options.session - Supabase session (must have access_token)
+ * @param {Function} options.getToken - Async function that returns a fresh JWT
+ * @param {Object} [options.session] - Legacy: session object with access_token (fallback)
  * @param {string} [options.method='GET'] - HTTP method
  * @param {Object} [options.body] - Request body (auto-serialized to JSON)
  * @param {Object} [options.params] - URL query parameters
  * @returns {Promise<{data: any, error: string|null}>}
  */
-export async function apiFetch(url, { session, method = 'GET', body, params } = {}) {
-    if (!session?.access_token) {
+export async function apiFetch(url, { getToken, session, method = 'GET', body, params } = {}) {
+    let token = null
+
+    // Prefer getToken (dynamic) over session (cached)
+    if (getToken) {
+        try {
+            token = await getToken()
+        } catch {
+            token = null
+        }
+    } else if (session?.access_token) {
+        token = session.access_token
+    }
+
+    if (!token) {
         return { data: null, error: 'Oturum bulunamadı. Lütfen tekrar giriş yapın.' }
     }
 
@@ -40,7 +56,7 @@ export async function apiFetch(url, { session, method = 'GET', body, params } = 
         const fetchOptions = {
             method,
             headers: {
-                'Authorization': `Bearer ${session.access_token}`,
+                'Authorization': `Bearer ${token}`,
                 'Content-Type': 'application/json',
             },
         }

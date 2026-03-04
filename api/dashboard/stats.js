@@ -1,118 +1,115 @@
 /**
  * /api/dashboard/stats — GET aggregated dashboard statistics
- * RLS automatically filters by user's company_id
+ * Company isolation via getAuthContext → companyId
  */
-import { getUserClient, handlePreflight } from '../_lib/supabase.js'
+import { getAuthContext, handlePreflight, db } from '../_lib/db.js'
+import { products, customers, orders, orderItems } from '../../db/schema.js'
+import { eq, and, ne, sql, desc, asc, inArray } from 'drizzle-orm'
 
 export default async function handler(req, res) {
     if (handlePreflight(req, res, ['GET'])) return
 
-    const { user, supabase, error: authError } = await getUserClient(req)
-    if (authError) return res.status(authError.status).json({ error: authError.message })
+    const auth = await getAuthContext(req)
+    if (auth.error) return res.status(auth.error.status).json({ error: auth.error.message })
 
     try {
-        // Run all queries in parallel for performance
+        const cid = auth.companyId
+
         const [
-            productsRes,
-            customersRes,
-            ordersRes,
-            revenueRes,
-            pendingRes,
-            lowStockRes,
-            recentOrdersRes,
-            topProductsRes,
+            productCount,
+            customerCount,
+            orderCount,
+            revenueRows,
+            pendingCount,
+            lowStockRows,
+            recentOrderRows,
+            topProductRows,
         ] = await Promise.all([
             // Total active products
-            supabase
-                .from('products')
-                .select('id', { count: 'exact', head: true })
-                .eq('is_active', true),
+            db.select({ count: sql`count(*)::int` })
+                .from(products)
+                .where(and(eq(products.company_id, cid), eq(products.is_active, true))),
 
             // Total customers
-            supabase
-                .from('customers')
-                .select('id', { count: 'exact', head: true }),
+            db.select({ count: sql`count(*)::int` })
+                .from(customers)
+                .where(eq(customers.company_id, cid)),
 
             // Total orders (exclude cancelled)
-            supabase
-                .from('orders')
-                .select('id', { count: 'exact', head: true })
-                .neq('status', 'cancelled'),
+            db.select({ count: sql`count(*)::int` })
+                .from(orders)
+                .where(and(eq(orders.company_id, cid), ne(orders.status, 'cancelled'))),
 
-            // Total revenue (sum of non-cancelled orders)
-            supabase
-                .from('orders')
-                .select('total_amount')
-                .neq('status', 'cancelled'),
+            // Revenue sum
+            db.select({ total: sql`coalesce(sum(total_amount::numeric), 0)` })
+                .from(orders)
+                .where(and(eq(orders.company_id, cid), ne(orders.status, 'cancelled'))),
 
-            // Pending orders count
-            supabase
-                .from('orders')
-                .select('id', { count: 'exact', head: true })
-                .eq('status', 'pending'),
+            // Pending orders
+            db.select({ count: sql`count(*)::int` })
+                .from(orders)
+                .where(and(eq(orders.company_id, cid), eq(orders.status, 'pending'))),
 
-            // Low stock / out of stock products
-            supabase
-                .from('products')
-                .select('id, name, stock_meters, stock_status')
-                .eq('is_active', true)
-                .in('stock_status', ['low_stock', 'out_of_stock'])
-                .order('stock_meters', { ascending: true })
+            // Low stock products
+            db.select({ id: products.id, name: products.name, stock_meters: products.stock_meters, stock_status: products.stock_status })
+                .from(products)
+                .where(and(
+                    eq(products.company_id, cid),
+                    eq(products.is_active, true),
+                    inArray(products.stock_status, ['low_stock', 'out_of_stock']),
+                ))
+                .orderBy(asc(products.stock_meters))
                 .limit(10),
 
             // Recent 5 orders with customer name
-            supabase
-                .from('orders')
-                .select(`
-                    id, order_number, status, payment_status,
-                    total_amount, created_at,
-                    customer:customers(full_name)
-                `)
-                .order('created_at', { ascending: false })
+            db.select({
+                id: orders.id,
+                order_number: orders.order_number,
+                status: orders.status,
+                payment_status: orders.payment_status,
+                total_amount: orders.total_amount,
+                created_at: orders.created_at,
+                customer_name: customers.full_name,
+            })
+                .from(orders)
+                .leftJoin(customers, eq(orders.customer_id, customers.id))
+                .where(eq(orders.company_id, cid))
+                .orderBy(desc(orders.created_at))
                 .limit(5),
 
-            // Top selling products (aggregate from order_items via non-cancelled orders)
-            supabase
-                .from('order_items')
-                .select(`
-                    product_name,
-                    quantity,
-                    total_price,
-                    order:orders!inner(status)
-                `)
-                .neq('order.status', 'cancelled'),
+            // Order items for top products (join orders to filter cancelled)
+            db.select({
+                product_name: orderItems.product_name,
+                quantity: orderItems.quantity,
+                unit_price: orderItems.unit_price,
+            })
+                .from(orderItems)
+                .innerJoin(orders, eq(orderItems.order_id, orders.id))
+                .where(and(eq(orders.company_id, cid), ne(orders.status, 'cancelled'))),
         ])
 
-        // Calculate total revenue
-        const totalRevenue = (revenueRes.data || []).reduce(
-            (sum, order) => sum + Number(order.total_amount || 0), 0
-        )
-
-        // Aggregate top products from order_items
+        // Aggregate top products
         const productAgg = {}
-        for (const item of (topProductsRes.data || [])) {
+        for (const item of topProductRows) {
             const name = item.product_name
+            if (!name) continue
             if (!productAgg[name]) productAgg[name] = { name, sales: 0, revenue: 0 }
             productAgg[name].sales += Number(item.quantity || 0)
-            productAgg[name].revenue += Number(item.total_price || 0)
+            productAgg[name].revenue += Number(item.quantity || 0) * Number(item.unit_price || 0)
         }
         const topProducts = Object.values(productAgg)
             .sort((a, b) => b.sales - a.sales)
             .slice(0, 5)
 
         const stats = {
-            totalProducts: productsRes.count || 0,
-            totalCustomers: customersRes.count || 0,
-            totalOrders: ordersRes.count || 0,
-            totalRevenue,
-            pendingOrders: pendingRes.count || 0,
-            lowStockProducts: lowStockRes.data || [],
+            totalProducts: productCount[0]?.count || 0,
+            totalCustomers: customerCount[0]?.count || 0,
+            totalOrders: orderCount[0]?.count || 0,
+            totalRevenue: Number(revenueRows[0]?.total || 0),
+            pendingOrders: pendingCount[0]?.count || 0,
+            lowStockProducts: lowStockRows,
             topProducts,
-            recentOrders: (recentOrdersRes.data || []).map(order => ({
-                ...order,
-                customer_name: order.customer?.full_name || null,
-                customer: undefined,
-            })),
+            recentOrders: recentOrderRows,
         }
 
         return res.status(200).json(stats)

@@ -1,4 +1,4 @@
-import { useState, useCallback, useMemo } from 'react'
+import { useState, useCallback, useMemo, useRef, useEffect } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useProducts } from '../hooks/useProducts'
 import { useCurrency } from '../hooks/useCurrency'
@@ -38,7 +38,7 @@ const labelStyle = {
 
 export default function Products() {
     const { t } = useTranslation('products')
-    const { products: rawProducts, loading, error, createProduct, updateProduct, deleteProduct: apiDeleteProduct } = useProducts()
+    const { products: rawProducts, loading, error, fetchProducts, createProduct, updateProduct, deleteProduct: apiDeleteProduct, deleteAllProducts } = useProducts()
     const { formatMoney, symbol } = useCurrency()
 
     // Normalize DB fields to match UI expectations
@@ -53,45 +53,78 @@ export default function Products() {
     })), [rawProducts])
 
     const [search, setSearch] = useState('')
-    const [category, setCategory] = useState('all')
+    const [category, setCategory] = useState('Tümü')
     const [view, setView] = useState('grid')
     const [modalOpen, setModalOpen] = useState(false)
     const [editingProduct, setEditingProduct] = useState(null)
     const [selectedProduct, setSelectedProduct] = useState(null)
     const [form, setForm] = useState(emptyForm)
+    const [priceDisplay, setPriceDisplay] = useState('')
+    const [initialForm, setInitialForm] = useState(null)
     const [deleteConfirm, setDeleteConfirm] = useState(null)
     const [saving, setSaving] = useState(false)
 
-    const filtered = products.filter(p => {
-        const matchSearch = p.name.toLowerCase().includes(search.toLowerCase())
-        const matchCat = category === 'all' || p.category === category
-        return matchSearch && matchCat
-    })
+    // Server-side filtering — debounce search, immediate category
+    const searchTimer = useRef(null)
+    useEffect(() => {
+        if (searchTimer.current) clearTimeout(searchTimer.current)
+        searchTimer.current = setTimeout(() => {
+            const filters = {}
+            if (search) filters.search = search
+            if (category !== 'all' && category !== 'Tümü') filters.category = category
+            fetchProducts(filters)
+        }, 300)
+        return () => { if (searchTimer.current) clearTimeout(searchTimer.current) }
+    }, [search, category]) // eslint-disable-line react-hooks/exhaustive-deps
+
+    // Products are already filtered by the API
+    const filtered = products
 
     const updateForm = (field, value) => setForm(f => ({ ...f, [field]: value }))
 
     const openAddModal = useCallback(() => {
         setEditingProduct(null)
+        setInitialForm(null)
         setForm(emptyForm)
+        setPriceDisplay('')
         setModalOpen(true)
     }, [])
 
     const openEditModal = useCallback((product) => {
         setEditingProduct(product)
-        setForm({
+        const prStr = String(product.price || 0)
+        const newForm = {
             name: product.name,
             fabric: product.fabric,
             color: product.color,
-            price: String(product.price),
+            price: prStr,
             stock: String(product.stock),
             category: product.category,
-        })
+        }
+        setForm(newForm)
+        setInitialForm(newForm)
+
+        if (prStr && !isNaN(parseFloat(prStr))) {
+            const formatted = new Intl.NumberFormat('tr-TR', { maximumFractionDigits: 2 }).format(parseFloat(prStr))
+            setPriceDisplay(formatted)
+        } else {
+            setPriceDisplay('')
+        }
+
         setModalOpen(true)
     }, [])
 
     const handleSave = useCallback(async () => {
         if (!form.name.trim()) return alert(t('form.nameRequired'))
         if (!form.price) return alert(t('form.priceRequired'))
+
+        if (editingProduct && initialForm) {
+            const hasChanges = Object.keys(initialForm).some(key => form[key] !== initialForm[key])
+            if (!hasChanges) {
+                return alert('Herhangi bir değişiklik yapmadınız. Lütfen güncellemek için en az 1 veriyi güncelleyin.')
+            }
+        }
+
         setSaving(true)
         const payload = {
             name: form.name.trim(),
@@ -111,7 +144,8 @@ export default function Products() {
         setSaving(false)
         setModalOpen(false)
         setForm(emptyForm)
-    }, [form, editingProduct, createProduct, updateProduct, t])
+        setPriceDisplay('')
+    }, [form, editingProduct, initialForm, createProduct, updateProduct, t])
 
     const handleDelete = useCallback(async (id) => {
         const { error: err } = await apiDeleteProduct(id)
@@ -119,6 +153,22 @@ export default function Products() {
         setDeleteConfirm(null)
         setSelectedProduct(null)
     }, [apiDeleteProduct])
+
+    const deleteAllProductsHandler = useCallback(async () => {
+        if (!window.confirm('Tüm ürünleri tamamen silmek istediğinize emin misiniz? Bu işlem şirketinize ait tüm ürün listesini geri dönülemez şekilde yok edecektir!')) return
+        const promptReset = window.prompt('Bu işlemi onaylamak için lütfen "LİSTEYİ TEMİZLE" yazın:')
+        if (promptReset !== 'LİSTEYİ TEMİZLE') {
+            alert('İşlem iptal edildi.')
+            return
+        }
+
+        setSaving(true)
+        const { error: err } = await deleteAllProducts()
+        setSaving(false)
+
+        if (err) return alert(err)
+        fetchProducts({ search: search, category: category !== 'all' && category !== 'Tümü' ? category : undefined })
+    }, [deleteAllProducts, fetchProducts, search, category])
 
     const colorBg = (color) => {
         const map = {
@@ -154,15 +204,35 @@ export default function Products() {
 
     return (
         <div>
-            <div className="page-header">
+            <div className="page-header" style={{ display: 'flex', flexWrap: 'wrap', gap: '16px', justifyContent: 'space-between', alignItems: 'flex-start' }}>
                 <div>
                     <h1 className="page-title">{t('title')}</h1>
                     <p className="page-subtitle">{products.length} {t('subtitle')}</p>
                 </div>
-                <button className="btn btn-primary" onClick={openAddModal}
-                    style={{ position: 'relative', overflow: 'hidden' }}>
-                    <span style={{ position: 'relative', zIndex: 1 }}>+ {t('addProduct')}</span>
-                </button>
+                <div style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
+                    <button className="btn btn-secondary"
+                        style={{
+                            padding: '12px 20px', fontSize: '0.9rem',
+                            color: '#ef4444', borderColor: 'rgba(239, 68, 68, 0.35)', fontWeight: 600,
+                        }}
+                        onMouseEnter={e => {
+                            e.currentTarget.style.background = 'rgba(239, 68, 68, 0.1)'
+                            e.currentTarget.style.borderColor = 'rgba(239, 68, 68, 0.6)'
+                            e.currentTarget.style.boxShadow = '0 4px 16px rgba(239, 68, 68, 0.2)'
+                        }}
+                        onMouseLeave={e => {
+                            e.currentTarget.style.background = 'rgba(255, 255, 255, 0.04)'
+                            e.currentTarget.style.borderColor = 'rgba(239, 68, 68, 0.35)'
+                            e.currentTarget.style.boxShadow = 'none'
+                        }}
+                        onClick={deleteAllProductsHandler}>
+                        🔥 Listeyi Temizle
+                    </button>
+                    <button className="btn btn-primary" onClick={openAddModal}
+                        style={{ position: 'relative', overflow: 'hidden', padding: '12px 20px' }}>
+                        <span style={{ position: 'relative', zIndex: 1 }}>+ {t('addProduct')}</span>
+                    </button>
+                </div>
             </div>
 
             {/* Filters */}
@@ -309,6 +379,10 @@ export default function Products() {
                     <div className="empty-state-desc" style={{ position: 'relative', zIndex: 1 }}>
                         Arama kriterlerinize uygun ürün yok. Filtreleri değiştirmeyi deneyin.
                     </div>
+                    <button className="btn btn-secondary" style={{ marginTop: '20px', position: 'relative', zIndex: 1 }}
+                        onClick={() => { setSearch(''); setCategory('Tümü') }}>
+                        Filtreleri Temizle
+                    </button>
                 </div>
             ) : view === 'grid' ? (
                 <div className="grid-3">
@@ -834,37 +908,45 @@ export default function Products() {
                         </div>
 
                         {/* Action buttons with hover glow */}
-                        <div style={{ display: 'flex', gap: '8px', marginTop: '20px' }}>
-                            <button className="btn btn-primary" style={{
-                                flex: 1,
-                                position: 'relative',
-                                overflow: 'hidden',
-                            }}
+                        <div style={{ display: 'flex', gap: '10px', marginTop: '20px', flexWrap: 'wrap' }}>
+                            <button className="btn btn-secondary"
+                                style={{
+                                    fontSize: '0.82rem', padding: '10px 22px', flex: 1,
+                                    color: 'var(--accent-blue)',
+                                    borderColor: 'rgba(88, 166, 255, 0.35)',
+                                    fontWeight: 600,
+                                }}
                                 onMouseEnter={e => {
-                                    e.currentTarget.style.boxShadow = `0 8px 32px ${catColor(selectedProduct.category)}35, inset 0 1px 0 rgba(255,255,255,0.2)`
+                                    e.currentTarget.style.background = 'rgba(88, 166, 255, 0.1)'
+                                    e.currentTarget.style.borderColor = 'rgba(88, 166, 255, 0.6)'
                                 }}
                                 onMouseLeave={e => {
-                                    e.currentTarget.style.boxShadow = '0 4px 20px rgba(88, 166, 255, 0.25), inset 0 1px 0 rgba(255,255,255,0.15)'
+                                    e.currentTarget.style.background = 'rgba(255, 255, 255, 0.04)'
+                                    e.currentTarget.style.borderColor = 'rgba(88, 166, 255, 0.35)'
                                 }}
                                 onClick={() => { openEditModal(selectedProduct); setSelectedProduct(null) }}>
                                 ✏️ Düzenle
                             </button>
-                            <button className="btn btn-secondary" style={{
-                                color: '#e74c3c',
-                                borderColor: 'rgba(231,76,60,0.3)',
-                                transition: 'all 0.25s ease',
-                            }}
+                            <button className="btn btn-secondary"
+                                style={{
+                                    fontSize: '0.82rem', padding: '10px 22px', flex: 1,
+                                    color: '#ef4444',
+                                    borderColor: 'rgba(239, 68, 68, 0.35)',
+                                    fontWeight: 600,
+                                }}
                                 onMouseEnter={e => {
-                                    e.currentTarget.style.boxShadow = '0 4px 20px rgba(231,76,60,0.2)'
-                                    e.currentTarget.style.borderColor = 'rgba(231,76,60,0.5)'
-                                    e.currentTarget.style.background = 'rgba(231,76,60,0.08)'
+                                    e.currentTarget.style.background = 'rgba(239, 68, 68, 0.1)'
+                                    e.currentTarget.style.borderColor = 'rgba(239, 68, 68, 0.6)'
+                                    e.currentTarget.style.boxShadow = '0 4px 16px rgba(239, 68, 68, 0.2)'
                                 }}
                                 onMouseLeave={e => {
-                                    e.currentTarget.style.boxShadow = 'none'
-                                    e.currentTarget.style.borderColor = 'rgba(231,76,60,0.3)'
                                     e.currentTarget.style.background = 'rgba(255, 255, 255, 0.04)'
+                                    e.currentTarget.style.borderColor = 'rgba(239, 68, 68, 0.35)'
+                                    e.currentTarget.style.boxShadow = 'none'
                                 }}
-                                onClick={() => setDeleteConfirm(selectedProduct.id)}>🗑️</button>
+                                onClick={() => setDeleteConfirm(selectedProduct.id)}>
+                                🗑️ Sil
+                            </button>
                         </div>
                     </div>
                 </div>
@@ -917,7 +999,28 @@ export default function Products() {
                             <div className="grid-2-col">
                                 <div>
                                     <label style={labelStyle}>Fiyat ({symbol}) *</label>
-                                    <input className="input" type="number" value={form.price} onChange={e => updateForm('price', e.target.value)} placeholder="1300"
+                                    <input className="input" type="text" inputMode="decimal"
+                                        value={priceDisplay}
+                                        onChange={e => {
+                                            const rawValue = e.target.value
+                                            const cleanVal = rawValue.replace(/[^\d,]/g, '')
+                                            setPriceDisplay(cleanVal)
+                                            const numVal = cleanVal.replace(',', '.')
+                                            updateForm('price', numVal)
+                                        }}
+                                        onBlur={() => {
+                                            const val = parseFloat(form.price)
+                                            if (!isNaN(val)) {
+                                                const formatted = new Intl.NumberFormat('tr-TR', { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(val)
+                                                setPriceDisplay(formatted)
+                                            }
+                                        }}
+                                        onFocus={() => {
+                                            if (form.price) {
+                                                setPriceDisplay(String(form.price).replace('.', ','))
+                                            }
+                                        }}
+                                        placeholder="1.300,00"
                                         style={{ transition: 'all 0.25s ease' }} />
                                 </div>
                                 <div>

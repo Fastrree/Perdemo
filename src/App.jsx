@@ -1,6 +1,8 @@
-import { useState, createContext, useContext, lazy, Suspense } from 'react'
+import { useState, useEffect, createContext, useContext, lazy, Suspense, useCallback } from 'react'
 import { Routes, Route, Navigate } from 'react-router-dom'
+import { ClerkProvider } from '@clerk/clerk-react'
 import { AuthProvider, useAuth } from './contexts/AuthContext'
+import { usePreferences } from './hooks/usePreferences'
 import Landing from './pages/Landing'
 import AppLayout from './components/AppLayout'
 import DesktopOnly from './components/DesktopOnly'
@@ -46,7 +48,6 @@ function PageLoader() {
 
 /**
  * ProtectedRoute — Redirects to /login if not authenticated.
- * Shows loading spinner while checking auth state.
  */
 function ProtectedRoute({ children }) {
   const { isAuthenticated, loading } = useAuth()
@@ -58,7 +59,6 @@ function ProtectedRoute({ children }) {
 
 /**
  * GuestRoute — Redirects to /dashboard if already authenticated.
- * Prevents logged-in users from seeing login/register pages.
  */
 function GuestRoute({ children }) {
   const { isAuthenticated, loading } = useAuth()
@@ -96,21 +96,60 @@ function AppRoutes() {
   )
 }
 
-function App() {
-  const [theme, setTheme] = useState('dark')
+/**
+ * ThemeSyncProvider — syncs theme from DB (when logged in) with localStorage fallback.
+ * Must be inside ClerkProvider + AuthProvider to access usePreferences.
+ */
+function ThemeSyncProvider({ theme, setThemeFn, children }) {
+  const { isAuthenticated } = useAuth()
+  const { prefs, setTheme: saveTheme } = usePreferences()
 
-  const toggleTheme = () => {
+  // Sync from DB when prefs load
+  useEffect(() => {
+    if (isAuthenticated && prefs?.theme && prefs.theme !== theme) {
+      setThemeFn(prefs.theme)
+      document.documentElement.className = prefs.theme
+      localStorage.setItem('perdemo-theme', prefs.theme)
+    }
+  }, [prefs?.theme, isAuthenticated]) // eslint-disable-line react-hooks/exhaustive-deps
+
+  const toggleTheme = useCallback(() => {
     const next = theme === 'dark' ? 'light' : 'dark'
-    setTheme(next)
+    setThemeFn(next)
     document.documentElement.className = next
-  }
+    localStorage.setItem('perdemo-theme', next)
+    // Save to DB if authenticated
+    if (isAuthenticated) {
+      saveTheme(next)
+    }
+  }, [theme, setThemeFn, isAuthenticated, saveTheme])
 
   return (
     <ThemeContext.Provider value={{ theme, toggleTheme }}>
-      <AuthProvider>
-        <AppRoutes />
-      </AuthProvider>
+      {children}
     </ThemeContext.Provider>
+  )
+}
+
+function App() {
+  // Initialize from localStorage for instant render (no flash)
+  const [theme, setTheme] = useState(() => {
+    return localStorage.getItem('perdemo-theme') || 'dark'
+  })
+
+  // Set HTML class on mount
+  useEffect(() => {
+    document.documentElement.className = theme
+  }, []) // eslint-disable-line react-hooks/exhaustive-deps
+
+  return (
+    <ClerkProvider publishableKey={import.meta.env.VITE_CLERK_PUBLISHABLE_KEY}>
+      <AuthProvider>
+        <ThemeSyncProvider theme={theme} setThemeFn={setTheme}>
+          <AppRoutes />
+        </ThemeSyncProvider>
+      </AuthProvider>
+    </ClerkProvider>
   )
 }
 

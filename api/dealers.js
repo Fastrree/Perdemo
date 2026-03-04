@@ -1,24 +1,33 @@
 /**
- * /api/dealers — GET all dealers, POST new dealer
- * RLS automatically filters by user's company_id
+ * /api/dealers — GET, POST, PUT, DELETE
  */
-import { getUserClient, handlePreflight } from './_lib/supabase.js'
+import { getAuthContext, handlePreflight, db } from './_lib/db.js'
+import { dealers } from '../db/schema.js'
+import { eq, and, desc } from 'drizzle-orm'
 
 export default async function handler(req, res) {
-    if (handlePreflight(req, res, ['GET', 'POST'])) return
+    if (handlePreflight(req, res, ['GET', 'POST', 'PUT', 'DELETE'])) return
 
-    const { user, supabase, error: authError } = await getUserClient(req)
-    if (authError) return res.status(authError.status).json({ error: authError.message })
+    const auth = await getAuthContext(req)
+    if (auth.error) return res.status(auth.error.status).json({ error: auth.error.message })
 
-    // GET — List all dealers
+    const { id } = req.query
+    const companyGuard = id ? and(eq(dealers.id, id), eq(dealers.company_id, auth.companyId)) : null
+
+    // GET — List or Single
     if (req.method === 'GET') {
         try {
-            const { data, error } = await supabase
-                .from('dealers')
-                .select('*')
-                .order('monthly_revenue', { ascending: false })
+            if (id) {
+                const [data] = await db.select().from(dealers).where(companyGuard).limit(1)
+                if (!data) return res.status(404).json({ error: 'Dealer not found' })
+                return res.status(200).json(data)
+            }
 
-            if (error) throw error
+            const data = await db
+                .select()
+                .from(dealers)
+                .where(eq(dealers.company_id, auth.companyId))
+                .orderBy(desc(dealers.created_at))
             return res.status(200).json(data)
         } catch (err) {
             console.error('GET /api/dealers error:', err.message)
@@ -26,47 +35,76 @@ export default async function handler(req, res) {
         }
     }
 
-    // POST — Create new dealer
+    // POST — Create
     if (req.method === 'POST') {
         try {
-            const {
-                name, city, region, contact_name, phone, email,
-                monthly_revenue, total_orders, total_demos, top_product,
-                satisfaction, markup_percent, status, lat, lng,
-            } = req.body
-
-            if (!name) {
+            const body = req.body
+            if (!body.name?.trim()) {
                 return res.status(400).json({ error: 'Dealer name is required' })
             }
 
-            // Get user's company_id from profile
-            const { data: profile } = await supabase
-                .from('profiles')
-                .select('company_id')
-                .eq('id', user.id)
-                .single()
-
-            const { data, error } = await supabase
-                .from('dealers')
-                .insert({
-                    company_id: profile.company_id,
-                    name, city, region, contact_name, phone, email,
-                    monthly_revenue: monthly_revenue || 0,
-                    total_orders: total_orders || 0,
-                    total_demos: total_demos || 0,
-                    top_product, satisfaction: satisfaction || 0,
-                    markup_percent: markup_percent || 0,
-                    status: status || 'active',
-                    lat, lng,
+            const [data] = await db
+                .insert(dealers)
+                .values({
+                    company_id: auth.companyId,
+                    name: body.name.trim(),
+                    city: body.city || null,
+                    region: body.region || null,
+                    contact_name: body.contact_name || null,
+                    phone: body.phone || null,
+                    email: body.email || null,
+                    monthly_revenue: body.monthly_revenue ? String(body.monthly_revenue) : '0',
+                    total_orders: body.total_orders || 0,
+                    total_demos: body.total_demos || 0,
+                    top_product: body.top_product || null,
+                    satisfaction: body.satisfaction ? String(body.satisfaction) : '0',
+                    markup_percent: body.markup_percent || 0,
+                    status: body.status || 'active',
+                    lat: body.lat ? String(body.lat) : null,
+                    lng: body.lng ? String(body.lng) : null,
                 })
-                .select()
-                .single()
+                .returning()
 
-            if (error) throw error
             return res.status(201).json(data)
         } catch (err) {
             console.error('POST /api/dealers error:', err.message)
             return res.status(500).json({ error: 'Failed to create dealer' })
+        }
+    }
+
+    // PUT — Update
+    if (req.method === 'PUT') {
+        if (!id) return res.status(400).json({ error: 'Dealer ID is required' })
+        try {
+            const updates = { ...req.body }
+            delete updates.id
+            delete updates.company_id
+            delete updates.created_at
+            updates.updated_at = new Date().toISOString()
+
+            if (updates.monthly_revenue != null) updates.monthly_revenue = String(updates.monthly_revenue)
+            if (updates.satisfaction != null) updates.satisfaction = String(updates.satisfaction)
+            if (updates.lat != null) updates.lat = String(updates.lat)
+            if (updates.lng != null) updates.lng = String(updates.lng)
+
+            const [data] = await db.update(dealers).set(updates).where(companyGuard).returning()
+            if (!data) return res.status(404).json({ error: 'Dealer not found' })
+            return res.status(200).json(data)
+        } catch (err) {
+            console.error('PUT /api/dealers error:', err.message)
+            return res.status(500).json({ error: 'Failed to update dealer' })
+        }
+    }
+
+    // DELETE
+    if (req.method === 'DELETE') {
+        if (!id) return res.status(400).json({ error: 'Dealer ID is required' })
+        try {
+            await db.delete(dealers).where(companyGuard)
+            return res.status(204).end()
+        } catch (err) {
+            console.error('DELETE /api/dealers error:', err.message)
+            return res.status(500).json({ error: 'Failed to delete dealer' })
         }
     }
 }

@@ -20,6 +20,7 @@ const statusKeys = {
     processing: { labelKey: 'status.processing', class: 'badge-info' },
     shipped: { labelKey: 'status.shipped', class: 'badge-purple' },
     delivered: { labelKey: 'status.delivered', class: 'badge-success' },
+    cancelled: { labelKey: 'status.cancelled', class: 'badge-inactive' },
 }
 
 const monthKeys = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
